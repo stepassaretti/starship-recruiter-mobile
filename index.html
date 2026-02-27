@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <title>Starship Recruiter</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -222,6 +222,23 @@ body {
   transition: opacity 0.05s;
 }
 .mc-wrap.selected .mc-dither { opacity: 1; }
+
+.mc-hired {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+}
+.mc-hired span {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 16px;
+  color: #fff;
+  text-transform: uppercase;
+}
+.mc-wrap.selected .mc-hired { display: flex; }
 
 .mc-head { display: flex; justify-content: space-between; align-items: center; }
 .mc-name { font-size: 17px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -777,6 +794,7 @@ function updateUI() {
     <div class="mc-wrap${isSelected ? ' selected' : ''}" id="card-${app.id}" data-id="${app.id}" data-race="${app.race}" onclick="tapCard(${app.id})">
       ${cardBorderSVG()}
       <div class="mc-dither"></div>
+      <div class="mc-hired"><span>HIRED</span></div>
       <div class="mc-inner">
         <div class="mc-head">
           <div class="mc-name">${app.name}</div>
