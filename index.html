@@ -43,47 +43,8 @@ body {
 .top-right { display: flex; gap: 16px; align-items: center; }
 .top-cr { font-weight: 700; }
 
-/* ── TAB BAR ── */
-.tab-bar {
-  display: flex;
-  background: #fff;
-  border-bottom: 2px solid #000;
-  flex-shrink: 0;
-  z-index: 50;
-}
-.tab-btn {
-  flex: 1;
-  padding: 8px 0;
-  font-family: "VT323", monospace;
-  font-size: 18px;
-  text-transform: uppercase;
-  text-align: center;
-  background: #fff;
-  color: #000;
-  border: none;
-  border-right: 2px solid #000;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition: background 0.1s;
-}
-.tab-btn:last-child { border-right: none; }
-.tab-btn.active {
-  background: #000;
-  color: #fff;
-}
-
-/* ── MAIN PANELS ── */
-.panel {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  display: none;
-  flex-direction: column;
-}
-.panel.active { display: flex; }
-
-.panel-scroll {
+/* ── MAIN SCROLL AREA ── */
+.scroll-area {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -301,6 +262,135 @@ body {
   align-items: center;
   gap: 8px;
   border-top: 2px solid #000;
+  position: relative;
+  z-index: 60;
+}
+
+/* ── BUTTON ROW ── */
+.btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ── ICON BUTTONS (mission / manual) ── */
+.icon-btn {
+  width: 48px;
+  height: 40px;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  background: #fff;
+  border: 2px solid #000;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+.icon-btn img {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.icon-btn.active {
+  background: #000;
+}
+
+/* ── DRAWER OVERLAY ── */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #999 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 55;
+}
+.drawer-overlay.visible { display: block; }
+
+/* ── DRAWER ── */
+.drawer {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 2px solid #000;
+  z-index: 60;
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0.3, 1);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.drawer.open {
+  transform: translateY(0);
+}
+.drawer.dragging {
+  transition: none;
+}
+
+.drawer-handle {
+  width: 100%;
+  padding: 8px 16px 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+.drawer-handle-bar {
+  width: 40px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+}
+.drawer-close {
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background: none;
+  border: none;
+  padding: 4px 0;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px 16px;
+}
+
+/* Slots inside drawer when open */
+.drawer .drawer-slots {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.drawer .drawer-slots .slots-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  touch-action: pan-x;
+}
+.drawer .drawer-slots .btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
 /* ── SLOTS ROW ── */
@@ -463,54 +553,58 @@ body {
   </div>
 </div>
 
-<!-- TAB BAR -->
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('recruit')">Recruit</button>
-  <button class="tab-btn" onclick="switchTab('mission')">Mission</button>
-  <button class="tab-btn" onclick="switchTab('manual')">Manual</button>
-</div>
-
-<!-- RECRUIT PANEL -->
-<div class="panel active" id="panel-recruit">
-  <div class="panel-scroll">
-    <div class="section-title-row">
-      <div class="section-title" id="pool-title">APPLICANTS [0]</div>
-      <div class="section-payroll">PAYROLL: <span id="ui-payroll">0</span> CR</div>
-    </div>
-    <div class="cards-grid" id="cards-grid"></div>
+<!-- SCROLLABLE AREA (always applicants) -->
+<div class="scroll-area">
+  <div class="section-title-row">
+    <div class="section-title" id="pool-title">APPLICANTS [0]</div>
+    <div class="section-payroll">PAYROLL: <span id="ui-payroll">0</span> CR</div>
   </div>
+  <div class="cards-grid" id="cards-grid"></div>
 </div>
 
-<!-- MISSION PANEL -->
-<div class="panel" id="panel-mission">
-  <div class="panel-scroll">
-    <div class="section-title" style="margin-bottom:10px;">MISSION INTEL</div>
-    <div class="mission-card" id="ui-mission"></div>
-    <div class="section-title" style="margin-bottom:10px;">YOUR SHIP</div>
-    <div class="ship-preview">
-      <img id="ui-ship-image" src="" alt="Ship" onerror="this.style.display='none'">
-    </div>
-    <div style="font-size:20px; margin-bottom:8px;"><span id="ui-ship-name">Scout</span></div>
-    <div style="font-size:18px;">MIN CREW: <strong><span id="ui-ship-min">3</span></strong></div>
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-handle" id="drawer-handle">
+    <div class="drawer-handle-bar"></div>
+    <button class="drawer-close" onclick="closeDrawer()">CLOSE</button>
   </div>
-</div>
-
-<!-- MANUAL PANEL -->
-<div class="panel" id="panel-manual">
-  <div class="panel-scroll">
-    <div class="section-title" style="margin-bottom:10px;">XENO-BIOLOGY MANUAL</div>
-    <div id="ui-manual"></div>
+  <div class="drawer-content" id="drawer-content"></div>
+  <div class="drawer-slots">
+    <div class="slots-row" id="drawer-slots-row"></div>
+    <div class="btn-row">
+      <button class="icon-btn" id="btn-mission-drawer" onclick="toggleDrawer('mission')">
+        <img id="icon-mission-drawer" src="images/mission_default.png">
+      </button>
+      <button class="launch-btn disabled" id="btn-launch-drawer" onclick="launchMission()">
+        <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+        <span class="launch-btn-text">Launch Mission</span>
+      </button>
+      <button class="icon-btn" id="btn-manual-drawer" onclick="toggleDrawer('manual')">
+        <img id="icon-manual-drawer" src="images/manual_default.png">
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- BOTTOM BAR -->
-<div class="bottom-bar">
+<div class="bottom-bar" id="bottom-bar">
   <div class="slots-row" id="slots-row"></div>
   <div class="launch-warning" id="launch-warning">HIRE CREW TO LAUNCH</div>
-  <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
-    <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-    <span class="launch-btn-text">Launch Mission</span>
-  </button>
+  <div class="btn-row">
+    <button class="icon-btn" id="btn-mission" onclick="toggleDrawer('mission')">
+      <img id="icon-mission" src="images/mission_default.png">
+    </button>
+    <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
+      <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text">Launch Mission</span>
+    </button>
+    <button class="icon-btn" id="btn-manual" onclick="toggleDrawer('manual')">
+      <img id="icon-manual" src="images/manual_default.png">
+    </button>
+  </div>
 </div>
 
 <!-- RESULT OVERLAY -->
@@ -532,13 +626,190 @@ body {
 // TAB SWITCHING
 // ══════════════════════════════════════════════
 
-function switchTab(tabName) {
-  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-    btn.classList.toggle('active', ['recruit','mission','manual'][i] === tabName);
-  });
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tabName).classList.add('active');
+// ══════════════════════════════════════════════
+// DRAWER SYSTEM
+// ══════════════════════════════════════════════
+
+let activeDrawer = null; // 'mission' | 'manual' | null
+
+function toggleDrawer(type) {
+  if (activeDrawer === type) {
+    closeDrawer();
+    return;
+  }
+  openDrawer(type);
 }
+
+function openDrawer(type) {
+  activeDrawer = type;
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('drawer-overlay');
+  const content = document.getElementById('drawer-content');
+
+  // Populate content
+  if (type === 'mission') {
+    content.innerHTML = getMissionHTML();
+  } else {
+    content.innerHTML = getManualHTML();
+  }
+
+  // Sync drawer slots
+  syncDrawerSlots();
+
+  // Update icon states
+  updateIconButtons();
+
+  // Hide bottom bar, show drawer
+  document.getElementById('bottom-bar').style.display = 'none';
+  overlay.classList.add('visible');
+  // Force reflow then open
+  void drawer.offsetHeight;
+  drawer.classList.add('open');
+}
+
+function closeDrawer() {
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('drawer-overlay');
+
+  drawer.classList.remove('open');
+  overlay.classList.remove('visible');
+  activeDrawer = null;
+
+  updateIconButtons();
+
+  // Show bottom bar after transition
+  setTimeout(() => {
+    document.getElementById('bottom-bar').style.display = '';
+    syncBottomBarSlots();
+    updateLaunchState();
+  }, 260);
+}
+
+function updateIconButtons() {
+  // Bottom bar icons
+  const mBtn = document.getElementById('btn-mission');
+  const mImg = document.getElementById('icon-mission');
+  const aBtn = document.getElementById('btn-manual');
+  const aImg = document.getElementById('icon-manual');
+  // Drawer icons
+  const mBtnD = document.getElementById('btn-mission-drawer');
+  const mImgD = document.getElementById('icon-mission-drawer');
+  const aBtnD = document.getElementById('btn-manual-drawer');
+  const aImgD = document.getElementById('icon-manual-drawer');
+
+  const mActive = activeDrawer === 'mission';
+  const aActive = activeDrawer === 'manual';
+
+  if (mBtn) { mBtn.classList.toggle('active', mActive); mImg.src = mActive ? 'images/mission_selected.png' : 'images/mission_default.png'; }
+  if (aBtn) { aBtn.classList.toggle('active', aActive); aImg.src = aActive ? 'images/manual_selected.png' : 'images/manual_default.png'; }
+  if (mBtnD) { mBtnD.classList.toggle('active', mActive); mImgD.src = mActive ? 'images/mission_selected.png' : 'images/mission_default.png'; }
+  if (aBtnD) { aBtnD.classList.toggle('active', aActive); aImgD.src = aActive ? 'images/manual_selected.png' : 'images/manual_default.png'; }
+}
+
+function getMissionHTML() {
+  const m = state.mission;
+  let reqHTML = m.reqs.map(r => `<span class="mission-req-tag">${r.toUpperCase()}: ${m.targets[r]}</span>`).join(" ");
+  const shipSrc = `images/ships_${state.ship.name.toLowerCase().replace(/\s+/g, '_')}.png`;
+  return `
+    <div class="section-title" style="margin-bottom:10px;">MISSION INTEL</div>
+    <div class="mission-card">
+      <div class="mission-type">${m.type}</div>
+      <div class="mission-title">${m.title}</div>
+      <div class="mission-detail">${reqHTML}</div>
+      <div class="mission-detail">MIN SUCCESS: <strong>${m.minReq}%</strong></div>
+      <div class="mission-detail">REWARD: <strong>${m.reward} CR</strong></div>
+    </div>
+    <div class="section-title" style="margin-bottom:10px;">YOUR SHIP</div>
+    <div class="ship-preview"><img src="${shipSrc}" alt="Ship" style="max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;" onerror="this.style.display='none'"></div>
+    <div style="font-size:20px; margin-bottom:8px;">${state.ship.name} [${state.roster.filter(a=>a).length}/${state.ship.max}]</div>
+    <div style="font-size:18px;">MIN CREW: <strong>${state.ship.min}</strong></div>
+  `;
+}
+
+function getManualHTML() {
+  let html = '<div class="section-title" style="margin-bottom:10px;">XENO-BIOLOGY MANUAL</div>';
+  let availableRaces = [];
+  state.pool.forEach(p => { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });
+  availableRaces.forEach(rKey => {
+    const rd = RACES[rKey];
+    html += `
+      <div class="manual-entry">
+        <div class="manual-name">
+          <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
+          ${rKey}
+        </div>
+        <div class="manual-desc">${rd.desc}</div>
+        <div class="manual-hates">HATES: <strong>${rd.hates.join(", ")}</strong></div>
+      </div>`;
+  });
+  return html;
+}
+
+function syncDrawerSlots() {
+  const row = document.getElementById('drawer-slots-row');
+  if (!row) return;
+  row.innerHTML = '';
+  for (let i = 0; i < state.ship.max; i++) {
+    const app = state.roster[i];
+    let h = `<div class="slot${app ? ' filled' : ''}" onclick="tapSlot(${i})">`;
+    h += `<svg class="slot-fill-bg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"><polygon fill="#000" points="0,2 2,2 2,0 48,0 48,2 50,2 50,48 48,48 48,50 2,50 2,48 0,48"/></svg>`;
+    if (app) h += `<img class="slot-icon" src="${RACES[app.race].icon}" style="position:absolute;width:40px;height:40px;top:5px;left:5px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
+    h += `</div>`;
+    row.insertAdjacentHTML('beforeend', h);
+  }
+  // Sync launch button state in drawer
+  const crewCount = state.roster.filter(a => a !== null).length;
+  const btn = document.getElementById('btn-launch-drawer');
+  if (btn) btn.classList.toggle('disabled', crewCount === 0);
+}
+
+function syncBottomBarSlots() {
+  renderSlots();
+}
+
+// ── PULL-DOWN GESTURE ──
+(function() {
+  const handle = document.getElementById('drawer-handle');
+  const drawer = document.getElementById('drawer');
+  let startY = 0, currentY = 0, dragging = false;
+
+  handle.addEventListener('pointerdown', (e) => {
+    startY = e.clientY;
+    currentY = 0;
+    dragging = true;
+    drawer.classList.add('dragging');
+    handle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  handle.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    currentY = Math.max(0, e.clientY - startY);
+    drawer.style.transform = `translateY(${currentY}px)`;
+  });
+
+  handle.addEventListener('pointerup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    drawer.classList.remove('dragging');
+    // If pulled down more than 80px, close
+    if (currentY > 80) {
+      drawer.style.transform = '';
+      closeDrawer();
+    } else {
+      drawer.style.transform = '';
+      drawer.classList.add('open');
+    }
+  });
+
+  handle.addEventListener('pointercancel', () => {
+    if (!dragging) return;
+    dragging = false;
+    drawer.classList.remove('dragging');
+    drawer.style.transform = '';
+    drawer.classList.add('open');
+  });
+})();
 
 // ══════════════════════════════════════════════
 // GAME DATA
@@ -749,41 +1020,6 @@ function updateUI() {
   // Payroll
   document.getElementById('ui-payroll').innerText = currentCost;
 
-  // Mission panel
-  let reqHTML = m.reqs.map(r => `<span class="mission-req-tag">${r.toUpperCase()}: ${m.targets[r]}</span>`).join(" ");
-  document.getElementById('ui-mission').innerHTML = `
-    <div class="mission-type">${m.type}</div>
-    <div class="mission-title">${m.title}</div>
-    <div class="mission-detail">${reqHTML}</div>
-    <div class="mission-detail">MIN SUCCESS: <strong>${m.minReq}%</strong></div>
-    <div class="mission-detail">REWARD: <strong>${m.reward} CR</strong></div>
-  `;
-
-  // Ship info
-  const shipImg = document.getElementById('ui-ship-image');
-  shipImg.src = `images/ships_${state.ship.name.toLowerCase().replace(/\s+/g, '_')}.png`;
-  shipImg.style.display = 'block';
-  document.getElementById('ui-ship-name').innerText = `${state.ship.name} [${state.roster.filter(a=>a).length}/${state.ship.max}]`;
-  document.getElementById('ui-ship-min').innerText = state.ship.min;
-
-  // Manual panel
-  let manualHTML = "";
-  let availableRaces = [];
-  state.pool.forEach(p => { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });
-  availableRaces.forEach(rKey => {
-    const rd = RACES[rKey];
-    manualHTML += `
-      <div class="manual-entry">
-        <div class="manual-name">
-          <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
-          ${rKey}
-        </div>
-        <div class="manual-desc">${rd.desc}</div>
-        <div class="manual-hates">HATES: <strong>${rd.hates.join(", ")}</strong></div>
-      </div>`;
-  });
-  document.getElementById('ui-manual').innerHTML = manualHTML;
-
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = "";
@@ -848,6 +1084,23 @@ function renderSlots() {
   }
 }
 
+function updateLaunchState() {
+  const crewCount = state.roster.filter(a => a !== null).length;
+  const disabled = crewCount === 0;
+  const b1 = document.getElementById('btn-launch');
+  const b2 = document.getElementById('btn-launch-drawer');
+  if (b1) b1.classList.toggle('disabled', disabled);
+  if (b2) b2.classList.toggle('disabled', disabled);
+  const warn = document.getElementById('launch-warning');
+  if (warn) warn.style.display = disabled ? '' : 'none';
+}
+
+function syncAllSlots() {
+  renderSlots();
+  if (activeDrawer !== null) syncDrawerSlots();
+  updateLaunchState();
+}
+
 // ══════════════════════════════════════════════
 // CARD TAP — original index.html interaction model
 // Card stays in pool, gets dither highlight, fills slot
@@ -870,16 +1123,12 @@ function tapCard(appId) {
   if (rosterIdx !== -1) {
     state.roster[rosterIdx] = null;
     card.classList.remove('selected');
-    // Compact slots
     const filled = state.roster.filter(a => a !== null);
     for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
-    renderSlots();
-    // Update payroll + credits + launch state
+    syncAllSlots();
     const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
     document.getElementById('ui-payroll').innerText = currentCost;
     document.getElementById('ui-money').innerText = state.money - currentCost;
-    const crewCount = state.roster.filter(a => a !== null).length;
-    document.getElementById('btn-launch').classList.toggle('disabled', crewCount === 0);
     return;
   }
 
@@ -900,35 +1149,28 @@ function tapCard(appId) {
   // Assign — card gets selected overlay, stays in grid
   card.classList.add('selected');
   state.roster[nextSlot] = app;
-  renderSlots();
+  syncAllSlots();
 
-  // Update payroll + credits + launch state
   const newCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-payroll').innerText = newCost;
   document.getElementById('ui-money').innerText = state.money - newCost;
-  document.getElementById('btn-launch').classList.remove('disabled');
-  document.getElementById('launch-warning').style.display = 'none';
 }
 
 function tapSlot(index) {
   const app = state.roster[index];
   if (!app) return;
 
-  // Deselect the card
   const card = document.getElementById('card-' + app.id);
   if (card) card.classList.remove('selected');
 
   state.roster[index] = null;
-  // Compact
   const filled = state.roster.filter(a => a !== null);
   for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
-  renderSlots();
+  syncAllSlots();
 
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-payroll').innerText = currentCost;
   document.getElementById('ui-money').innerText = state.money - currentCost;
-  const crewCount = state.roster.filter(a => a !== null).length;
-  document.getElementById('btn-launch').classList.toggle('disabled', crewCount === 0);
 }
 
 // ══════════════════════════════════════════════
@@ -1031,13 +1273,13 @@ function nextDay() {
       document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
       document.getElementById('modal-btn').onclick = nextDay;
       document.getElementById('result-overlay').classList.remove('visible');
-      switchTab('recruit');
+      closeDrawer();
       startDay();
     };
     document.getElementById('result-overlay').classList.add('visible');
   } else {
     state.day++;
-    switchTab('recruit');
+    closeDrawer();
     startDay();
   }
 }
