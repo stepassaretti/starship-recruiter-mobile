@@ -39,7 +39,8 @@ body {
   border-bottom: 2px solid #000;
   z-index: 50;
 }
-.top-left { display: flex; gap: 12px; align-items: center; }
+.top-title { font-weight: 700; }
+.top-right { display: flex; gap: 16px; align-items: center; }
 .top-cr { font-weight: 700; }
 
 /* ── TAB BAR ── */
@@ -58,6 +59,7 @@ body {
   text-transform: uppercase;
   text-align: center;
   background: #fff;
+  color: #000;
   border: none;
   border-right: 2px solid #000;
   cursor: pointer;
@@ -88,12 +90,21 @@ body {
   padding: 12px 16px 16px;
 }
 
-/* ── SECTION TITLES ── */
+/* ── SECTION TITLE ROW ── */
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
 .section-title {
   font-size: 20px;
   text-transform: uppercase;
-  margin-bottom: 10px;
   font-weight: bold;
+}
+.section-payroll {
+  font-size: 18px;
+  font-weight: 700;
 }
 
 /* ── MISSION PANEL ── */
@@ -103,9 +114,9 @@ body {
   margin-bottom: 16px;
   background: #fff;
 }
-.mission-type { 
-  background: #000; color: #fff; padding: 3px 8px; display: inline-block; 
-  font-size: 16px; text-transform: uppercase; margin-bottom: 8px; 
+.mission-type {
+  background: #000; color: #fff; padding: 3px 8px; display: inline-block;
+  font-size: 16px; text-transform: uppercase; margin-bottom: 8px;
 }
 .mission-title { font-size: 22px; font-weight: bold; line-height: 1.1; margin-bottom: 8px; }
 .mission-detail { font-size: 18px; margin-top: 6px; }
@@ -138,7 +149,7 @@ body {
   border-bottom: 2px dotted #000;
 }
 .manual-name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   text-transform: uppercase;
   display: flex;
@@ -152,8 +163,8 @@ body {
   flex-shrink: 0;
 }
 .manual-icon img { width: 18px; height: 18px; image-rendering: pixelated; }
-.manual-desc { font-size: 15px; line-height: 1.1; margin-top: 2px; }
-.manual-hates { font-size: 15px; margin-top: 2px; }
+.manual-desc { font-size: 17px; line-height: 1.1; margin-top: 2px; }
+.manual-hates { font-size: 17px; margin-top: 2px; }
 
 /* ── CARDS GRID ── */
 .cards-grid {
@@ -165,7 +176,7 @@ body {
 /* ── CARD ── */
 .mc-wrap {
   position: relative;
-  aspect-ratio: 168 / 220;
+  aspect-ratio: 168 / 210;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -195,10 +206,11 @@ body {
   padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   overflow: hidden;
 }
 
+/* Selected state: dither overlay — card stays in pool */
 .mc-dither {
   position: absolute;
   top: 2px; left: 2px; right: 2px; bottom: 2px;
@@ -212,7 +224,7 @@ body {
 .mc-wrap.selected .mc-dither { opacity: 1; }
 
 .mc-head { display: flex; justify-content: space-between; align-items: center; }
-.mc-name { font-size: 14px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-name { font-size: 17px; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .mc-tag {
   position: relative;
@@ -232,48 +244,50 @@ body {
   pointer-events: none;
   overflow: visible;
 }
-.mc-tag-text { font-size: 11px; color: #fff; line-height: 1; text-transform: uppercase; }
+.mc-tag-text { font-size: 14px; color: #fff; line-height: 1; text-transform: uppercase; }
 
-.mc-portrait { width: 100%; height: 100px; overflow: hidden; flex-shrink: 0; }
+.mc-portrait { width: 100%; height: 108px; overflow: hidden; flex-shrink: 0; }
 .mc-portrait img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; pointer-events: none; }
 
-.mc-skills { font-size: 12px; display: flex; justify-content: space-between; width: 100%; }
+.mc-skills { font-size: 15px; display: flex; justify-content: space-between; width: 100%; }
 .mc-skills .hi-stat { font-weight: bold; text-decoration: underline; }
-.mc-exp { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-exp { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.mc-div { height: 2px; border: none; background-image: linear-gradient(to right, #000 2px, transparent 2px); background-size: 4px 2px; background-repeat: repeat-x; flex-shrink: 0; }
+.mc-div { height: 2px; border: none; background-image: linear-gradient(to right, #000 2px, transparent 2px); background-size: 4px 2px; background-repeat: repeat-x; flex-shrink: 0; margin-top: auto; margin-bottom: -2px; }
 
-.mc-foot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.mc-foot { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-top: 0; }
 
-.hate-row { display: flex; align-items: center; gap: 3px; }
-.hate-lbl { font-size: 12px; line-height: 1; }
-.hate-outer { width: 24px; height: 8px; border: 2px solid #000; background: #fff; position: relative; overflow: hidden; }
-.hate-fill { position: absolute; inset: 0; right: auto; background-image: var(--dither); background-size: 2px 2px; }
-.hate-pct { font-size: 12px; line-height: 1; }
+.mc-hate-row { display: flex; align-items: center; gap: 3px; flex: 1; min-width: 0; }
+.mc-hate-label { font-size: 15px; line-height: 1; white-space: nowrap; flex-shrink: 0; }
+.mc-hate-bar-track {
+  width: 30px; height: 8px;
+  position: relative; flex-shrink: 0;
+  border: 2px solid #000; overflow: hidden;
+}
+.mc-hate-bar-fill {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  background-image: var(--dither);
+  background-size: 2px 2px;
+}
+.mc-hate-pct { font-size: 15px; line-height: 1; white-space: nowrap; flex-shrink: 0; }
+.mc-hate-pct.high { font-weight: 700; }
 
-.mc-salary { font-size: 13px; font-weight: 700; }
+.mc-salary { font-size: 15px; font-weight: 700; flex-shrink: 0; }
 
-/* ── BOTTOM BAR ── */
+/* ── BOTTOM BAR (compact — no crew count) ── */
 .bottom-bar {
   background: #fff;
-  padding: 10px 16px 16px;
+  padding: 8px 16px 14px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-top: 2px solid #000;
 }
 
-.roster-info {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 16px;
-}
-
 /* ── SLOTS ROW ── */
-.slots-row { display: flex; gap: 8px; width: 100%; justify-content: center; }
+.slots-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; flex-shrink: 0; }
 
 .slot {
   width: 50px;
@@ -312,6 +326,12 @@ body {
   height: 40px;
   flex-shrink: 0;
   touch-action: manipulation;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
 }
 .launch-btn-bg {
   position: absolute;
@@ -335,7 +355,22 @@ body {
   height: 100%;
 }
 .launch-btn:active .launch-btn-bg polygon { fill: #333; }
-.launch-btn.disabled { opacity: 0.4; pointer-events: none; }
+.launch-btn.disabled {
+  pointer-events: none;
+  clip-path: none;
+}
+.launch-btn.disabled .launch-btn-bg { display: none; }
+.launch-btn.disabled .launch-btn-text {
+  color: #000;
+  background-image:
+    linear-gradient(to right, #000 50%, transparent 50%),
+    linear-gradient(to bottom, #000 50%, transparent 50%),
+    linear-gradient(to right, #000 50%, transparent 50%),
+    linear-gradient(to bottom, #000 50%, transparent 50%);
+  background-size: 4px 2px, 2px 4px, 4px 2px, 2px 4px;
+  background-position: top, right, bottom, left;
+  background-repeat: repeat-x, repeat-y, repeat-x, repeat-y;
+}
 
 .launch-warning {
   display: none;
@@ -403,8 +438,11 @@ body {
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <span class="top-day">DAY <span id="ui-day">1</span></span>
-  <span class="top-cr"><span id="ui-money">800</span> CR</span>
+  <span class="top-title">STARSHIP//RECRUITER</span>
+  <div class="top-right">
+    <span class="top-day">DAY <span id="ui-day">1</span></span>
+    <span class="top-cr"><span id="ui-money">800</span> CR</span>
+  </div>
 </div>
 
 <!-- TAB BAR -->
@@ -417,19 +455,20 @@ body {
 <!-- RECRUIT PANEL -->
 <div class="panel active" id="panel-recruit">
   <div class="panel-scroll">
-    <div class="section-title" id="pool-title">APPLICANTS [0]</div>
-    <div class="cards-grid" id="cards-grid">
-      <!-- Cards injected by JS -->
+    <div class="section-title-row">
+      <div class="section-title" id="pool-title">APPLICANTS [0]</div>
+      <div class="section-payroll">PAYROLL: <span id="ui-payroll">0</span> CR</div>
     </div>
+    <div class="cards-grid" id="cards-grid"></div>
   </div>
 </div>
 
 <!-- MISSION PANEL -->
 <div class="panel" id="panel-mission">
   <div class="panel-scroll">
-    <div class="section-title">MISSION INTEL</div>
+    <div class="section-title" style="margin-bottom:10px;">MISSION INTEL</div>
     <div class="mission-card" id="ui-mission"></div>
-    <div class="section-title">YOUR SHIP</div>
+    <div class="section-title" style="margin-bottom:10px;">YOUR SHIP</div>
     <div class="ship-preview">
       <img id="ui-ship-image" src="" alt="Ship" onerror="this.style.display='none'">
     </div>
@@ -441,20 +480,14 @@ body {
 <!-- MANUAL PANEL -->
 <div class="panel" id="panel-manual">
   <div class="panel-scroll">
-    <div class="section-title">XENO-BIOLOGY MANUAL</div>
+    <div class="section-title" style="margin-bottom:10px;">XENO-BIOLOGY MANUAL</div>
     <div id="ui-manual"></div>
   </div>
 </div>
 
 <!-- BOTTOM BAR -->
 <div class="bottom-bar">
-  <div class="roster-info">
-    <span id="ui-roster-count">CREW: 0/<span id="ui-roster-max">5</span></span>
-    <span>PAYROLL: <strong><span id="ui-payroll">0</span> CR</strong></span>
-  </div>
-  <div class="slots-row" id="slots-row">
-    <!-- Slots injected by JS -->
-  </div>
+  <div class="slots-row" id="slots-row"></div>
   <div class="launch-warning" id="launch-warning">HIRE CREW TO LAUNCH</div>
   <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
     <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
@@ -490,90 +523,30 @@ function switchTab(tabName) {
 }
 
 // ══════════════════════════════════════════════
-// GAME DATA (from index-web)
+// GAME DATA
 // ══════════════════════════════════════════════
 
 const NAME_MAP = {
-  "Human": [
-    null,
-    "Devendrika Ray", "Kael Ionescu", "Randy Starkiller", "Quinn Solemani", "Tomasz Malik", "Lucian Vance", "Rafael Kovacs", "Elias Moretti", "Aveline Karim", "Soren Baptiste", "Petra Novak", "Matteo Calder", "Elara Mendez", "Nikolai Duarte", "Adrian Sato", "Cassian Ward", "Farid Alami", "Dario Velasquez", "Layla Rahman", "Henrik Solberg", "Isaac Moreno", "Iris Bennett", "Selene Duarte", "Gordon Lemo", "Rami Qureshi", "Andre Baptiste", "Empress Rosa", "Camila Torres", "Lydia Shaw", "Empress Bianca", "Theo Grant", "Lukas Andrade", "Dominic Hayes", "Dalo Manimo", "Hannah Becker", "Aaron Gallagher", "Jonas Weber", "Niklas Berg", "Ana Velasquez", "Cassian Moretti", "Zayed Rahmani", "Dorian Keane", "Rafael Duarte", "Marcus Keane", "Adrian Malik", "Victor Calder", "Henry Vance", "Daniel Ward", "Isaac Shaw", "Grace O'Connell", "Patrick Hayes", "Julian Weber"
-  ],
-  "Beetlegunner": [
-    null,
-    "Rixo-Zer", "Brak Vorn", "Trok-Xaar", "Zek Kril", "Kral-Dex", "Vrax-Orn", "Drek Xul", "Gorth-Zan", "Krag Vex", "Torg-Xel", "Rax-Korn", "Vek Draal", "Zorn-Xik", "Brix Kaal", "Thrak-Zor", "Krul Varn", "Drox-Kel", "Ralx Zern", "Grix Vaal", "Krot-Xarn", "Bral Kex", "Zor-Kaal", "Trik Vorn", "Krav-Xil", "Drax-Vel", "Rokk Zarn", "Grel-Kor", "Xarn-Dek", "Brox Vek", "Krag-Dor", "Trel-Xan", "Vorn-Krex", "Zrix Vaal", "Drel Krot", "Krul-Zex", "Trog Varn", "Xek-Draal", "Brik Zorn", "Rokk-Vex", "Krag Xorn", "Grot-Dex", "Zarn Krel"
-  ],
-  "Barbitulian": [
-    null,
-    "Zulvaris", "Xath Merul", "Qorvath Elix", "Sereval Thun", "Valrex Omir", "Thalior Zek", "Vorim Qeth", "Luraxis Vel", "Zathiel Korun", "Meraxis Thal", "Qerun Valis", "Selvar Omek", "Vorun Threx", "Zaleth Miron", "Xeraxis Velun", "Thunor Qelis", "Varith Zel", "Qelaris Morun", "Luthar Vexis", "Zalorin Thun", "Meroth Qal", "Xevorin Lath", "Selvaris Torun", "Qathor Velen", "Zorath Melun", "Threxion Val", "Luraxis Qeth", "Vorin Zelun", "Xerath Omir", "Qelthor Varis", "Zalethor Marn", "Selvor Qarn", "Meraxis Thul", "Zorim Velath", "Qarneth Sol", "Valreth Xorun", "Thulorin Qex", "Xereth Valun", "Lutharis Qel", "Vorath Solun", "Zelvar Threx", "Qeroth Malun", "Tharn Velix", "Zolvar Qeth", "Meraxis Varn", "Qalreth Zor", "Luraxis Threx", "Vorun Qelis", "Xeroth Valar", "Threxil Qarn", "Zaleth Vexor", "Selvar Qorin", "Qorath Melun", "Valreth Zarn"
-  ],
-  "Drakhen": [
-    null,
-    "Zaga Ro-La", "Vrax Kor-Tha", "Selm Dral-Vor", "Krath Zel-Mor", "Threx Val-Ka", "Korvax Dre-Than", "Xev Mor-Ra", "Dral Vek-Tor", "Varn Sel-Keth", "Krag Vo-Dra", "Zorn Mal-Tha", "Tharn Kor-Vex", "Xel Var-Drath", "Morvax Sel-Ra", "Drex Kor-La", "Krath Zel-Vor", "Vrax Thun-Kar", "Selm Dro-Va", "Korvax Zeth-Ra", "Xarn Vel-Tha", "Threx Mor-Kal", "Dral Vor-Xa", "Zaga Threx-La"
-  ],
-  "Aquasim": [
-    null,
-    "Lumaseri", "Veshanari", "Talimor", "Nerisvalu", "Sorameli", "Venathari", "Liorumesi", "Naluvesh", "Terensori", "Meralun", "Valinesu", "Sorimel", "Lumatheri", "Nerivalu", "Mesilor", "Veshtalu", "Seranali", "Lioruveni", "Talumeri", "Nalusori", "Venaliri", "Melisora", "Therinesu", "Lumavesh", "Nalimeru", "Veshlora", "Sorithalu", "Lioruneri", "Meravali", "Talusera", "Nesuluma", "Venameli", "Sorivesh", "Lirinelu", "Mesithera", "Talivenu", "Nalisoru", "Lumamera", "Veshseli", "Seralioru", "Nerithalu", "Melivesu", "Taluneri", "Venasoru", "Liorutali", "Seravali", "Mesinelu", "Nesuvena", "Lumathali", "Veshmeru", "Soriluma", "Nerivali", "Taluseli", "Meranesu"
-  ],
-  "Space-Cat": [
-    null,
-    "Kitty Dude", "Puss Inbootz", "Rob McCat", "Whiskerjack", "Meowsalot", "Felinor Vox", "O'Malley", "Fluffington", "Mewlius P", "Scratcharro", "Purrlock", "Fluffrage", "Von Hairball", "Zarpurrion", "Whisker Boy", "Pawl Atreides", "Catrick Swayze", "Clawdius Max", "Don Furioso", "Orion", "Jax Whisks", "Kit Stardust", "Purrcy J", "Scratchula", "Pawblo Esc", "Feline Dion", "Meowzart", "Tabbington"
-  ],
-  "Sky-Elf": [
-    null,
-    "Aeryn Valeth", "Thalion Merev", "Lyrielle Veyra", "Serapha Nymis", "Caelum Orivar", "Vaelor Thyne", "Ilyrion Caelis", "Oryndel Vareth", "Sylvaris Deyne", "Maelor Quineth", "Caedryn Solvar", "Elion Tharis", "Vaelyra Soles", "Nymeris Caeli", "Thalorin Vexar", "Oriel Damaris", "Vaedryn Rval", "Sylion Arhex", "Caelor Nythe", "Valeris Thane", "Oryxiel Dareth", "Theryn Solis", "Aelion Vereth", "Isyra Valenne", "Kaelith Deymor", "Lyssara Thalen", "Vaelor Cyneth", "Tharion Valesk", "Elidryn Soreth", "Myri Caevra", "Vaenys Olara", "Caelum Nyreth", "Oryndel Alis", "Thalion Xereth", "Sylvar Kaelis", "Aeryssa Vireth"
-  ],
-  "Blorg": [
-    null,
-    "Blorvix", "Glorbin", "Zorbik", "Melnog", "Plorvis", "Grendol", "Vornik", "Slorbin", "Nembog", "Xorlum", "Brivnog", "Olgrin", "Tormeg", "Glimbor", "Yelgorn", "Blixor", "Vorblen", "Gralvik", "Ombrik", "Zelbor", "Drimnog", "Plixem", "Brondel", "Lornik", "Glorvak", "Mernog", "Zelnor", "Xemblor", "Brivok", "Nolgrim", "Slorvek", "Glimnor", "Orbex", "Melbrin", "Tormik", "Vexnog", "Blorgath", "Zornel", "Grimlor"
-  ],
-  "Giant": [
-    null,
-    "Solinamo", "Polisano", "Sediliro", "Zanatolo", "Maroneto", "Talomiro", "Veradino", "Colenaro", "Doramiso", "Vaneloro", "Solerano", "Zanemiro", "Calidoro", "Pelaniso", "Moratello", "Zanatorio", "Solavero", "Dorelano", "Pelomaro", "Veranito", "Salinoro", "Donamiso", "Toranello", "Zalerino", "Monaleto", "Solenaro", "Talomiso", "Veralino", "Zanemato", "Caleriso", "Polanero", "Doratino", "Melarono", "Varoniso", "Saletoro", "Zanemiro", "Peladino", "Solerito", "Donaloro", "Tareliso", "Veranolo", "Colamiro", "Zanatorio", "Moreniso", "Solaneto", "Valerono", "Sedanilo", "Polerato", "Zanemoro", "Talorino"
-  ],
-  "Sodio": [
-    null,
-    "Sorel Zin","Zanor Solk","Ostrix Sal","Selzor Kryn","Zolmar Brin","Sorvak Zol","Zelrik Sor","Orzan Krel","Solrex Tarn","Zorlin Skar","Salkor Vren","Zostrik Mal","Orren Solk","Zernox Sal","Sovrin Kalt","Zolstrix Mar","Sarnok Vex","Zerlin Kor","Orskel Zan","Solvrax Din","Zalkor Bren","Sorlin Kest","Zerox Varn","Ostrel Zin","Solkar Vex","Zorvak Trin","Sornel Kraz","Zelmar Drok","Orrik Sol","Salkren Vor","Zostral Kyn","Sorvex Dral","Zelrix Tarn","Orval Skor","Solgren Maz","Zornik Vaal","Salkor Brak","Zerun Sol"
-  ],
-  "Squid": [
-    null,
-    "Veshkai","Orlith","Terequl","Nalith Ve","Xamuresh","Velith","Sorekai","Lumesh","Thalith","Neresh","Orukai","Selith","Tavul","Varekai","Xerith","Morukai","Lunesh","Talith","Zerukai","Veshul","Norith","Salukai","Temesh","Lirith","Velukai","Ormesh","Xerukai","Sorith","Nalukai","Vekesh","Thalukai","Merith","Sorukai","Velesh","Orlukai","Xamith","Loreskai","Selukai","Nerith","Torekai","Valesh","Lumukai","Zerith","Sorethkai","Velukai II","Orqul","Talesh","Vornith","Nalukai","Xeresh","Morukai II","Lunith","Selesh","Torukai","Veshith","Norekai","Valith","Lumesh II","Zerukai II","Sorith II","Talukai II","Velith II","Orukai II","Nalith II","Xamukai","Meresh","Sorukai II","Velkai Prime","Orlith Minor"
-  ],
-  "Long-Neck": [
-    null,
-    "Elarion Tallis","Noreli Vaan","Serevian Lo","Valori Ean","Thaevis Olan","Aevarion Seli","Norevan El","Serevalion Va","Valerion Oa","Thaevaris Ean","Elioran Vale","Norevian Tal","Seravian Olan","Valerian Lo","Thaevalis En","Aerelion Vaan","Norealis Oa","Serevion El","Valerion Ta","Thaeorian Lo","Elarion Vale","Norevian Olan","Serevalis Vaan","Valorian El","Thaevelion Ean","Aevelion Lo","Norelanis Va","Serevion Tal","Valerion Olan","Thaevarion En","Elioran Ta","Norevalion Lo","Serevalis El","Valorian Vaan","Thaevelis Oa","Aerelion Ta","Norevalis En","Serevian Vale","Valerion Ean","Thaevarion Lo"
-  ],
-  "Oak-Person": [
-    null,
-    "Oaken Briar","Thalos Reed","Mavren Root","Alderon Vale","Bramble Thorne","Rowan Moss","Elmira Grove","Hawthorn Dell","Willow Bark","Cedar Hollow","Maple Thorn","Birch Elder","Aspen Vale","Laurel Root","Juniper Field","Oakmere Glen","Hazel Briar","Linden Stone","Yarrow Thorne","Cypress Reed","Willowmere Vale","Ashen Grove","Briar Hollow","Rowan Thorne","Elmwood Dell","Oakheart Vale","Hazelroot Glen","Cedar Thorn","Maplewood Briar","Birchmere Hollow","Aspen Thorn","Laurel Glen","Juniper Vale","Oakbark Field","Hawthorn Grove","Linden Vale","Yarrow Glen","Cypress Hollow","Willowroot Thorne","Ashen Vale","Bramblewood Glen","Rowan Hollow","Elmira Thorn","Oakmere Field","Hazel Grove","Cedar Vale","Maple Thornfield","Birch Glen","Aspen Hollow"
-  ],
-  "Void-Demon": [
-    null,
-    "Aza'thul","Morvael","Xyr'Nox","Thal'Kyr","Oruven Shade","Vael'Mor","Xyraeth","Thal'Vorun","Oruvael"
-  ],
-  "Velkhorian": [
-    null,
-    "Velkhor Davex","Xalven Korath","Draven Xorik","Velthar Khaine","Korvex Marin","Velkorath Xarn","Xaldri Vorex","Draveth Kho","Velthra Maen","Korva Xelrin","Velkhora Den","Xalveth Korin","Draven Khoris","Velthorin Xarn","Korvex Thalrin","Velkhoris Draen","Xalvar Khoren","Dravex Malrin","Velthar Xorin","Korveth Dralin","Velkhor Varex","Xaldris Korath","Dravion Khoris","Velthrax Orin","Korvex Xalrin","Velkhor Dranis","Xalven Thorek","Dravex Khoral","Velthar Malri","Korvex Drael","Velkhor Xareth","Xalvorn Dris"
-  ],
-  "Robomantoid": [
-    null,
-    "Zek'trix-9","Korlax-Unit","Vrixen-Ka","Tal'Xor-7","Mektraz-Vel","Zor'Tek-4","Krexal-Node","Vrax'Kil-8","Talrex-Core","Mek'Zor-2","Zektral-Vex","Kor'Xal-5","Vrix'Tor-1","Tal'Zek-3","Mektral-Unit","Zor'Vrix-6","Krex'Tal-9","Vrax'Kel-7","Tal'Vorn-2","Mek'Tral-4","Zek'Kor-8","Kor'Vrex-3","Vrix'Zal-5","Tal'Krex-1","Mek'Zorn-6","Zor'Kel-7","Krex'Vorn-2","Vrax'Tek-9","Tal'Zor-4","Mek'Vrix-8","Zek'Tal-3","Kor'Zal-6","Vrix'Kor-7","Tal'Vrex-2","Mek'Zal-5","Zor'Tral-1","Krex'Zor-8","Vrax'Tal-6","Tal'Kor-9","Mek'Tren-3","Zek'Vorn-4","Kor'Tek-7","Vrix'Tral-2","Tal'Zrex-5","Mek'Kor-8","Zor'Vex-6","Krex'Zal-1","Vrax'Kor-3","Tal'Tren-9","Mek'Zrex-2","Zek'Tral-5","Kor'Vorn-8","Vrix'Kel-4","Tal'Zor-6","Mek'Vorn-1","Zor'Kor-7","Krex'Tral-2","Vrax'Zor-8","Tal'Vex-3"
-  ],
-  "Droid": [
-    null,
-    "XR-204","MK-771","DV-009","HN-448","QX-310","TR-118","LK-552","PX-903","JM-441","ZT-670","AR-112","BX-784","CY-005","DL-908","EN-223","FX-667","GT-390","HR-145","IV-882","JK-731","KL-556","LM-908","MN-102","NP-774","OR-661","PS-430","QT-987","RU-312","SV-459","TW-620","UX-715","VY-248","WX-903","YZ-114","AB-778","BC-661","CD-209","DE-884","EF-372","FG-990","GH-551","HI-230","IJ-843","JK-662","KL-119","LM-740","MN-356","NO-908","OP-441","PQ-720","QR-118","RS-662","ST-905","TU-348","UV-771","VW-229","WX-118","XY-556","YZ-804","ZA-331"
-  ],
-  "Sugorian": [
-    null,
-    "Bolo","Spelu","Momo","Chellu","Poro","Lulu","Beni","Sulo","Melu","Pelu","Boro","Lomo","Somi","Peluva","Beli","Molu","Sero","Pomu","Leli","Sulu","Bomi","Pelu","Loro","Selo","Meluva","Bolu","Soru","Peli","Moro","Lumo","Soli","Belo","Poroa","Lelu","Melu","Sori","Boru","Pomu","Lomi","Senu"
-  ],
-  "Cheesponge": [
-    null,
-    "Gorvath Mol","Sugorak Tharn","Molgrin Orox","Thorgun Vale","Gravorin Dax","Gorvak Thorn","Sugorath Mal","Molthar Grox","Thorgal Dorn","Gravex Kor","Gorvorn Mal","Sugorik Thal","Molgrath Dorn","Thorgrax Vel","Gravor Mal","Gorvax Tharn","Sugorun Dax","Molthrex Kor","Thorgun Mal","Gravorn Thal","Gorvak Dren","Sugorath Vex","Molgrin Thorn","Thorgal Dax","Gravorin Kor","Gorvex Mal","Sugorak Dorn","Molthar Vex","Thorgrax Mal","Gravorn Dax","Gorvak Kor","Sugorath Tharn","Molgrath Dren","Thorgun Vex","Gravor Mal","Gorvorn Thal","Sugorik Dax","Molthrex Mal","Thorgal Kor","Gravorin Thorn","Gorvax Dorn","Sugorun Mal","Molgrin Dax","Thorgrax Kor","Gravorn Vex","Gorvak Mal","Sugorath Thorn","Molthar Dren","Thorgun Kor","Gravor Dax","Gorvex Tharn","Sugorak Mal","Molgrath Vex","Thorgal Thorn","Gravorin Mal","Gorvorn Kor","Sugorik Thorn","Molthrex Dax","Thorgrax Mal","Gravorn Thorn","Gorvak Vex","Sugorath Dren","Molgrin Kor","Thorgun Thorn","Gravor Mal","Gorvax Kor","Sugorun Thorn","Molthar Mal","Thorgal Vex","Gravorin Dren","Gorvorn Dax","Sugorik Mal","Molgrath Thorn"
-  ],
-  "Fungi": [
-    null,
-    "Papashroom","Brainyshroom","Grumpyshroom","Sneakyshroom","Glowshroom","Loudshroom","Madshroom","Tinyshroom","Bigshroom","Fastshroom","Slowshroom","Redshroom","Bluishroom","Darkshroom","Brightshroom","Stinkyshroom","Spikyshroom","Fuzzyshroom","Slimyshroom","Grinshroom","Sadshroom","Angryshroom","Wildshroom","Calmshroom","Sharpishroom","Softshroom","Boldshroom","Shyshroom","Roughshroom","Quietshroom","Noisyshroom","Braveshroom","Lazyshroom","Jollyshroom","Clevershroom","Swiftshroom","Heavyshroom","Lightshroom","Proudshroom","Screamshroom"
-  ]
+  "Human": [null,"Devendrika Ray","Kael Ionescu","Randy Starkiller","Quinn Solemani","Tomasz Malik","Lucian Vance","Rafael Kovacs","Elias Moretti","Aveline Karim","Soren Baptiste","Petra Novak","Matteo Calder","Elara Mendez","Nikolai Duarte","Adrian Sato","Cassian Ward","Farid Alami","Dario Velasquez","Layla Rahman","Henrik Solberg","Isaac Moreno","Iris Bennett","Selene Duarte","Gordon Lemo","Rami Qureshi","Andre Baptiste","Empress Rosa","Camila Torres","Lydia Shaw","Empress Bianca","Theo Grant","Lukas Andrade","Dominic Hayes","Dalo Manimo","Hannah Becker","Aaron Gallagher","Jonas Weber","Niklas Berg","Ana Velasquez","Cassian Moretti","Zayed Rahmani","Dorian Keane","Rafael Duarte","Marcus Keane","Adrian Malik","Victor Calder","Henry Vance","Daniel Ward","Isaac Shaw","Grace O'Connell","Patrick Hayes","Julian Weber"],
+  "Beetlegunner": [null,"Rixo-Zer","Brak Vorn","Trok-Xaar","Zek Kril","Kral-Dex","Vrax-Orn","Drek Xul","Gorth-Zan","Krag Vex","Torg-Xel","Rax-Korn","Vek Draal","Zorn-Xik","Brix Kaal","Thrak-Zor","Krul Varn","Drox-Kel","Ralx Zern","Grix Vaal","Krot-Xarn","Bral Kex","Zor-Kaal","Trik Vorn","Krav-Xil","Drax-Vel","Rokk Zarn","Grel-Kor","Xarn-Dek","Brox Vek","Krag-Dor","Trel-Xan","Vorn-Krex","Zrix Vaal","Drel Krot","Krul-Zex","Trog Varn","Xek-Draal","Brik Zorn","Rokk-Vex","Krag Xorn","Grot-Dex","Zarn Krel"],
+  "Barbitulian": [null,"Zulvaris","Xath Merul","Qorvath Elix","Sereval Thun","Valrex Omir","Thalior Zek","Vorim Qeth","Luraxis Vel","Zathiel Korun","Meraxis Thal","Qerun Valis","Selvar Omek","Vorun Threx","Zaleth Miron","Xeraxis Velun","Thunor Qelis","Varith Zel","Qelaris Morun","Luthar Vexis","Zalorin Thun","Meroth Qal","Xevorin Lath","Selvaris Torun","Qathor Velen","Zorath Melun","Threxion Val","Luraxis Qeth","Vorin Zelun","Xerath Omir","Qelthor Varis","Zalethor Marn","Selvor Qarn","Meraxis Thul","Zorim Velath","Qarneth Sol","Valreth Xorun","Thulorin Qex","Xereth Valun","Lutharis Qel","Vorath Solun","Zelvar Threx","Qeroth Malun","Tharn Velix","Zolvar Qeth","Meraxis Varn","Qalreth Zor","Luraxis Threx","Vorun Qelis","Xeroth Valar","Threxil Qarn","Zaleth Vexor","Selvar Qorin","Qorath Melun","Valreth Zarn"],
+  "Drakhen": [null,"Zaga Ro-La","Vrax Kor-Tha","Selm Dral-Vor","Krath Zel-Mor","Threx Val-Ka","Korvax Dre-Than","Xev Mor-Ra","Dral Vek-Tor","Varn Sel-Keth","Krag Vo-Dra","Zorn Mal-Tha","Tharn Kor-Vex","Xel Var-Drath","Morvax Sel-Ra","Drex Kor-La","Krath Zel-Vor","Vrax Thun-Kar","Selm Dro-Va","Korvax Zeth-Ra","Xarn Vel-Tha","Threx Mor-Kal","Dral Vor-Xa","Zaga Threx-La"],
+  "Aquasim": [null,"Lumaseri","Veshanari","Talimor","Nerisvalu","Sorameli","Venathari","Liorumesi","Naluvesh","Terensori","Meralun","Valinesu","Sorimel","Lumatheri","Nerivalu","Mesilor","Veshtalu","Seranali","Lioruveni","Talumeri","Nalusori","Venaliri","Melisora","Therinesu","Lumavesh","Nalimeru","Veshlora","Sorithalu","Lioruneri","Meravali","Talusera","Nesuluma","Venameli","Sorivesh","Lirinelu","Mesithera","Talivenu","Nalisoru","Lumamera","Veshseli","Seralioru","Nerithalu","Melivesu","Taluneri","Venasoru","Liorutali","Seravali","Mesinelu","Nesuvena","Lumathali","Veshmeru","Soriluma","Nerivali","Taluseli","Meranesu"],
+  "Space-Cat": [null,"Kitty Dude","Puss Inbootz","Rob McCat","Whiskerjack","Meowsalot","Felinor Vox","O'Malley","Fluffington","Mewlius P","Scratcharro","Purrlock","Fluffrage","Von Hairball","Zarpurrion","Whisker Boy","Pawl Atreides","Catrick Swayze","Clawdius Max","Don Furioso","Orion","Jax Whisks","Kit Stardust","Purrcy J","Scratchula","Pawblo Esc","Feline Dion","Meowzart","Tabbington"],
+  "Sky-Elf": [null,"Aeryn Valeth","Thalion Merev","Lyrielle Veyra","Serapha Nymis","Caelum Orivar","Vaelor Thyne","Ilyrion Caelis","Oryndel Vareth","Sylvaris Deyne","Maelor Quineth","Caedryn Solvar","Elion Tharis","Vaelyra Soles","Nymeris Caeli","Thalorin Vexar","Oriel Damaris","Vaedryn Rval","Sylion Arhex","Caelor Nythe","Valeris Thane","Oryxiel Dareth","Theryn Solis","Aelion Vereth","Isyra Valenne","Kaelith Deymor","Lyssara Thalen","Vaelor Cyneth","Tharion Valesk","Elidryn Soreth","Myri Caevra","Vaenys Olara","Caelum Nyreth","Oryndel Alis","Thalion Xereth","Sylvar Kaelis","Aeryssa Vireth"],
+  "Blorg": [null,"Blorvix","Glorbin","Zorbik","Melnog","Plorvis","Grendol","Vornik","Slorbin","Nembog","Xorlum","Brivnog","Olgrin","Tormeg","Glimbor","Yelgorn","Blixor","Vorblen","Gralvik","Ombrik","Zelbor","Drimnog","Plixem","Brondel","Lornik","Glorvak","Mernog","Zelnor","Xemblor","Brivok","Nolgrim","Slorvek","Glimnor","Orbex","Melbrin","Tormik","Vexnog","Blorgath","Zornel","Grimlor"],
+  "Giant": [null,"Solinamo","Polisano","Sediliro","Zanatolo","Maroneto","Talomiro","Veradino","Colenaro","Doramiso","Vaneloro","Solerano","Zanemiro","Calidoro","Pelaniso","Moratello","Zanatorio","Solavero","Dorelano","Pelomaro","Veranito","Salinoro","Donamiso","Toranello","Zalerino","Monaleto","Solenaro","Talomiso","Veralino","Zanemato","Caleriso","Polanero","Doratino","Melarono","Varoniso","Saletoro","Zanemiro","Peladino","Solerito","Donaloro","Tareliso","Veranolo","Colamiro","Zanatorio","Moreniso","Solaneto","Valerono","Sedanilo","Polerato","Zanemoro","Talorino"],
+  "Sodio": [null,"Sorel Zin","Zanor Solk","Ostrix Sal","Selzor Kryn","Zolmar Brin","Sorvak Zol","Zelrik Sor","Orzan Krel","Solrex Tarn","Zorlin Skar","Salkor Vren","Zostrik Mal","Orren Solk","Zernox Sal","Sovrin Kalt","Zolstrix Mar","Sarnok Vex","Zerlin Kor","Orskel Zan","Solvrax Din","Zalkor Bren","Sorlin Kest","Zerox Varn","Ostrel Zin","Solkar Vex","Zorvak Trin","Sornel Kraz","Zelmar Drok","Orrik Sol","Salkren Vor","Zostral Kyn","Sorvex Dral","Zelrix Tarn","Orval Skor","Solgren Maz","Zornik Vaal","Salkor Brak","Zerun Sol"],
+  "Squid": [null,"Veshkai","Orlith","Terequl","Nalith Ve","Xamuresh","Velith","Sorekai","Lumesh","Thalith","Neresh","Orukai","Selith","Tavul","Varekai","Xerith","Morukai","Lunesh","Talith","Zerukai","Veshul","Norith","Salukai","Temesh","Lirith","Velukai","Ormesh","Xerukai","Sorith","Nalukai","Vekesh","Thalukai","Merith","Sorukai","Velesh","Orlukai","Xamith","Loreskai","Selukai","Nerith","Torekai","Valesh","Lumukai","Zerith","Sorethkai","Velukai II","Orqul","Talesh","Vornith","Nalukai","Xeresh","Morukai II","Lunith","Selesh","Torukai","Veshith","Norekai","Valith","Lumesh II","Zerukai II","Sorith II","Talukai II","Velith II","Orukai II","Nalith II","Xamukai","Meresh","Sorukai II","Velkai Prime","Orlith Minor"],
+  "Long-Neck": [null,"Elarion Tallis","Noreli Vaan","Serevian Lo","Valori Ean","Thaevis Olan","Aevarion Seli","Norevan El","Serevalion Va","Valerion Oa","Thaevaris Ean","Elioran Vale","Norevian Tal","Seravian Olan","Valerian Lo","Thaevalis En","Aerelion Vaan","Norealis Oa","Serevion El","Valerion Ta","Thaeorian Lo","Elarion Vale","Norevian Olan","Serevalis Vaan","Valorian El","Thaevelion Ean","Aevelion Lo","Norelanis Va","Serevion Tal","Valerion Olan","Thaevarion En","Elioran Ta","Norevalion Lo","Serevalis El","Valorian Vaan","Thaevelis Oa","Aerelion Ta","Norevalis En","Serevian Vale","Valerion Ean","Thaevarion Lo"],
+  "Oak-Person": [null,"Oaken Briar","Thalos Reed","Mavren Root","Alderon Vale","Bramble Thorne","Rowan Moss","Elmira Grove","Hawthorn Dell","Willow Bark","Cedar Hollow","Maple Thorn","Birch Elder","Aspen Vale","Laurel Root","Juniper Field","Oakmere Glen","Hazel Briar","Linden Stone","Yarrow Thorne","Cypress Reed","Willowmere Vale","Ashen Grove","Briar Hollow","Rowan Thorne","Elmwood Dell","Oakheart Vale","Hazelroot Glen","Cedar Thorn","Maplewood Briar","Birchmere Hollow","Aspen Thorn","Laurel Glen","Juniper Vale","Oakbark Field","Hawthorn Grove","Linden Vale","Yarrow Glen","Cypress Hollow","Willowroot Thorne","Ashen Vale","Bramblewood Glen","Rowan Hollow","Elmira Thorn","Oakmere Field","Hazel Grove","Cedar Vale","Maple Thornfield","Birch Glen","Aspen Hollow"],
+  "Void-Demon": [null,"Aza'thul","Morvael","Xyr'Nox","Thal'Kyr","Oruven Shade","Vael'Mor","Xyraeth","Thal'Vorun","Oruvael"],
+  "Velkhorian": [null,"Velkhor Davex","Xalven Korath","Draven Xorik","Velthar Khaine","Korvex Marin","Velkorath Xarn","Xaldri Vorex","Draveth Kho","Velthra Maen","Korva Xelrin","Velkhora Den","Xalveth Korin","Draven Khoris","Velthorin Xarn","Korvex Thalrin","Velkhoris Draen","Xalvar Khoren","Dravex Malrin","Velthar Xorin","Korveth Dralin","Velkhor Varex","Xaldris Korath","Dravion Khoris","Velthrax Orin","Korvex Xalrin","Velkhor Dranis","Xalven Thorek","Dravex Khoral","Velthar Malri","Korvex Drael","Velkhor Xareth","Xalvorn Dris"],
+  "Robomantoid": [null,"Zek'trix-9","Korlax-Unit","Vrixen-Ka","Tal'Xor-7","Mektraz-Vel","Zor'Tek-4","Krexal-Node","Vrax'Kil-8","Talrex-Core","Mek'Zor-2","Zektral-Vex","Kor'Xal-5","Vrix'Tor-1","Tal'Zek-3","Mektral-Unit","Zor'Vrix-6","Krex'Tal-9","Vrax'Kel-7","Tal'Vorn-2","Mek'Tral-4","Zek'Kor-8","Kor'Vrex-3","Vrix'Zal-5","Tal'Krex-1","Mek'Zorn-6","Zor'Kel-7","Krex'Vorn-2","Vrax'Tek-9","Tal'Zor-4","Mek'Vrix-8","Zek'Tal-3","Kor'Zal-6","Vrix'Kor-7","Tal'Vrex-2","Mek'Zal-5","Zor'Tral-1","Krex'Zor-8","Vrax'Tal-6","Tal'Kor-9","Mek'Tren-3","Zek'Vorn-4","Kor'Tek-7","Vrix'Tral-2","Tal'Zrex-5","Mek'Kor-8","Zor'Vex-6","Krex'Zal-1","Vrax'Kor-3","Tal'Tren-9","Mek'Zrex-2","Zek'Tral-5","Kor'Vorn-8","Vrix'Kel-4","Tal'Zor-6","Mek'Vorn-1","Zor'Kor-7","Krex'Tral-2","Vrax'Zor-8","Tal'Vex-3"],
+  "Droid": [null,"XR-204","MK-771","DV-009","HN-448","QX-310","TR-118","LK-552","PX-903","JM-441","ZT-670","AR-112","BX-784","CY-005","DL-908","EN-223","FX-667","GT-390","HR-145","IV-882","JK-731","KL-556","LM-908","MN-102","NP-774","OR-661","PS-430","QT-987","RU-312","SV-459","TW-620","UX-715","VY-248","WX-903","YZ-114","AB-778","BC-661","CD-209","DE-884","EF-372","FG-990","GH-551","HI-230","IJ-843","JK-662","KL-119","LM-740","MN-356","NO-908","OP-441","PQ-720","QR-118","RS-662","ST-905","TU-348","UV-771","VW-229","WX-118","XY-556","YZ-804","ZA-331"],
+  "Sugorian": [null,"Bolo","Spelu","Momo","Chellu","Poro","Lulu","Beni","Sulo","Melu","Pelu","Boro","Lomo","Somi","Peluva","Beli","Molu","Sero","Pomu","Leli","Sulu","Bomi","Pelu","Loro","Selo","Meluva","Bolu","Soru","Peli","Moro","Lumo","Soli","Belo","Poroa","Lelu","Melu","Sori","Boru","Pomu","Lomi","Senu"],
+  "Cheesponge": [null,"Gorvath Mol","Sugorak Tharn","Molgrin Orox","Thorgun Vale","Gravorin Dax","Gorvak Thorn","Sugorath Mal","Molthar Grox","Thorgal Dorn","Gravex Kor","Gorvorn Mal","Sugorik Thal","Molgrath Dorn","Thorgrax Vel","Gravor Mal","Gorvax Tharn","Sugorun Dax","Molthrex Kor","Thorgun Mal","Gravorn Thal","Gorvak Dren","Sugorath Vex","Molgrin Thorn","Thorgal Dax","Gravorin Kor","Gorvex Mal","Sugorak Dorn","Molthar Vex","Thorgrax Mal","Gravorn Dax","Gorvak Kor","Sugorath Tharn","Molgrath Dren","Thorgun Vex","Gravor Mal","Gorvorn Thal","Sugorik Dax","Molthrex Mal","Thorgal Kor","Gravorin Thorn","Gorvax Dorn","Sugorun Mal","Molgrin Dax","Thorgrax Kor","Gravorn Vex","Gorvak Mal","Sugorath Thorn","Molthar Dren","Thorgun Kor","Gravor Dax","Gorvex Tharn","Sugorak Mal","Molgrath Vex","Thorgal Thorn","Gravorin Mal","Gorvorn Kor","Sugorik Thorn","Molthrex Dax","Thorgrax Mal","Gravorn Thorn","Gorvak Vex","Sugorath Dren","Molgrin Kor","Thorgun Thorn","Gravor Mal","Gorvax Kor","Sugorun Thorn","Molthar Mal","Thorgal Vex","Gravorin Dren","Gorvorn Dax","Sugorik Mal","Molgrath Thorn"],
+  "Fungi": [null,"Papashroom","Brainyshroom","Grumpyshroom","Sneakyshroom","Glowshroom","Loudshroom","Madshroom","Tinyshroom","Bigshroom","Fastshroom","Slowshroom","Redshroom","Bluishroom","Darkshroom","Brightshroom","Stinkyshroom","Spikyshroom","Fuzzyshroom","Slimyshroom","Grinshroom","Sadshroom","Angryshroom","Wildshroom","Calmshroom","Sharpishroom","Softshroom","Boldshroom","Shyshroom","Roughshroom","Quietshroom","Noisyshroom","Braveshroom","Lazyshroom","Jollyshroom","Clevershroom","Swiftshroom","Heavyshroom","Lightshroom","Proudshroom","Screamshroom"]
 };
 
 function getNameFor(raceKey, portraitVariant) {
@@ -608,15 +581,7 @@ const RACES = {
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
 const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
 
-let state = {
-  day: 1,
-  money: 800,
-  pool: [],
-  roster: [],
-  mission: null,
-  ship: null,
-  gameOver: false
-};
+let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
@@ -629,13 +594,11 @@ function generateApplicant(id) {
   let available = races.slice(0, Math.min(6 + Math.floor(state.day/2), races.length));
   const raceKey = available[rand(0, available.length - 1)];
   const rd = RACES[raceKey];
-
   let str = rand(rd.str[0], rd.str[1]);
   let int = rand(rd.int[0], rd.int[1]);
   let cha = rand(rd.cha[0], rd.cha[1]);
   let hate = rand(0, 100);
 
-  // Enforce Biological Traits
   if (raceKey === "Sugorian") hate = rand(0, 50);
   if (raceKey === "Blorg") hate = rand(0, 20);
   if (raceKey === "Sky-Elf") { int = Math.max(str, cha) + rand(1, 10); }
@@ -657,15 +620,12 @@ function generateApplicant(id) {
   const safeRaceName = raceKey.toLowerCase().replace(/-/g, '');
   const maxImgs = rd.images || 12;
   const portraitVariant = rand(1, maxImgs);
-
   let mappedName = getNameFor(raceKey, portraitVariant);
   let finalName = mappedName ? mappedName : NAMES[rand(0, NAMES.length - 1)];
   if (raceKey === "Droid" && !mappedName) { finalName += "-" + rand(1, 99); }
 
   return {
-    id: id,
-    name: finalName,
-    race: raceKey,
+    id: id, name: finalName, race: raceKey,
     str: str, int: int, cha: cha, hate: hate,
     exp: ROLES[rand(0, ROLES.length - 1)],
     portrait: `images/${safeRaceName}/${safeRaceName}_portrait_${portraitVariant}.png`,
@@ -674,7 +634,7 @@ function generateApplicant(id) {
 }
 
 // ══════════════════════════════════════════════
-// MISSION GENERATION
+// MISSION & SHIP
 // ══════════════════════════════════════════════
 
 function generateMission() {
@@ -695,99 +655,62 @@ function generateMission() {
     { id: "THE GRAND HEIST", stat: ["str", "int", "cha"], t: 3, titles: ["Breaking into a floating fortress"] },
     { id: "PLANETARY EVACUATION", stat: ["str", "int", "cha"], t: 3, titles: ["Saving a civilization from a supernova"] }
   ];
-  
   let available = types.filter(t => t.t === 1);
   if (state.day > 4) available = available.concat(types.filter(t => t.t === 2));
   if (state.day > 8) available = available.concat(types.filter(t => t.t === 3));
-
   const m = available[rand(0, available.length - 1)];
   const title = m.titles[rand(0, m.titles.length - 1)];
   const targetBase = 45 + Math.floor(state.day * 7.5);
-
   let targets = {};
   m.stat.forEach(s => targets[s] = targetBase + rand(-5, 5));
-
-  return {
-    title: title,
-    type: m.id,
-    reqs: m.stat,
-    targets: targets,
+  return { title: title, type: m.id, reqs: m.stat, targets: targets,
     minReq: Math.min(95, 65 + Math.floor(state.day * 1.2)),
-    reward: 500 + (state.day * 90)
-  };
+    reward: 500 + (state.day * 90) };
 }
-
-// ══════════════════════════════════════════════
-// SHIP PROGRESSION
-// ══════════════════════════════════════════════
 
 function updateShip() {
-  if (state.day === 1) state.ship = { name: "Speeder", max: 5, min: 3 };
-  else if (state.day === 2) state.ship = { name: "Courier", max: 5, min: 3 };
-  else if (state.day === 3) state.ship = { name: "Interceptor", max: 5, min: 3 };
-  else if (state.day === 4) state.ship = { name: "Scout", max: 6, min: 4 };
-  else if (state.day === 5) state.ship = { name: "Shuttle", max: 6, min: 4 };
-  else if (state.day === 6) state.ship = { name: "Gunship", max: 6, min: 4 };
-  else if (state.day === 7) state.ship = { name: "Cargo", max: 7, min: 4 };
-  else if (state.day === 8) state.ship = { name: "Corvette", max: 7, min: 4 };
-  else if (state.day === 9) state.ship = { name: "Transport", max: 7, min: 4 };
-  else if (state.day === 10) state.ship = { name: "Destroyer", max: 7, min: 4 };
-  else if (state.day === 11) state.ship = { name: "Battleship", max: 8, min: 5 };
-  else if (state.day === 12) state.ship = { name: "Battlecruiser", max: 9, min: 5 };
-  else if (state.day === 13) state.ship = { name: "Assault Cruiser", max: 9, min: 5 };
-  else if (state.day === 14) state.ship = { name: "Heavy Cruiser", max: 9, min: 6 };
-  else if (state.day === 15) state.ship = { name: "Titan", max: 10, min: 6 };
-  else state.ship = { name: "Dreadnought", max: 10, min: 7 };
-
+  const ships = [
+    {d:1,n:"Speeder",x:5,m:3},{d:2,n:"Courier",x:5,m:3},{d:3,n:"Interceptor",x:5,m:3},
+    {d:4,n:"Scout",x:6,m:4},{d:5,n:"Shuttle",x:6,m:4},{d:6,n:"Gunship",x:6,m:4},
+    {d:7,n:"Cargo",x:7,m:4},{d:8,n:"Corvette",x:7,m:4},{d:9,n:"Transport",x:7,m:4},
+    {d:10,n:"Destroyer",x:7,m:4},{d:11,n:"Battleship",x:8,m:5},{d:12,n:"Battlecruiser",x:9,m:5},
+    {d:13,n:"Assault Cruiser",x:9,m:5},{d:14,n:"Heavy Cruiser",x:9,m:6},
+    {d:15,n:"Titan",x:10,m:6}
+  ];
+  const s = ships.find(s => s.d === state.day) || {n:"Dreadnought",x:10,m:7};
+  state.ship = { name: s.n, max: s.x, min: s.m };
   state.roster = new Array(state.ship.max).fill(null);
 }
-
-// ══════════════════════════════════════════════
-// START DAY
-// ══════════════════════════════════════════════
 
 function startDay() {
   updateShip();
   state.mission = generateMission();
-  
   const poolSize = 6 + Math.floor(state.day / 2);
   state.pool = [];
   let attempts = 0;
-  
   while(state.pool.length < poolSize && attempts < 200) {
     let newApp = generateApplicant(state.pool.length);
-    let isDuplicate = state.pool.some(a => a.name === newApp.name);
-    if (!isDuplicate) {
-      state.pool.push(newApp);
-    }
+    if (!state.pool.some(a => a.name === newApp.name)) state.pool.push(newApp);
     attempts++;
   }
-
   updateUI();
 }
 
 // ══════════════════════════════════════════════
-// SVG HELPERS (from original mobile index.html)
+// SVG HELPERS
 // ══════════════════════════════════════════════
 
 function cardBorderSVG() {
-  return `<svg class="mc-border" viewBox="0 0 168 220" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" fill="#000" d="M 0,4 L 2,4 L 2,2 L 4,2 L 4,0 L 164,0 L 164,2 L 166,2 L 166,4 L 168,4 L 168,216 L 166,216 L 166,218 L 164,218 L 164,220 L 4,220 L 4,218 L 2,218 L 2,216 L 0,216 Z M 2,6 L 4,6 L 4,4 L 6,4 L 6,2 L 162,2 L 162,4 L 164,4 L 164,6 L 166,6 L 166,214 L 164,214 L 164,216 L 162,216 L 162,218 L 6,218 L 6,216 L 4,216 L 4,214 L 2,214 Z"/></svg>`;
+  return `<svg class="mc-border" viewBox="0 0 168 210" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" fill="#000" d="M 0,4 L 2,4 L 2,2 L 4,2 L 4,0 L 164,0 L 164,2 L 166,2 L 166,4 L 168,4 L 168,206 L 166,206 L 166,208 L 164,208 L 164,210 L 4,210 L 4,208 L 2,208 L 2,206 L 0,206 Z M 2,6 L 4,6 L 4,4 L 6,4 L 6,2 L 162,2 L 162,4 L 164,4 L 164,6 L 166,6 L 166,204 L 164,204 L 164,206 L 162,206 L 162,208 L 6,208 L 6,206 L 4,206 L 4,204 L 2,204 Z"/></svg>`;
 }
 
 function tagBgSVG(w) {
-  const r = w;
-  return `<svg class="mc-tag-bg" viewBox="0 0 ${r} 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;"><polygon fill="#000" points="0,2 2,2 2,0 ${r-2},0 ${r-2},2 ${r},2 ${r},18 ${r-2},18 ${r-2},20 2,20 2,18 0,18"/></svg>`;
+  return `<svg class="mc-tag-bg" viewBox="0 0 ${w} 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;"><polygon fill="#000" points="0,2 2,2 2,0 ${w-2},0 ${w-2},2 ${w},2 ${w},18 ${w-2},18 ${w-2},20 2,20 2,18 0,18"/></svg>`;
 }
 
 function tagWidth(species) {
-  const widths = {
-    "Human": 52, "Drakhen": 64, "Barbitulian": 88, "Beetlegunner": 96,
-    "Sky-Elf": 60, "Giant": 48, "Droid": 48, "Robomantoid": 88,
-    "Space-Cat": 72, "Velkhorian": 80, "Aquasim": 60, "Void-Demon": 80,
-    "Fungi": 48, "Oak-Person": 80, "Long-Neck": 72, "Squid": 48,
-    "Sugorian": 68, "Cheesponge": 84, "Sodio": 48, "Blorg": 48
-  };
-  return widths[species] || 72;
+  const w = { "Human":52,"Drakhen":64,"Barbitulian":88,"Beetlegunner":96,"Sky-Elf":60,"Giant":48,"Droid":48,"Robomantoid":88,"Space-Cat":72,"Velkhorian":80,"Aquasim":60,"Void-Demon":80,"Fungi":48,"Oak-Person":80,"Long-Neck":72,"Squid":48,"Sugorian":68,"Cheesponge":84,"Sodio":48,"Blorg":48 };
+  return w[species] || 72;
 }
 
 // ══════════════════════════════════════════════
@@ -796,15 +719,17 @@ function tagWidth(species) {
 
 function updateUI() {
   const m = state.mission;
+  const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
 
   // Top bar
   document.getElementById('ui-day').innerText = state.day;
-  const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-money').innerText = state.money - currentCost;
 
-  // Pool count (remaining unhired)
-  const remainingCount = state.pool.filter(app => !state.roster.find(a => a && a.id === app.id)).length;
-  document.getElementById('pool-title').innerText = `APPLICANTS [${remainingCount}]`;
+  // Pool title — count ALL applicants (cards stay in pool)
+  document.getElementById('pool-title').innerText = `APPLICANTS [${state.pool.length}]`;
+
+  // Payroll
+  document.getElementById('ui-payroll').innerText = currentCost;
 
   // Mission panel
   let reqHTML = m.reqs.map(r => `<span class="mission-req-tag">${r.toUpperCase()}: ${m.targets[r]}</span>`).join(" ");
@@ -827,35 +752,28 @@ function updateUI() {
   let manualHTML = "";
   let availableRaces = [];
   state.pool.forEach(p => { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });
-  
   availableRaces.forEach(rKey => {
     const rd = RACES[rKey];
     manualHTML += `
       <div class="manual-entry">
         <div class="manual-name">
-          <div class="manual-icon">
-            <img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'">
-          </div>
+          <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${rKey}
         </div>
         <div class="manual-desc">${rd.desc}</div>
         <div class="manual-hates">HATES: <strong>${rd.hates.join(", ")}</strong></div>
-      </div>
-    `;
+      </div>`;
   });
   document.getElementById('ui-manual').innerHTML = manualHTML;
 
-  // Cards grid
+  // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = "";
-  
   state.pool.forEach(app => {
-    if (state.roster.find(a => a && a.id === app.id)) return;
-
+    const isSelected = state.roster.some(a => a && a.id === app.id);
     const hl = (s) => m.reqs.includes(s) ? 'hi-stat' : '';
-    
-    const cardHTML = `
-    <div class="mc-wrap" id="card-${app.id}" data-id="${app.id}" data-race="${app.race}" onclick="tapCard(${app.id})">
+    grid.insertAdjacentHTML('beforeend', `
+    <div class="mc-wrap${isSelected ? ' selected' : ''}" id="card-${app.id}" data-id="${app.id}" data-race="${app.race}" onclick="tapCard(${app.id})">
       ${cardBorderSVG()}
       <div class="mc-dither"></div>
       <div class="mc-inner">
@@ -863,33 +781,27 @@ function updateUI() {
           <div class="mc-name">${app.name}</div>
           <div class="mc-tag">${tagBgSVG(tagWidth(app.race))}<span class="mc-tag-text" style="position:relative;z-index:1;">${app.race}</span></div>
         </div>
-        <div class="mc-portrait"><img src="${app.portrait}" draggable="false" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=\"font-size:32px; color:#ccc; display:flex; align-items:center; justify-content:center; height:100%;\">?</span>';"></div>
+        <div class="mc-portrait"><img src="${app.portrait}" draggable="false" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;font-size:32px;color:#ccc;display:flex;align-items:center;justify-content:center;height:100%;&quot;>?</span>';"></div>
         <div class="mc-skills"><span class="${hl('str')}">STR ${app.str}</span><span class="${hl('int')}">INT ${app.int}</span><span class="${hl('cha')}">CHA ${app.cha}</span></div>
         <div class="mc-exp">EXP: ${app.exp}</div>
         <hr class="mc-div">
         <div class="mc-foot">
-          <div class="hate-row">
-            <div class="hate-lbl">HATE</div>
-            <div class="hate-outer"><div class="hate-fill" style="width:${app.hate}%"></div></div>
-            <div class="hate-pct">${app.hate}%</div>
+          <div class="mc-hate-row">
+            <div class="mc-hate-label">HATE</div>
+            <div class="mc-hate-bar-track"><div class="mc-hate-bar-fill" style="width:${app.hate}%"></div></div>
+            <div class="mc-hate-pct${app.hate >= 70 ? ' high' : ''}">${app.hate}%</div>
           </div>
           <div class="mc-salary">${app.cost} cr</div>
         </div>
       </div>
-    </div>`;
-    
-    grid.insertAdjacentHTML('beforeend', cardHTML);
+    </div>`);
   });
-
-  // Bottom bar
-  const crewCount = state.roster.filter(a => a !== null).length;
-  document.getElementById('ui-roster-count').innerHTML = `CREW: ${crewCount}/<span id="ui-roster-max">${state.ship.max}</span>`;
-  document.getElementById('ui-payroll').innerText = currentCost;
 
   // Slots
   renderSlots();
 
   // Launch button state
+  const crewCount = state.roster.filter(a => a !== null).length;
   const launchBtn = document.getElementById('btn-launch');
   const launchWarn = document.getElementById('launch-warning');
   if (crewCount > 0) {
@@ -907,31 +819,26 @@ function updateUI() {
 function renderSlots() {
   const slotsRow = document.getElementById('slots-row');
   slotsRow.innerHTML = '';
-  
   for (let i = 0; i < state.ship.max; i++) {
     const app = state.roster[i];
-    let slotHTML = `<div class="slot${app ? ' filled' : ''}" id="slot-${i}" onclick="tapSlot(${i})">`;
-    slotHTML += `<svg class="slot-fill-bg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"><polygon fill="#000" points="0,2 2,2 2,0 48,0 48,2 50,2 50,48 48,48 48,50 2,50 2,48 0,48"/></svg>`;
-    
-    if (app) {
-      const iconSrc = RACES[app.race].icon;
-      slotHTML += `<img class="slot-icon" src="${iconSrc}" style="position:absolute;width:40px;height:40px;top:5px;left:5px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
-    }
-    
-    slotHTML += `</div>`;
-    slotsRow.insertAdjacentHTML('beforeend', slotHTML);
+    let h = `<div class="slot${app ? ' filled' : ''}" id="slot-${i}" onclick="tapSlot(${i})">`;
+    h += `<svg class="slot-fill-bg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"><polygon fill="#000" points="0,2 2,2 2,0 48,0 48,2 50,2 50,48 48,48 48,50 2,50 2,48 0,48"/></svg>`;
+    if (app) h += `<img class="slot-icon" src="${RACES[app.race].icon}" style="position:absolute;width:40px;height:40px;top:5px;left:5px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
+    h += `</div>`;
+    slotsRow.insertAdjacentHTML('beforeend', h);
   }
 }
 
 // ══════════════════════════════════════════════
-// CARD TAP LOGIC (mobile — tap to assign/unassign)
+// CARD TAP — original index.html interaction model
+// Card stays in pool, gets dither highlight, fills slot
 // ══════════════════════════════════════════════
 
 function tapCard(appId) {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
 
-  // Bounce animation
+  // Bounce
   card.classList.remove('bounce');
   void card.offsetWidth;
   card.classList.add('bounce');
@@ -939,49 +846,70 @@ function tapCard(appId) {
   const app = state.pool.find(a => a.id === appId);
   if (!app) return;
 
-  // Already assigned — unassign
+  // Already assigned — unassign (deselect)
   const rosterIdx = state.roster.findIndex(a => a && a.id === appId);
   if (rosterIdx !== -1) {
     state.roster[rosterIdx] = null;
-    // Compact: remove gaps
+    card.classList.remove('selected');
+    // Compact slots
     const filled = state.roster.filter(a => a !== null);
-    for (let i = 0; i < state.ship.max; i++) {
-      state.roster[i] = filled[i] || null;
-    }
-    updateUI();
+    for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
+    renderSlots();
+    // Update payroll + credits + launch state
+    const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
+    document.getElementById('ui-payroll').innerText = currentCost;
+    document.getElementById('ui-money').innerText = state.money - currentCost;
+    const crewCount = state.roster.filter(a => a !== null).length;
+    document.getElementById('btn-launch').classList.toggle('disabled', crewCount === 0);
     return;
   }
 
-  // Check if can afford
+  // Check funds
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   if (state.money < currentCost + app.cost) {
-    // Flash warning
     const warn = document.getElementById('launch-warning');
     warn.innerText = 'INSUFFICIENT FUNDS';
     warn.style.display = 'block';
-    setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
+    setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; if (!state.roster.some(a=>a)) warn.style.display = 'block'; else warn.style.display = 'none'; }, 1500);
     return;
   }
 
   // Find next empty slot
   const nextSlot = state.roster.indexOf(null);
-  if (nextSlot === -1) return; // all full
+  if (nextSlot === -1) return;
 
+  // Assign — card gets selected overlay, stays in grid
+  card.classList.add('selected');
   state.roster[nextSlot] = app;
-  updateUI();
+  renderSlots();
+
+  // Update payroll + credits + launch state
+  const newCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
+  document.getElementById('ui-payroll').innerText = newCost;
+  document.getElementById('ui-money').innerText = state.money - newCost;
+  document.getElementById('btn-launch').classList.remove('disabled');
+  document.getElementById('launch-warning').style.display = 'none';
 }
 
 function tapSlot(index) {
   const app = state.roster[index];
   if (!app) return;
 
+  // Deselect the card
+  const card = document.getElementById('card-' + app.id);
+  if (card) card.classList.remove('selected');
+
   state.roster[index] = null;
   // Compact
   const filled = state.roster.filter(a => a !== null);
-  for (let i = 0; i < state.ship.max; i++) {
-    state.roster[i] = filled[i] || null;
-  }
-  updateUI();
+  for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
+  renderSlots();
+
+  const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
+  document.getElementById('ui-payroll').innerText = currentCost;
+  document.getElementById('ui-money').innerText = state.money - currentCost;
+  const crewCount = state.roster.filter(a => a !== null).length;
+  document.getElementById('btn-launch').classList.toggle('disabled', crewCount === 0);
 }
 
 // ══════════════════════════════════════════════
@@ -990,32 +918,23 @@ function tapSlot(index) {
 
 function launchMission() {
   const hired = state.roster.filter(a => a !== null);
-  if (hired.length === 0) {
-    const launchWarn = document.getElementById('launch-warning');
-    launchWarn.style.display = 'block';
-    return;
-  }
+  if (hired.length === 0) { document.getElementById('launch-warning').style.display = 'block'; return; }
 
   const cost = hired.reduce((sum, app) => sum + app.cost, 0);
   state.money -= cost;
-
-  let logs = [];
-  let score = 0;
+  let logs = [], score = 0;
 
   // 1. RAW SKILL
   let statScores = [];
   state.mission.reqs.forEach(stat => {
     let sum = hired.reduce((acc, app) => acc + app[stat], 0);
-    let pct = (sum / state.mission.targets[stat]) * 100;
-    statScores.push(pct);
+    statScores.push((sum / state.mission.targets[stat]) * 100);
   });
-  
   let rawScore = statScores.reduce((a,b)=>a+b, 0) / statScores.length;
   logs.push(`Base Power Output: ${Math.floor(rawScore)}%`);
 
   // 2. SHIP EFFICIENCY
-  let effPct = hired.length / state.ship.min;
-  let effMod = 0;
+  let effPct = hired.length / state.ship.min, effMod = 0;
   if (hired.length === state.ship.max) { effMod = 5; logs.push(`Ship at Max Capacity: +5% Bonus`); }
   else if (effPct >= 1) { effMod = 0; logs.push(`Ship Minimum Crew Met: 0% Penalty`); }
   else if (effPct >= 0.7) { effMod = -20; logs.push(`Understaffed (Tier 1): -20% Penalty`); }
@@ -1023,132 +942,79 @@ function launchMission() {
   else if (effPct >= 0.15) { effMod = -60; logs.push(`Skeleton Crew (Tier 3): -60% Penalty`); }
   else { effMod = -70; logs.push(`Fatal Understaffing (Tier 4): -70% Penalty`); }
 
-  // 3. CONFLICTS (Mutual Dominance Math)
-  let conflictPenalty = 0;
-  let conflictCount = 0;
-
-  for(let i=0; i<hired.length; i++) {
-    for(let j=i+1; j<hired.length; j++) {
-      let a = hired[i]; let rA = RACES[a.race];
-      let b = hired[j]; let rB = RACES[b.race];
-
-      let aHatesB = rA.hates.includes(b.race) || (rA.hates.includes("ALL") && a.race !== b.race);
-      let bHatesA = rB.hates.includes(a.race) || (rB.hates.includes("ALL") && b.race !== a.race);
-
+  // 3. CONFLICTS
+  let conflictPenalty = 0, conflictCount = 0;
+  for(let i=0;i<hired.length;i++) {
+    for(let j=i+1;j<hired.length;j++) {
+      let a=hired[i], rA=RACES[a.race], b=hired[j], rB=RACES[b.race];
+      let aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
+      let bHatesA = rB.hates.includes(a.race)||(rB.hates.includes("ALL")&&b.race!==a.race);
       if (aHatesB && bHatesA) {
-        let aWins = 0, bWins = 0;
-        if(a.str > b.str) aWins++; else if(b.str > a.str) bWins++;
-        if(a.int > b.int) aWins++; else if(b.int > a.int) bWins++;
-        if(a.cha > b.cha) aWins++; else if(b.cha > a.cha) bWins++;
-
-        if (aWins > bWins) {
-          let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;
-          logs.push(`MUTUAL: ${a.race} dominated ${b.race}. -${Math.floor(pen)}%`);
-        } else if (bWins > aWins) {
-          let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;
-          logs.push(`MUTUAL: ${b.race} dominated ${a.race}. -${Math.floor(pen)}%`);
-        } else {
-          let penA = (10 + (a.hate/4))/2;
-          let penB = (10 + (b.hate/4))/2;
-          conflictPenalty += (penA + penB); conflictCount++;
-          logs.push(`MUTUAL DRAW: Bloody stalemate. -${Math.floor(penA+penB)}%`);
-        }
-      } else if (aHatesB) {
-        let pen = 10 + (a.hate/4); conflictPenalty += pen; conflictCount++;
-        logs.push(`CONFLICT: ${a.race} attacked ${b.race}. -${Math.floor(pen)}%`);
-      } else if (bHatesA) {
-        let pen = 10 + (b.hate/4); conflictPenalty += pen; conflictCount++;
-        logs.push(`CONFLICT: ${b.race} attacked ${a.race}. -${Math.floor(pen)}%`);
-      }
+        let aW=0,bW=0;
+        if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
+        if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
+        if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
+        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`MUTUAL: ${a.race} dominated ${b.race}. -${Math.floor(p)}%`);}
+        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`MUTUAL: ${b.race} dominated ${a.race}. -${Math.floor(p)}%`);}
+        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;logs.push(`MUTUAL DRAW: Bloody stalemate. -${Math.floor(pA+pB)}%`);}
+      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`CONFLICT: ${a.race} attacked ${b.race}. -${Math.floor(p)}%`);}
+      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`CONFLICT: ${b.race} attacked ${a.race}. -${Math.floor(p)}%`);}
     }
   }
 
   // 4. SYNERGY
   let synergy = 0;
-  if (hired.length >= 3 && conflictCount === 0) {
-    synergy = 10;
-    logs.push(`SYNERGY BONUS: Perfect harmony. +10%`);
-  }
+  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; logs.push(`SYNERGY BONUS: Perfect harmony. +10%`); }
 
-  // CALC FINAL
   score = Math.floor(rawScore + effMod - conflictPenalty + synergy);
-  
   let overperformance = 0;
-  if (score > 100) {
-    overperformance = Math.min(20, score - 100);
-    score = 100;
-  }
+  if (score > 100) { overperformance = Math.min(20, score - 100); score = 100; }
   if (score < 0) score = 0;
 
-  // 5. PAYOUT VS FINE
-  let earned = 0;
-  let isSuccess = false;
-  
+  // 5. PAYOUT
+  let earned = 0, isSuccess = false;
   if (score >= state.mission.minReq) {
     isSuccess = true;
     earned = Math.floor(state.mission.reward * (score/100));
-    if (overperformance > 0) {
-      let bonus = Math.floor(state.mission.reward * (overperformance/100));
-      earned += bonus;
-      logs.push(`OVERPERFORMANCE BONUS: +${bonus} CR`);
-    }
+    if (overperformance > 0) { let bonus = Math.floor(state.mission.reward * (overperformance/100)); earned += bonus; logs.push(`OVERPERFORMANCE BONUS: +${bonus} CR`); }
   } else {
     let diff = (state.mission.minReq - score) / 100;
     earned = -Math.floor(state.mission.reward * diff);
     logs.push(`FINE APPLIED: Mission requirement (${state.mission.minReq}%) not met.`);
   }
-
   state.money += earned;
 
-  // Show Modal
   document.getElementById('res-score').innerText = score + "%";
   document.getElementById('res-score').style.color = "";
   document.getElementById('res-msg').innerText = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
-  
   let logHTML = logs.map(l => `<div>> ${l}</div>`).join('');
   logHTML += `<br><div>> NET FINANCIAL CHANGE: ${earned >= 0 ? '+'+earned : earned} CR</div>`;
   document.getElementById('res-log').innerHTML = logHTML;
-
   document.getElementById('res-title').innerText = "DEBRIEFING";
   document.getElementById('modal-btn').onclick = nextDay;
-  const modalBtnText = document.querySelector('#modal-btn .launch-btn-text');
-  if (modalBtnText) modalBtnText.innerText = "CONTINUE";
-
+  document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
   document.getElementById('result-overlay').classList.add('visible');
-
   if (state.money < 0) state.gameOver = true;
 }
 
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
-  
   if (state.gameOver) {
     document.getElementById('res-title').innerText = "SYSTEM LOCKOUT";
     document.getElementById('res-score').innerText = "BANKRUPT";
     document.getElementById('res-score').style.color = "red";
     document.getElementById('res-msg').innerText = "Your career is over.";
     document.getElementById('res-log').innerHTML = "> Liquidating assets...<br>> Reclaiming organic material...";
-    
-    const modalBtnText = document.querySelector('#modal-btn .launch-btn-text');
-    if (modalBtnText) modalBtnText.innerText = "START OVER";
-    
+    document.querySelector('#modal-btn .launch-btn-text').innerText = "START OVER";
     document.getElementById('modal-btn').onclick = function() {
-      state.day = 1;
-      state.money = 800;
-      state.gameOver = false;
-      state.roster = [];
-      state.pool = [];
-      
+      state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
       document.getElementById('res-score').style.color = "";
-      const mbText = document.querySelector('#modal-btn .launch-btn-text');
-      if (mbText) mbText.innerText = "CONTINUE";
+      document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
       document.getElementById('modal-btn').onclick = nextDay;
-      
       document.getElementById('result-overlay').classList.remove('visible');
       switchTab('recruit');
       startDay();
     };
-    
     document.getElementById('result-overlay').classList.add('visible');
   } else {
     state.day++;
@@ -1157,12 +1023,8 @@ function nextDay() {
   }
 }
 
-// ══════════════════════════════════════════════
 // INIT
-// ══════════════════════════════════════════════
-
 startDay();
-
 </script>
 </body>
 </html>
