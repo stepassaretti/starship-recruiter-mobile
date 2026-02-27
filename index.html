@@ -39,7 +39,7 @@ body {
   border-bottom: 2px solid #000;
   z-index: 50;
 }
-.top-title { font-weight: 700; }
+.top-title { font-family: 'Press Start 2P', cursive; font-size: 10px; font-weight: 400; letter-spacing: -0.5px; }
 .top-right { display: flex; gap: 16px; align-items: center; }
 .top-cr { font-weight: 700; }
 
@@ -70,10 +70,18 @@ body {
 
 /* ── MISSION PANEL ── */
 .mission-card {
-  border: 2px solid #000;
+  position: relative;
   padding: 12px;
   margin-bottom: 16px;
   background: #fff;
+  border: none;
+  box-shadow: inset 0 0 0 2px #000;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
 }
 .mission-type {
   background: #000; color: #fff; padding: 3px 8px; display: inline-block;
@@ -89,12 +97,18 @@ body {
 .ship-preview {
   background: #000;
   width: 100%;
-  height: 100px;
+  height: 130px;
   margin-bottom: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
 }
 .ship-preview img {
   max-width: 100%;
@@ -271,11 +285,13 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  justify-content: center;
   width: 100%;
 }
+.btn-row .launch-btn {
+  margin-left: auto;
+}
 
-/* ── ICON BUTTONS (mission / manual) ── */
+/* ── ICON BUTTONS (mission / manual) with pixel staircase corners ── */
 .icon-btn {
   width: 48px;
   height: 40px;
@@ -284,21 +300,34 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   background: #fff;
-  border: 2px solid #000;
+  border: none;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s;
+  position: relative;
+}
+.icon-btn-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .icon-btn img {
   width: 36px;
   height: 36px;
   image-rendering: pixelated;
   pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
-.icon-btn.active {
-  background: #000;
+.icon-btn.active .icon-btn-bg polygon { fill: #000; stroke: #000; }
+.icon-btn.bounce { animation: btnBounce 0.2s ease; }
+@keyframes btnBounce {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.9); }
+  100% { transform: scale(1); }
 }
 
 /* ── DRAWER OVERLAY ── */
@@ -310,88 +339,72 @@ body {
   background-size: 4px 4px;
   background-color: rgba(255,255,255,0.7);
   z-index: 55;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .drawer-overlay.visible { display: block; }
 
-/* ── DRAWER ── */
-.drawer {
-  position: fixed;
-  left: 0; right: 0;
-  bottom: 0;
+/* ── BOTTOM BAR — expandable ── */
+.bottom-bar {
   background: #fff;
-  border-top: 2px solid #000;
-  z-index: 60;
-  transform: translateY(100%);
-  transition: transform 0.25s cubic-bezier(0.2, 0, 0.3, 1);
-  max-height: 80vh;
+  padding: 8px 16px 14px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-}
-.drawer.open {
-  transform: translateY(0);
-}
-.drawer.dragging {
+  align-items: center;
+  gap: 8px;
+  border-top: 2px solid #000;
+  position: relative;
+  z-index: 60;
   transition: none;
 }
 
-.drawer-handle {
+/* When expanded: fixed to bottom, animates max-height */
+.bottom-bar.expanded {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  max-height: 85vh;
+  transition: max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1);
+  overflow: hidden;
+  align-items: stretch;
+}
+.bottom-bar.dragging {
+  transition: none;
+}
+
+/* Handle — only visible when expanded */
+.bar-handle {
+  display: none;
   width: 100%;
-  padding: 8px 16px 4px;
-  display: flex;
-  justify-content: space-between;
+  padding: 8px 0 4px;
+  justify-content: center;
   align-items: center;
   flex-shrink: 0;
   cursor: grab;
   touch-action: none;
 }
-.drawer-handle-bar {
+.bottom-bar.expanded .bar-handle { display: flex; }
+.bar-handle-line {
   width: 40px;
-  height: 4px;
-  background: #ccc;
-  border-radius: 2px;
-}
-.drawer-close {
-  font-family: "VT323", monospace;
-  font-size: 18px;
-  text-transform: uppercase;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  background: none;
-  border: none;
-  padding: 4px 0;
+  height: 2px;
+  background: #000;
 }
 
-.drawer-content {
+/* Expandable content area */
+.bar-content {
+  display: none;
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 16px 16px;
+  padding: 4px 10px 8px;
+  min-height: 0;
 }
+.bottom-bar.expanded .bar-content { display: block; }
 
-/* Slots inside drawer when open */
-.drawer .drawer-slots {
-  padding: 8px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.drawer .drawer-slots .slots-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 2px;
-  touch-action: pan-x;
-}
-.drawer .drawer-slots .btn-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
+/* Slots row — hidden when expanded */
+.bottom-bar.expanded .slots-row { display: none; }
+.bottom-bar.expanded .launch-warning { display: none !important; }
 
 /* ── SLOTS ROW ── */
 .slots-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; flex-shrink: 0; touch-action: pan-x; }
@@ -463,6 +476,7 @@ body {
   height: 100%;
 }
 .launch-btn:active .launch-btn-bg polygon { fill: #333; }
+.launch-btn.bounce { animation: btnBounce 0.2s ease; }
 .launch-btn.disabled {
   pointer-events: none;
   clip-path: none;
@@ -565,44 +579,26 @@ body {
 <!-- DRAWER OVERLAY -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 
-<!-- DRAWER -->
-<div class="drawer" id="drawer">
-  <div class="drawer-handle" id="drawer-handle">
-    <div class="drawer-handle-bar"></div>
-    <button class="drawer-close" onclick="closeDrawer()">CLOSE</button>
-  </div>
-  <div class="drawer-content" id="drawer-content"></div>
-  <div class="drawer-slots">
-    <div class="slots-row" id="drawer-slots-row"></div>
-    <div class="btn-row">
-      <button class="icon-btn" id="btn-mission-drawer" onclick="toggleDrawer('mission')">
-        <img id="icon-mission-drawer" src="images/mission_default.png">
-      </button>
-      <button class="launch-btn disabled" id="btn-launch-drawer" onclick="launchMission()">
-        <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-        <span class="launch-btn-text">Launch Mission</span>
-      </button>
-      <button class="icon-btn" id="btn-manual-drawer" onclick="toggleDrawer('manual')">
-        <img id="icon-manual-drawer" src="images/manual_default.png">
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- BOTTOM BAR -->
+<!-- BOTTOM BAR (expandable) -->
 <div class="bottom-bar" id="bottom-bar">
+  <div class="bar-handle" id="bar-handle">
+    <div class="bar-handle-line"></div>
+  </div>
+  <div class="bar-content" id="bar-content"></div>
   <div class="slots-row" id="slots-row"></div>
   <div class="launch-warning" id="launch-warning">HIRE CREW TO LAUNCH</div>
   <div class="btn-row">
+    <button class="icon-btn" id="btn-manual" onclick="toggleDrawer('manual')">
+      <svg class="icon-btn-bg" viewBox="0 0 48 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="none" stroke="#000" stroke-width="2" points="1,4 3,4 3,2 5,2 5,1 43,1 43,2 45,2 45,4 47,4 47,36 45,36 45,38 43,38 43,39 5,39 5,38 3,38 3,36 1,36"/></svg>
+      <img id="icon-manual" src="images/manual_default.png">
+    </button>
     <button class="icon-btn" id="btn-mission" onclick="toggleDrawer('mission')">
+      <svg class="icon-btn-bg" viewBox="0 0 48 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="none" stroke="#000" stroke-width="2" points="1,4 3,4 3,2 5,2 5,1 43,1 43,2 45,2 45,4 47,4 47,36 45,36 45,38 43,38 43,39 5,39 5,38 3,38 3,36 1,36"/></svg>
       <img id="icon-mission" src="images/mission_default.png">
     </button>
     <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
       <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text">Launch Mission</span>
-    </button>
-    <button class="icon-btn" id="btn-manual" onclick="toggleDrawer('manual')">
-      <img id="icon-manual" src="images/manual_default.png">
     </button>
   </div>
 </div>
@@ -623,16 +619,18 @@ body {
 
 <script>
 // ══════════════════════════════════════════════
-// TAB SWITCHING
-// ══════════════════════════════════════════════
-
-// ══════════════════════════════════════════════
-// DRAWER SYSTEM
+// EXPANDABLE BOTTOM BAR
 // ══════════════════════════════════════════════
 
 let activeDrawer = null; // 'mission' | 'manual' | null
+let collapsedHeight = 0;
 
 function toggleDrawer(type) {
+  // Bounce the tapped button
+  const btnId = type === 'mission' ? 'btn-mission' : 'btn-manual';
+  const btn = document.getElementById(btnId);
+  if (btn) { btn.classList.remove('bounce'); requestAnimationFrame(() => btn.classList.add('bounce')); }
+
   if (activeDrawer === type) {
     closeDrawer();
     return;
@@ -641,69 +639,74 @@ function toggleDrawer(type) {
 }
 
 function openDrawer(type) {
-  activeDrawer = type;
-  const drawer = document.getElementById('drawer');
+  const bar = document.getElementById('bottom-bar');
   const overlay = document.getElementById('drawer-overlay');
-  const content = document.getElementById('drawer-content');
+  const content = document.getElementById('bar-content');
 
-  // Populate content
-  if (type === 'mission') {
-    content.innerHTML = getMissionHTML();
-  } else {
-    content.innerHTML = getManualHTML();
+  // If switching between panels while already open
+  if (activeDrawer && activeDrawer !== type) {
+    content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
+    activeDrawer = type;
+    updateIconButtons();
+    return;
   }
 
-  // Sync drawer slots
-  syncDrawerSlots();
+  activeDrawer = type;
 
-  // Update icon states
+  // Remember collapsed height before expanding
+  collapsedHeight = bar.offsetHeight;
+
+  // Populate content
+  content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
+
+  // Update icons
   updateIconButtons();
 
-  // Hide bottom bar, show drawer
-  document.getElementById('bottom-bar').style.display = 'none';
+  // Set initial max-height to collapsed size, then expand
+  bar.style.maxHeight = collapsedHeight + 'px';
+  bar.classList.add('expanded');
   overlay.classList.add('visible');
-  // Force reflow then open
-  void drawer.offsetHeight;
-  drawer.classList.add('open');
+
+  // Next frame: animate to full content height
+  requestAnimationFrame(() => {
+    bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+    bar.style.maxHeight = '85vh';
+  });
 }
 
 function closeDrawer() {
-  const drawer = document.getElementById('drawer');
+  const bar = document.getElementById('bottom-bar');
   const overlay = document.getElementById('drawer-overlay');
 
-  drawer.classList.remove('open');
+  // Animate back to collapsed height
+  bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+  bar.style.maxHeight = collapsedHeight + 'px';
   overlay.classList.remove('visible');
-  activeDrawer = null;
 
+  activeDrawer = null;
   updateIconButtons();
 
-  // Show bottom bar after transition
+  // After animation, remove expanded state
   setTimeout(() => {
-    document.getElementById('bottom-bar').style.display = '';
-    syncBottomBarSlots();
+    bar.classList.remove('expanded');
+    bar.style.maxHeight = '';
+    bar.style.transition = '';
+    renderSlots();
     updateLaunchState();
-  }, 260);
+  }, 210);
 }
 
 function updateIconButtons() {
-  // Bottom bar icons
   const mBtn = document.getElementById('btn-mission');
   const mImg = document.getElementById('icon-mission');
   const aBtn = document.getElementById('btn-manual');
   const aImg = document.getElementById('icon-manual');
-  // Drawer icons
-  const mBtnD = document.getElementById('btn-mission-drawer');
-  const mImgD = document.getElementById('icon-mission-drawer');
-  const aBtnD = document.getElementById('btn-manual-drawer');
-  const aImgD = document.getElementById('icon-manual-drawer');
 
   const mActive = activeDrawer === 'mission';
   const aActive = activeDrawer === 'manual';
 
   if (mBtn) { mBtn.classList.toggle('active', mActive); mImg.src = mActive ? 'images/mission_selected.png' : 'images/mission_default.png'; }
   if (aBtn) { aBtn.classList.toggle('active', aActive); aImg.src = aActive ? 'images/manual_selected.png' : 'images/manual_default.png'; }
-  if (mBtnD) { mBtnD.classList.toggle('active', mActive); mImgD.src = mActive ? 'images/mission_selected.png' : 'images/mission_default.png'; }
-  if (aBtnD) { aBtnD.classList.toggle('active', aActive); aImgD.src = aActive ? 'images/manual_selected.png' : 'images/manual_default.png'; }
 }
 
 function getMissionHTML() {
@@ -745,70 +748,119 @@ function getManualHTML() {
   return html;
 }
 
-function syncDrawerSlots() {
-  const row = document.getElementById('drawer-slots-row');
-  if (!row) return;
-  row.innerHTML = '';
-  for (let i = 0; i < state.ship.max; i++) {
-    const app = state.roster[i];
-    let h = `<div class="slot${app ? ' filled' : ''}" onclick="tapSlot(${i})">`;
-    h += `<svg class="slot-fill-bg" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"><polygon fill="#000" points="0,2 2,2 2,0 48,0 48,2 50,2 50,48 48,48 48,50 2,50 2,48 0,48"/></svg>`;
-    if (app) h += `<img class="slot-icon" src="${RACES[app.race].icon}" style="position:absolute;width:40px;height:40px;top:5px;left:5px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
-    h += `</div>`;
-    row.insertAdjacentHTML('beforeend', h);
-  }
-  // Sync launch button state in drawer
-  const crewCount = state.roster.filter(a => a !== null).length;
-  const btn = document.getElementById('btn-launch-drawer');
-  if (btn) btn.classList.toggle('disabled', crewCount === 0);
-}
-
-function syncBottomBarSlots() {
+function syncAllSlots() {
   renderSlots();
+  updateLaunchState();
 }
 
-// ── PULL-DOWN GESTURE ──
+// ── PULL-DOWN GESTURE on the expanded bar ──
 (function() {
-  const handle = document.getElementById('drawer-handle');
-  const drawer = document.getElementById('drawer');
-  let startY = 0, currentY = 0, dragging = false;
+  const bar = document.getElementById('bottom-bar');
+  const handle = document.getElementById('bar-handle');
+  const contentEl = document.getElementById('bar-content');
+  let startY = 0, startH = 0, dragging = false, captureEl = null;
 
-  handle.addEventListener('pointerdown', (e) => {
+  function beginDrag(e, el) {
     startY = e.clientY;
-    currentY = 0;
+    startH = bar.offsetHeight;
     dragging = true;
-    drawer.classList.add('dragging');
-    handle.setPointerCapture(e.pointerId);
+    captureEl = el;
+    bar.classList.add('dragging');
+    bar.style.transition = 'none';
+    try { el.setPointerCapture(e.pointerId); } catch(ex) {}
+  }
+
+  // Handle always initiates drag
+  handle.addEventListener('pointerdown', (e) => {
+    if (!activeDrawer) return;
+    beginDrag(e, handle);
     e.preventDefault();
   });
 
-  handle.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    currentY = Math.max(0, e.clientY - startY);
-    drawer.style.transform = `translateY(${currentY}px)`;
+  // Content initiates drag only when scrolled to top and pulling down
+  let contentStartY = 0, contentMaybeDrag = false;
+  contentEl.addEventListener('touchstart', (e) => {
+    if (!activeDrawer) return;
+    if (contentEl.scrollTop <= 0) {
+      contentStartY = e.touches[0].clientY;
+      contentMaybeDrag = true;
+    }
+  }, { passive: true });
+
+  contentEl.addEventListener('touchmove', (e) => {
+    if (!contentMaybeDrag || dragging) return;
+    const dy = e.touches[0].clientY - contentStartY;
+    if (dy > 10 && contentEl.scrollTop <= 0) {
+      // Intercept scroll — start drag
+      contentMaybeDrag = false;
+      startY = e.touches[0].clientY;
+      startH = bar.offsetHeight;
+      dragging = true;
+      bar.classList.add('dragging');
+      bar.style.transition = 'none';
+      contentEl.style.overflowY = 'hidden';
+      e.preventDefault();
+    } else if (dy < -5) {
+      contentMaybeDrag = false; // scrolling up, not a drag
+    }
+  }, { passive: false });
+
+  contentEl.addEventListener('touchend', () => {
+    contentMaybeDrag = false;
+    finishDrag();
   });
 
-  handle.addEventListener('pointerup', (e) => {
-    if (!dragging) return;
-    dragging = false;
-    drawer.classList.remove('dragging');
-    // If pulled down more than 80px, close
-    if (currentY > 80) {
-      drawer.style.transform = '';
-      closeDrawer();
-    } else {
-      drawer.style.transform = '';
-      drawer.classList.add('open');
+  // Pointer events on bar for handle-initiated drags
+  bar.addEventListener('pointermove', (e) => {
+    if (!dragging || !captureEl) return;
+    const dy = e.clientY - startY;
+    if (dy < 0) return;
+    const newH = Math.max(collapsedHeight, startH - dy);
+    bar.style.maxHeight = newH + 'px';
+  });
+
+  bar.addEventListener('pointerup', () => {
+    if (captureEl) finishDrag();
+  });
+
+  bar.addEventListener('pointercancel', () => {
+    if (captureEl) {
+      dragging = false;
+      captureEl = null;
+      bar.classList.remove('dragging');
+      bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+      bar.style.maxHeight = '85vh';
     }
   });
 
-  handle.addEventListener('pointercancel', () => {
+  // Touch events on bar for content-initiated drags
+  bar.addEventListener('touchmove', (e) => {
+    if (!dragging || captureEl) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy < 0) return;
+    const newH = Math.max(collapsedHeight, startH - dy);
+    bar.style.maxHeight = newH + 'px';
+    e.preventDefault();
+  }, { passive: false });
+
+  bar.addEventListener('touchend', () => {
+    if (dragging && !captureEl) finishDrag();
+  });
+
+  function finishDrag() {
     if (!dragging) return;
     dragging = false;
-    drawer.classList.remove('dragging');
-    drawer.style.transform = '';
-    drawer.classList.add('open');
-  });
+    captureEl = null;
+    bar.classList.remove('dragging');
+    contentEl.style.overflowY = '';
+    const currentH = bar.offsetHeight;
+    if (currentH < startH * 0.6) {
+      closeDrawer();
+    } else {
+      bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+      bar.style.maxHeight = '85vh';
+    }
+  }
 })();
 
 // ══════════════════════════════════════════════
@@ -1087,17 +1139,14 @@ function renderSlots() {
 function updateLaunchState() {
   const crewCount = state.roster.filter(a => a !== null).length;
   const disabled = crewCount === 0;
-  const b1 = document.getElementById('btn-launch');
-  const b2 = document.getElementById('btn-launch-drawer');
-  if (b1) b1.classList.toggle('disabled', disabled);
-  if (b2) b2.classList.toggle('disabled', disabled);
+  const btn = document.getElementById('btn-launch');
+  if (btn) btn.classList.toggle('disabled', disabled);
   const warn = document.getElementById('launch-warning');
-  if (warn) warn.style.display = disabled ? '' : 'none';
+  if (warn && !activeDrawer) warn.style.display = disabled ? '' : 'none';
 }
 
 function syncAllSlots() {
   renderSlots();
-  if (activeDrawer !== null) syncDrawerSlots();
   updateLaunchState();
 }
 
@@ -1110,25 +1159,24 @@ function tapCard(appId) {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
 
-  // Bounce
+  // Instant bounce via class toggle
   card.classList.remove('bounce');
-  void card.offsetWidth;
-  card.classList.add('bounce');
+  requestAnimationFrame(() => card.classList.add('bounce'));
 
   const app = state.pool.find(a => a.id === appId);
   if (!app) return;
 
-  // Already assigned — unassign (deselect)
+  // Already assigned — unassign
   const rosterIdx = state.roster.findIndex(a => a && a.id === appId);
   if (rosterIdx !== -1) {
     state.roster[rosterIdx] = null;
     card.classList.remove('selected');
+    // Compact
     const filled = state.roster.filter(a => a !== null);
     for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
-    syncAllSlots();
-    const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
-    document.getElementById('ui-payroll').innerText = currentCost;
-    document.getElementById('ui-money').innerText = state.money - currentCost;
+    renderSlots();
+    updateLaunchState();
+    updateCostDisplay();
     return;
   }
 
@@ -1138,7 +1186,7 @@ function tapCard(appId) {
     const warn = document.getElementById('launch-warning');
     warn.innerText = 'INSUFFICIENT FUNDS';
     warn.style.display = 'block';
-    setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; if (!state.roster.some(a=>a)) warn.style.display = 'block'; else warn.style.display = 'none'; }, 1500);
+    setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
     return;
   }
 
@@ -1146,14 +1194,14 @@ function tapCard(appId) {
   const nextSlot = state.roster.indexOf(null);
   if (nextSlot === -1) return;
 
-  // Assign — card gets selected overlay, stays in grid
+  // Assign — instant visual feedback first
   card.classList.add('selected');
   state.roster[nextSlot] = app;
-  syncAllSlots();
 
-  const newCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
-  document.getElementById('ui-payroll').innerText = newCost;
-  document.getElementById('ui-money').innerText = state.money - newCost;
+  // Update just the one slot that changed
+  updateSingleSlot(nextSlot);
+  updateLaunchState();
+  updateCostDisplay();
 }
 
 function tapSlot(index) {
@@ -1166,8 +1214,32 @@ function tapSlot(index) {
   state.roster[index] = null;
   const filled = state.roster.filter(a => a !== null);
   for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
-  syncAllSlots();
+  renderSlots();
+  updateLaunchState();
+  updateCostDisplay();
+}
 
+function updateSingleSlot(index) {
+  const slotEl = document.getElementById('slot-' + index);
+  if (!slotEl) return;
+  const app = state.roster[index];
+  if (app) {
+    slotEl.classList.add('filled');
+    let icon = slotEl.querySelector('.slot-icon');
+    if (!icon) {
+      slotEl.insertAdjacentHTML('beforeend', `<img class="slot-icon" style="position:absolute;width:40px;height:40px;top:5px;left:5px;z-index:2;image-rendering:pixelated;">`);
+      icon = slotEl.querySelector('.slot-icon');
+    }
+    icon.src = RACES[app.race].icon;
+    icon.style.display = 'block';
+  } else {
+    slotEl.classList.remove('filled');
+    const icon = slotEl.querySelector('.slot-icon');
+    if (icon) icon.style.display = 'none';
+  }
+}
+
+function updateCostDisplay() {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-payroll').innerText = currentCost;
   document.getElementById('ui-money').innerText = state.money - currentCost;
@@ -1178,6 +1250,10 @@ function tapSlot(index) {
 // ══════════════════════════════════════════════
 
 function launchMission() {
+  // Bounce
+  const lBtn = document.getElementById('btn-launch');
+  if (lBtn) { lBtn.classList.remove('bounce'); requestAnimationFrame(() => lBtn.classList.add('bounce')); }
+
   const hired = state.roster.filter(a => a !== null);
   if (hired.length === 0) { document.getElementById('launch-warning').style.display = 'block'; return; }
 
