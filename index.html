@@ -203,7 +203,7 @@ body {
   position: absolute;
   top: 2px; left: 2px; right: 2px; bottom: 2px;
   background: #fff;
-  padding: 6px 8px;
+  padding: 6px 8px 5px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -253,9 +253,9 @@ body {
 .mc-skills .hi-stat { font-weight: bold; text-decoration: underline; }
 .mc-exp { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.mc-div { height: 2px; border: none; background-image: linear-gradient(to right, #000 2px, transparent 2px); background-size: 4px 2px; background-repeat: repeat-x; flex-shrink: 0; margin-top: auto; margin-bottom: -2px; }
+.mc-div { height: 2px; border: none; background-image: linear-gradient(to right, #000 2px, transparent 2px); background-size: 4px 2px; background-repeat: repeat-x; flex-shrink: 0; margin-top: auto; }
 
-.mc-foot { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-top: 0; }
+.mc-foot { display: flex; justify-content: space-between; align-items: center; gap: 4px; }
 
 .mc-hate-row { display: flex; align-items: center; gap: 3px; flex: 1; min-width: 0; }
 .mc-hate-label { font-size: 15px; line-height: 1; white-space: nowrap; flex-shrink: 0; }
@@ -287,7 +287,7 @@ body {
 }
 
 /* ── SLOTS ROW ── */
-.slots-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; flex-shrink: 0; }
+.slots-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; flex-shrink: 0; touch-action: pan-x; }
 
 .slot {
   width: 50px;
@@ -295,7 +295,7 @@ body {
   position: relative;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  touch-action: pan-x;
   flex-shrink: 0;
   background-image:
     linear-gradient(to right, #000 50%, transparent 50%),
@@ -326,6 +326,7 @@ body {
   height: 40px;
   flex-shrink: 0;
   touch-action: manipulation;
+  margin: 0 4px;
   clip-path: polygon(
     0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
     calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
@@ -351,7 +352,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 8px;
+  padding: 4px 16px;
   height: 100%;
 }
 .launch-btn:active .launch-btn-bg polygon { fill: #333; }
