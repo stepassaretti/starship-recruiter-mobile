@@ -61,7 +61,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   font-size: 16px;
-  opacity: 0.0;
+  opacity: 0.4;
 }
 .debug-overlay {
   position: fixed;
@@ -118,7 +118,7 @@ body {
 }
 .section-payroll {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* ── MISSION PANEL ── */
@@ -127,14 +127,7 @@ body {
   padding: 12px;
   margin-bottom: 16px;
   background: #fff;
-  border: none;
-  box-shadow: inset 0 0 0 2px #000;
-  clip-path: polygon(
-    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
-    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
-    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
-  );
+  border: 2px solid #000;
 }
 .mission-type {
   background: #000; color: #fff; padding: 3px 8px; display: inline-block;
@@ -344,7 +337,7 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   border-top: 2px solid #000;
   position: relative;
@@ -356,7 +349,8 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  width: 100%;
+  width: calc(100% - 0px);
+  align-self: stretch;
 }
 .btn-row .launch-btn {
   margin-left: auto;
@@ -478,7 +472,7 @@ body {
 .bottom-bar.expanded .launch-warning { display: none !important; }
 
 /* ── SLOTS ROW ── */
-.slots-row { display: flex; gap: 8px; flex-shrink: 0; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; padding-bottom: 2px; width: calc(100% + 16px); margin-right: -16px; scrollbar-width: none; }
+.slots-row { display: flex; gap: 8px; flex-shrink: 0; align-items: center; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; padding-bottom: 2px; width: calc(100% + 16px); margin-right: -16px; scrollbar-width: none; }
 .slots-row::-webkit-scrollbar { display: none; }
 
 .slot {
@@ -574,7 +568,138 @@ body {
   font-weight: bold;
 }
 
-/* ── RESULT OVERLAY ── */
+/* ── SPLASH SCREEN ── */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.screen.hidden { display: none; }
+
+#screen-splash {
+  background: #000;
+  justify-content: space-between;
+  padding-bottom: 20px;
+}
+.splash-top {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.splash-img {
+  width: 120px;
+  height: 120px;
+  image-rendering: pixelated;
+  display: block;
+}
+.splash-cta {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Inverted launch button (white bg, black text → black bg, white text inverted) */
+.launch-btn-inverted {
+  position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "VT323", monospace;
+  height: 40px;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+}
+.launch-btn-inverted .launch-btn-bg-inv {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.launch-btn-inverted .launch-btn-text-inv {
+  position: relative;
+  z-index: 1;
+  color: #000;
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: "VT323", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 16px;
+  height: 100%;
+}
+.launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
+.launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
+
+/* ── WELCOME SCREEN ── */
+#screen-welcome {
+  background: #000;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.welcome-img-panel {
+  height: 33.333%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.welcome-img-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+}
+.welcome-text-panel {
+  flex: 1;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 20px 20px;
+}
+.welcome-lore {
+  color: #fff;
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  flex: 1;
+  text-align: center;
+}
+.welcome-btn-row {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── INTRO MODE — acknowledge button replaces normal btn-row ── */
+.btn-row-acknowledge {
+  display: none;
+  width: 100%;
+  align-self: stretch;
+  justify-content: center;
+  align-items: center;
+}
+.intro-mode .btn-row { display: none; }
+.intro-mode .slots-row { display: none !important; }
+.intro-mode .launch-warning { display: none !important; }
+.intro-mode .btn-row-acknowledge { display: flex; }
+
 .result-overlay {
   position: fixed;
   inset: 0;
@@ -630,6 +755,40 @@ body {
 </style>
 </head>
 <body>
+
+<!-- SPLASH SCREEN (Page 1) -->
+<div class="screen" id="screen-splash">
+  <div class="splash-top">
+    <img class="splash-img" src="images/splash.png" alt="Starship Recruiter" onerror="this.style.opacity='0'">
+  </div>
+  <div class="splash-cta">
+    <button class="launch-btn-inverted" onclick="goToWelcome()">
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text-inv">Start new career</span>
+    </button>
+  </div>
+</div>
+
+<!-- WELCOME SCREEN (Page 2) -->
+<div class="screen hidden" id="screen-welcome">
+  <div class="welcome-img-panel">
+    <img src="images/welcome.png" alt="Welcome" onerror="this.style.opacity='0'">
+  </div>
+  <div class="welcome-text-panel">
+    <div class="welcome-lore">
+      Welcome to the Agency, Recruiter.<br><br>
+      You are replacing Recruiter #908, who... failed to meet their quotas.<br><br>
+      Your job is simple: Fill the ships. Manage the conflicts. Do not bankrupt this company.<br><br>
+      Sit at your desk. Your first briefing is waiting.
+    </div>
+    <div class="welcome-btn-row">
+      <button class="launch-btn-inverted" onclick="goToGame()">
+        <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+        <span class="launch-btn-text-inv">Continue</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- TOP BAR -->
 <div class="top-bar">
@@ -688,6 +847,12 @@ body {
     <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
       <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text">Launch Mission</span>
+    </button>
+  </div>
+  <div class="btn-row-acknowledge">
+    <button class="launch-btn" id="btn-acknowledge" onclick="acknowledgeIntro()">
+      <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text">Acknowledge</span>
     </button>
   </div>
 </div>
@@ -805,7 +970,6 @@ function getMissionHTML() {
   return `
     <div class="section-title" style="margin-bottom:10px;">MISSION INTEL</div>
     <div class="mission-card">
-      <div class="mission-type">${m.type}</div>
       <div class="mission-title">${m.title}</div>
       <div class="mission-detail">${reqHTML}</div>
       <div class="mission-detail">MIN SUCCESS: <strong>${m.minReq}%</strong></div>
@@ -818,11 +982,17 @@ function getMissionHTML() {
   `;
 }
 
+function getUnlockedSpeciesForDay(day) {
+  const allSpecies = Object.keys(RACES);
+  const count = Math.min(6 + Math.floor(day / 2), allSpecies.length);
+  return allSpecies.slice(0, count);
+}
+
 function getManualHTML() {
   let html = '<div class="section-title" style="margin-bottom:10px;">XENO-BIOLOGY MANUAL</div>';
-  let availableRaces = [];
-  state.pool.forEach(p => { if(!availableRaces.includes(p.race)) availableRaces.push(p.race); });
-  availableRaces.forEach(rKey => {
+  const unlockedSpecies = getUnlockedSpeciesForDay(state.day);
+  const sorted = [...unlockedSpecies].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  sorted.forEach(rKey => {
     const rd = RACES[rKey];
     html += `
       <div class="manual-entry">
@@ -1237,8 +1407,8 @@ function renderSlots() {
     slotsRow.insertAdjacentHTML('beforeend', slotHTML(i));
   }
 
-  // Left-align when 6+ slots (scrollable), center when fewer
-  slotsRow.style.justifyContent = max >= 6 ? 'flex-start' : 'center';
+  // Always flush left
+  slotsRow.style.justifyContent = 'flex-start';
 }
 
 function slotHTML(i) {
@@ -1458,6 +1628,7 @@ function nextDay() {
       document.getElementById('result-overlay').classList.remove('visible');
       closeDrawer();
       startDay();
+      goToSplash();
     };
     document.getElementById('result-overlay').classList.add('visible');
   } else {
@@ -1515,6 +1686,35 @@ function debugSetCredits() {
 if (!DEBUG_ENABLED) {
   const dbtn = document.querySelector('.debug-btn');
   if (dbtn) dbtn.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════════════════════
+
+function goToWelcome() {
+  document.getElementById('screen-splash').classList.add('hidden');
+  document.getElementById('screen-welcome').classList.remove('hidden');
+}
+
+function goToGame() {
+  document.getElementById('screen-welcome').classList.add('hidden');
+  // Enter intro mode: show acknowledge button instead of normal controls
+  document.getElementById('bottom-bar').classList.add('intro-mode');
+  // Open mission drawer
+  requestAnimationFrame(() => openDrawer('mission'));
+}
+
+function acknowledgeIntro() {
+  // Exit intro mode: restore normal bottom bar controls
+  const bar = document.getElementById('bottom-bar');
+  bar.classList.remove('intro-mode');
+  closeDrawer();
+}
+
+function goToSplash() {
+  document.getElementById('screen-splash').classList.remove('hidden');
+  document.getElementById('screen-welcome').classList.add('hidden');
 }
 
 // INIT
