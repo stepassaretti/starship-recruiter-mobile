@@ -579,6 +579,31 @@ body {
   justify-content: center;
 }
 .screen.hidden { display: none; }
+#screen-pre     { z-index: 303; }
+#screen-splash  { z-index: 302; }
+#screen-welcome { z-index: 301; }
+
+/* ── PRE-PAGE ── */
+#screen-pre {
+  background: #000;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.pre-icon {
+  width: 140px;
+  height: 140px;
+  image-rendering: pixelated;
+  display: block;
+}
+.pre-tap-text {
+  margin-top: 60px;
+  color: #fff;
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  text-transform: uppercase;
+  text-align: center;
+}
 
 #screen-splash {
   background: #000;
@@ -647,6 +672,7 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
+.launch-btn-inverted { outline: 2px solid #fff; outline-offset: 0px; }
 #screen-welcome {
   background: #000;
   flex-direction: column;
@@ -699,6 +725,26 @@ body {
 .intro-mode .slots-row { display: none !important; }
 .intro-mode .launch-warning { display: none !important; }
 .intro-mode .btn-row-acknowledge { display: flex; }
+
+/* ── GAME UI — hidden until screens are done ── */
+#intro-cover {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 299;
+  pointer-events: none;
+}
+#intro-cover.gone { display: none; }
+
+/* ── PIXEL TRANSITION CANVAS ── */
+#pixel-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  display: none;
+  image-rendering: pixelated;
+}
 
 .result-overlay {
   position: fixed;
@@ -756,14 +802,22 @@ body {
 </head>
 <body>
 
+<audio id="theme-audio" src="sound/theme.mp3" loop preload="auto"></audio>
+
+<!-- PRE-PAGE (Page 0) -->
+<div class="screen" id="screen-pre">
+  <img class="pre-icon" src="images/pre_page1_icon.png" alt="" onerror="this.style.opacity='0'">
+  <div class="pre-tap-text">Tap anywhere to continue</div>
+</div>
+
 <!-- SPLASH SCREEN (Page 1) -->
-<div class="screen" id="screen-splash">
+<div class="screen hidden" id="screen-splash">
   <div class="splash-top">
     <img class="splash-img" src="images/splash.png" alt="Starship Recruiter" onerror="this.style.opacity='0'">
   </div>
   <div class="splash-cta">
     <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
-      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" stroke="#000" stroke-width="4" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv">Start new career</span>
     </button>
   </div>
@@ -784,6 +838,10 @@ body {
     </div>
   </div>
 </div>
+
+<canvas id="pixel-transition"></canvas>
+
+<div id="intro-cover"></div>
 
 <!-- TOP BAR -->
 <div class="top-bar">
@@ -867,8 +925,6 @@ body {
 </div>
 
 <script>
-// ══════════════════════════════════════════════
-// EXPANDABLE BOTTOM BAR
 // ══════════════════════════════════════════════
 
 let activeDrawer = null; // 'mission' | 'manual' | null
@@ -1623,7 +1679,7 @@ function nextDay() {
       document.getElementById('result-overlay').classList.remove('visible');
       closeDrawer();
       startDay();
-      goToSplash();
+      goToSplashFromGame();
     };
     document.getElementById('result-overlay').classList.add('visible');
   } else {
@@ -1696,6 +1752,36 @@ function bounceThen(btn, callback) {
   });
 }
 
+// ── AUDIO ──
+const themeAudio = document.getElementById('theme-audio');
+
+function playTheme() {
+  themeAudio.volume = 1;
+  themeAudio.currentTime = 0;
+  themeAudio.play().catch(() => {});
+}
+
+function stopTheme() {
+  themeAudio.pause();
+  themeAudio.currentTime = 0;
+}
+
+function fadeOutTheme(duration) {
+  const steps = 30;
+  const interval = duration / steps;
+  const decrement = themeAudio.volume / steps;
+  const fade = setInterval(() => {
+    if (themeAudio.volume > decrement) {
+      themeAudio.volume = Math.max(0, themeAudio.volume - decrement);
+    } else {
+      themeAudio.volume = 0;
+      themeAudio.pause();
+      themeAudio.currentTime = 0;
+      clearInterval(fade);
+    }
+  }, interval);
+}
+
 // Typewriter for welcome screen
 const LORE_TEXT = [
   "Welcome to the Agency, Recruiter.",
@@ -1721,11 +1807,95 @@ function startTypewriter() {
     if (ch === '\n') {
       el.innerHTML += '<br>';
     } else {
-      // Escape HTML chars just in case
       el.appendChild(document.createTextNode(ch));
     }
     i++;
   }, 30);
+}
+
+function pixelFadeIn(onComplete) {
+  const canvas = document.getElementById('pixel-transition');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const TILE = 8;
+  const cols = Math.ceil(W / TILE);
+  const rows = Math.ceil(H / TILE);
+  const total = cols * rows;
+
+  // Only init canvas if not already primed
+  if (canvas.style.display !== 'block') {
+    canvas.width = cols;
+    canvas.height = rows;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, cols, rows);
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  // Create shuffled list of all pixel blocks
+  const tiles = Array.from({ length: total }, (_, i) => i);
+  for (let i = tiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+  }
+
+  const batchSize = Math.max(1, Math.floor(total / 40));
+  let revealed = 0;
+
+  function step() {
+    const end = Math.min(revealed + batchSize, total);
+    ctx.clearRect(0, 0, cols, rows);
+    ctx.fillStyle = '#000';
+    for (let i = end; i < total; i++) {
+      const t = tiles[i];
+      ctx.fillRect(t % cols, Math.floor(t / cols), 1, 1);
+    }
+    revealed = end;
+    if (revealed < total) {
+      requestAnimationFrame(step);
+    } else {
+      canvas.style.display = 'none';
+      if (onComplete) onComplete();
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function goToSplash() {
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
+  playTheme();
+
+  const canvas = document.getElementById('pixel-transition');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const TILE = 8;
+  const cols = Math.ceil(W / TILE);
+  const rows = Math.ceil(H / TILE);
+
+  // Prime canvas as solid black cover BEFORE any DOM changes
+  canvas.width = cols;
+  canvas.height = rows;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cols, rows);
+
+  // Now safe to swap screens — canvas covers the transition
+  requestAnimationFrame(() => {
+    document.getElementById('screen-pre').classList.add('hidden');
+    document.getElementById('screen-welcome').classList.add('hidden');
+    document.getElementById('screen-splash').classList.remove('hidden');
+    document.getElementById('intro-cover').classList.add('gone');
+
+    // Now animate the dissolve
+    pixelFadeIn(null);
+  });
 }
 
 function goToWelcome() {
@@ -1737,27 +1907,41 @@ function goToWelcome() {
 function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
-  // Enter intro mode: show acknowledge button instead of normal controls
+  fadeOutTheme(1500);
   document.getElementById('bottom-bar').classList.add('intro-mode');
-  // Open mission drawer
-  requestAnimationFrame(() => openDrawer('mission'));
+  // Small delay before removing cover to prevent tap-bleed from welcome button
+  setTimeout(() => {
+    document.getElementById('intro-cover').classList.add('gone');
+    requestAnimationFrame(() => openDrawer('mission'));
+  }, 80);
 }
 
 function acknowledgeIntro() {
-  // Exit intro mode: restore normal bottom bar controls
   const bar = document.getElementById('bottom-bar');
   bar.classList.remove('intro-mode');
   closeDrawer();
 }
 
-function goToSplash() {
-  document.getElementById('screen-splash').classList.remove('hidden');
+// When returning from game over, restore intro-cover then pixel fade
+function goToSplashFromGame() {
+  document.getElementById('intro-cover').classList.remove('gone');
+  document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
+  playTheme();
+  requestAnimationFrame(() => {
+    pixelFadeIn(() => {
+      document.getElementById('intro-cover').classList.add('gone');
+      document.getElementById('screen-splash').classList.remove('hidden');
+    });
+  });
 }
 
 // INIT
 startDay();
+document.getElementById('screen-pre').addEventListener('pointerup', function() {
+  goToSplash();
+}, { once: true });
 </script>
 </body>
 </html>
