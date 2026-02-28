@@ -582,22 +582,24 @@ body {
 
 #screen-splash {
   background: #000;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding-bottom: 20px;
 }
 .splash-top {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
-.splash-img {
-  width: 120px;
-  height: 120px;
+.splash-top img.splash-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   image-rendering: pixelated;
   display: block;
 }
 .splash-cta {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -645,8 +647,6 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
-
-/* ── WELCOME SCREEN ── */
 #screen-welcome {
   background: #000;
   flex-direction: column;
@@ -762,7 +762,7 @@ body {
     <img class="splash-img" src="images/splash.png" alt="Starship Recruiter" onerror="this.style.opacity='0'">
   </div>
   <div class="splash-cta">
-    <button class="launch-btn-inverted" onclick="goToWelcome()">
+    <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv">Start new career</span>
     </button>
@@ -775,14 +775,9 @@ body {
     <img src="images/welcome.png" alt="Welcome" onerror="this.style.opacity='0'">
   </div>
   <div class="welcome-text-panel">
-    <div class="welcome-lore">
-      Welcome to the Agency, Recruiter.<br><br>
-      You are replacing Recruiter #908, who... failed to meet their quotas.<br><br>
-      Your job is simple: Fill the ships. Manage the conflicts. Do not bankrupt this company.<br><br>
-      Sit at your desk. Your first briefing is waiting.
-    </div>
+    <div class="welcome-lore" id="welcome-lore-text"></div>
     <div class="welcome-btn-row">
-      <button class="launch-btn-inverted" onclick="goToGame()">
+      <button class="launch-btn-inverted" id="btn-welcome-cta" onclick="bounceThen(this, goToGame)">
         <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
         <span class="launch-btn-text-inv">Continue</span>
       </button>
@@ -1692,13 +1687,56 @@ if (!DEBUG_ENABLED) {
 // SCREEN NAVIGATION
 // ══════════════════════════════════════════════
 
+// Bounce button then run callback after animation
+function bounceThen(btn, callback) {
+  btn.classList.remove('bounce');
+  requestAnimationFrame(() => {
+    btn.classList.add('bounce');
+    setTimeout(callback, 200);
+  });
+}
+
+// Typewriter for welcome screen
+const LORE_TEXT = [
+  "Welcome to the Agency, Recruiter.",
+  "",
+  "You are replacing Recruiter #908, who... failed to meet their quotas.",
+  "",
+  "Your job is simple: Fill the ships. Manage the conflicts. Do not bankrupt this company.",
+  "",
+  "Sit at your desk. Your first briefing is waiting."
+];
+
+let typewriterTimer = null;
+
+function startTypewriter() {
+  const el = document.getElementById('welcome-lore-text');
+  el.innerHTML = '';
+  const fullText = LORE_TEXT.join('\n');
+  let i = 0;
+  if (typewriterTimer) clearInterval(typewriterTimer);
+  typewriterTimer = setInterval(() => {
+    if (i >= fullText.length) { clearInterval(typewriterTimer); return; }
+    const ch = fullText[i];
+    if (ch === '\n') {
+      el.innerHTML += '<br>';
+    } else {
+      // Escape HTML chars just in case
+      el.appendChild(document.createTextNode(ch));
+    }
+    i++;
+  }, 30);
+}
+
 function goToWelcome() {
   document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.remove('hidden');
+  startTypewriter();
 }
 
 function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   // Enter intro mode: show acknowledge button instead of normal controls
   document.getElementById('bottom-bar').classList.add('intro-mode');
   // Open mission drawer
@@ -1715,6 +1753,7 @@ function acknowledgeIntro() {
 function goToSplash() {
   document.getElementById('screen-splash').classList.remove('hidden');
   document.getElementById('screen-welcome').classList.add('hidden');
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
 }
 
 // INIT
