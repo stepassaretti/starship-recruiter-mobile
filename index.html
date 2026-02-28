@@ -817,7 +817,7 @@ body {
   </div>
   <div class="splash-cta">
     <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
-      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" stroke="#000" stroke-width="4" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv">Start new career</span>
     </button>
   </div>
@@ -1752,34 +1752,66 @@ function bounceThen(btn, callback) {
   });
 }
 
-// ── AUDIO ──
-const themeAudio = document.getElementById('theme-audio');
+// ── AUDIO (Web Audio API — works on iOS) ──
+let audioCtx = null;
+let gainNode = null;
+let audioSourceCreated = false;
+let fadeTimer = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = 1;
+    gainNode.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
 
 function playTheme() {
-  themeAudio.volume = 1;
-  themeAudio.currentTime = 0;
-  themeAudio.play().catch(() => {});
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  gainNode.gain.setValueAtTime(1, ctx.currentTime);
+
+  const audio = document.getElementById('theme-audio');
+  // Connect source only once — MediaElementSource can't be recreated
+  if (!audioSourceCreated) {
+    const src = ctx.createMediaElementSource(audio);
+    src.connect(gainNode);
+    audioSourceCreated = true;
+  }
+  audio.currentTime = 0;
+  audio.loop = true;
+  audio.play().catch(() => {});
 }
 
 function stopTheme() {
-  themeAudio.pause();
-  themeAudio.currentTime = 0;
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  const audio = document.getElementById('theme-audio');
+  audio.pause();
+  audio.currentTime = 0;
+  if (gainNode && audioCtx) {
+    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+  }
 }
 
 function fadeOutTheme(duration) {
-  const steps = 30;
-  const interval = duration / steps;
-  const decrement = themeAudio.volume / steps;
-  const fade = setInterval(() => {
-    if (themeAudio.volume > decrement) {
-      themeAudio.volume = Math.max(0, themeAudio.volume - decrement);
-    } else {
-      themeAudio.volume = 0;
-      themeAudio.pause();
-      themeAudio.currentTime = 0;
-      clearInterval(fade);
-    }
-  }, interval);
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  const ctx = getAudioCtx();
+  const audio = document.getElementById('theme-audio');
+  gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+  fadeTimer = setTimeout(() => {
+    audio.pause();
+    audio.currentTime = 0;
+    gainNode.gain.cancelScheduledValues(ctx.currentTime);
+    gainNode.gain.setValueAtTime(1, ctx.currentTime);
+    fadeTimer = null;
+  }, duration);
 }
 
 // Typewriter for welcome screen
