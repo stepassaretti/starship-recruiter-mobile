@@ -25,10 +25,9 @@ html, body {
 }
 
 body {
-  background-color: #fff;
+  background-color: #000;
   color: #000;
-  background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
-  background-size: 16px 16px;
+  background-image: none;
   font-family: "VT323", monospace;
   user-select: none;
   -webkit-user-select: none;
@@ -351,10 +350,21 @@ body {
   display: flex;
   align-items: center;
   width: 100%;
-  font-size: 16px;
+  font-size: 17px;
   font-family: "VT323", monospace;
   text-transform: uppercase;
   line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.slot-info-row .stat-val {
+  font-size: 17px;
+  font-weight: 700;
+}
+.slot-info-row .stat-val.met {
+  background: #000;
+  color: #fff;
+  padding: 0 3px;
 }
 
 /* ── MISSION PROGRESS BAR ── */
@@ -894,7 +904,7 @@ body {
 <div id="intro-cover"></div>
 
 <!-- TOP BAR -->
-<div class="top-bar">
+<div class="top-bar" id="top-bar" style="visibility:hidden;">
   <span class="top-title">STARSHIP//RECRUITER</span>
   <span class="debug-btn" onclick="openDebug()">[=]</span>
   <div class="top-right">
@@ -919,10 +929,9 @@ body {
 </div>
 
 <!-- SCROLLABLE AREA (always applicants) -->
-<div class="scroll-area">
+<div class="scroll-area" id="scroll-area" style="visibility:hidden;">
   <div class="section-title-row">
     <div class="section-title" id="pool-title">APPLICANTS [0]</div>
-    <div class="section-payroll">HIRED [<span id="ui-hired">0</span>/<span id="ui-max-slots">0</span>]</div>
   </div>
   <div class="cards-grid" id="cards-grid"></div>
 </div>
@@ -931,7 +940,7 @@ body {
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 
 <!-- BOTTOM BAR -->
-<div class="bottom-bar" id="bottom-bar">
+<div class="bottom-bar" id="bottom-bar" style="visibility:hidden;">
   <div class="bar-handle" id="bar-handle">
     <div class="bar-handle-line"></div>
   </div>
@@ -1034,6 +1043,9 @@ function openDrawer(type) {
 function closeDrawer() {
   const bar = document.getElementById('bottom-bar');
   const overlay = document.getElementById('drawer-overlay');
+
+  // If closing during intro, exit intro mode too
+  bar.classList.remove('intro-mode');
 
   // Animate back to collapsed height
   bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
@@ -1293,7 +1305,7 @@ const RACES = {
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
 const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
 
-let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false };
+let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [] };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
@@ -1396,6 +1408,7 @@ function updateShip() {
 
 function startDay() {
   updateShip();
+  state.speciesOrder = [];
   state.mission = generateMission();
   const poolSize = 6 + Math.floor(state.day / 2);
   state.pool = [];
@@ -1444,11 +1457,6 @@ function updateUI() {
   // Pool title — count ALL applicants (cards stay in pool)
   document.getElementById('pool-title').innerText = `APPLICANTS [${state.pool.length}]`;
 
-  // Hired count
-  const crewCount = state.roster.filter(a => a !== null).length;
-  document.getElementById('ui-hired').innerText = crewCount;
-  document.getElementById('ui-max-slots').innerText = state.ship.max;
-
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = "";
@@ -1485,6 +1493,7 @@ function updateUI() {
   renderSlots();
 
   // Launch button state
+  const crewCount = state.roster.filter(a => a !== null).length;
   const launchBtn = document.getElementById('btn-launch');
   const launchWarn = document.getElementById('launch-warning');
   if (crewCount > 0) {
@@ -1509,32 +1518,61 @@ function renderSlots() {
   }
   slotsRow.style.justifyContent = 'flex-start';
 
-  // Update slot-info row
-  const crewCount = state.roster.filter(a => a !== null).length;
-  const m = state.mission;
-  const reqStr = m.reqs.map(r => `${r.toUpperCase()} ${m.targets[r]}`).join(', ');
-  document.getElementById('slot-info-row').innerHTML =
-    `SHIP: ${crewCount}/${max} &nbsp;|&nbsp; REQ: ${reqStr}`;
-
-  // Update mission progress bar
+  // Update mission progress bar and info row together
   updateMissionProgress();
 }
 
 function updateMissionProgress() {
   const m = state.mission;
   const hired = state.roster.filter(a => a !== null);
+  const crewCount = hired.length;
+  const max = state.ship.max;
 
-  // Average satisfaction across all required stats
+  // Per-stat satisfaction
   let total = 0;
+  const statMet = {};
   m.reqs.forEach(stat => {
     const sum = hired.reduce((acc, a) => acc + a[stat], 0);
     const pct = Math.min(100, (sum / m.targets[stat]) * 100);
+    statMet[stat] = pct >= 100;
     total += pct;
   });
   const avg = m.reqs.length > 0 ? total / m.reqs.length : 0;
 
+  // Progress bar
   const fill = document.getElementById('mission-progress-fill');
   if (fill) fill.style.width = avg.toFixed(1) + '%';
+
+  // Info row: MISSION REQ: <stat vals bold, black if met> | SHIP: 0/5
+  const minPct = m.minReq;
+  const reqParts = m.reqs.map(r => {
+    const met = statMet[r];
+    return `<span class="stat-val${met ? ' met' : ''}">${r.toUpperCase()} ${m.targets[r]}</span>`;
+  }).join(' &nbsp;|&nbsp; ');
+
+  const minMet = avg >= minPct;
+  const minSpan = `<span class="stat-val${minMet ? ' met' : ''}">MIN ${minPct}%</span>`;
+
+  const shipMet = crewCount >= state.ship.min;
+  const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${max}</span>`;
+
+  document.getElementById('slot-info-row').innerHTML =
+    `MISSION:&nbsp;${reqParts} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
+
+  // Compress letter-spacing only if content overflows one line
+  const row = document.getElementById('slot-info-row');
+  row.style.letterSpacing = '';
+  row.style.fontSize = '17px';
+  if (row.scrollWidth > row.clientWidth) {
+    row.style.letterSpacing = '-1px';
+  }
+  if (row.scrollWidth > row.clientWidth) {
+    row.style.letterSpacing = '-2px';
+  }
+  if (row.scrollWidth > row.clientWidth) {
+    row.style.fontSize = '15px';
+    row.style.letterSpacing = '-1px';
+  }
 }
 
 function slotHTML(i) {
@@ -1565,6 +1603,12 @@ function syncAllSlots() {
 // Card stays in pool, gets dither highlight, fills slot
 // ══════════════════════════════════════════════
 
+function sortRoster() {
+  const filled = state.roster.filter(a => a !== null);
+  filled.sort((a, b) => state.speciesOrder.indexOf(a.race) - state.speciesOrder.indexOf(b.race));
+  for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
+}
+
 function tapCard(appId) {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
@@ -1581,20 +1625,19 @@ function tapCard(appId) {
   if (rosterIdx !== -1) {
     state.roster[rosterIdx] = null;
     card.classList.remove('selected');
-    // Compact
-    const filled = state.roster.filter(a => a !== null);
-    for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
+    // Compact and sort
+    sortRoster();
     renderSlots();
     updateLaunchState();
     updateCostDisplay();
     return;
   }
 
-  // Check funds
+  // Check funds — allow up to -100cr overdraft
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
-  if (state.money < currentCost + app.cost) {
+  if (state.money - currentCost - app.cost < -100) {
     const warn = document.getElementById('launch-warning');
-    warn.innerText = 'INSUFFICIENT FUNDS';
+    warn.innerText = 'CREDIT LIMIT REACHED';
     warn.style.display = 'block';
     setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
     return;
@@ -1607,6 +1650,9 @@ function tapCard(appId) {
   // Assign — instant visual feedback first
   card.classList.add('selected');
   state.roster[nextSlot] = app;
+  // Track species selection order (first time only)
+  if (!state.speciesOrder.includes(app.race)) state.speciesOrder.push(app.race);
+  sortRoster();
 
   // Cost float animation
   const floater = document.createElement('div');
@@ -1630,6 +1676,7 @@ function tapSlot(index) {
 
   state.roster[index] = null;
   const filled = state.roster.filter(a => a !== null);
+  filled.sort((a, b) => a.race.localeCompare(b.race));
   for (let i = 0; i < state.ship.max; i++) state.roster[i] = filled[i] || null;
   renderSlots();
   updateLaunchState();
@@ -1644,8 +1691,6 @@ function updateSingleSlot(index) {
 function updateCostDisplay() {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-money').innerText = state.money - currentCost;
-  const crewCount = state.roster.filter(a => a !== null).length;
-  document.getElementById('ui-hired').innerText = crewCount;
 }
 
 // ══════════════════════════════════════════════
@@ -1661,7 +1706,9 @@ function launchMission() {
   if (hired.length === 0) { document.getElementById('launch-warning').style.display = 'block'; return; }
 
   const cost = hired.reduce((sum, app) => sum + app.cost, 0);
+  const preDeductionBalance = state.money;
   state.money -= cost;
+  const debitUsed = state.money < 0 ? Math.abs(state.money) : 0;
   let logs = [], score = 0;
 
   // 1. RAW SKILL
@@ -1729,16 +1776,21 @@ function launchMission() {
   document.getElementById('res-msg').innerText = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
   let logHTML = logs.map(l => `<div>> ${l}</div>`).join('');
   logHTML += `<br><div>> NET FINANCIAL CHANGE: ${earned >= 0 ? '+'+earned : earned} CR</div>`;
+  if (debitUsed > 0) logHTML += `<div>> DEBIT USED: -${Math.ceil(debitUsed)} CR (to be repaid)</div>`;
   document.getElementById('res-log').innerHTML = logHTML;
   document.getElementById('res-title').innerText = "DEBRIEFING";
   document.getElementById('modal-btn').onclick = nextDay;
   document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
   document.getElementById('result-overlay').classList.add('visible');
-  if (state.money < 0) state.gameOver = true;
+  if (state.money < -100) state.gameOver = true;
 }
 
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
+
+  // Cannot start a new day with 0 or fewer credits
+  if (!state.gameOver && state.money <= 0) state.gameOver = true;
+
   if (state.gameOver) {
     document.getElementById('res-title').innerText = "SYSTEM LOCKOUT";
     document.getElementById('res-score').innerText = "BANKRUPT";
@@ -2018,6 +2070,12 @@ function goToGame() {
   document.getElementById('bottom-bar').classList.add('intro-mode');
   // Small delay before removing cover to prevent tap-bleed from welcome button
   setTimeout(() => {
+    document.body.style.backgroundColor = '#fff';
+    document.body.style.backgroundImage = 'radial-gradient(circle, #ccc 1px, transparent 1px)';
+    document.body.style.backgroundSize = '16px 16px';
+    document.getElementById('top-bar').style.visibility = '';
+    document.getElementById('scroll-area').style.visibility = '';
+    document.getElementById('bottom-bar').style.visibility = '';
     document.getElementById('intro-cover').classList.add('gone');
     requestAnimationFrame(() => openDrawer('mission'));
   }, 80);
@@ -2031,6 +2089,11 @@ function acknowledgeIntro() {
 
 // When returning from game over, restore intro-cover then pixel fade
 function goToSplashFromGame() {
+  document.body.style.backgroundColor = '#000';
+  document.body.style.backgroundImage = 'none';
+  document.getElementById('top-bar').style.visibility = 'hidden';
+  document.getElementById('scroll-area').style.visibility = 'hidden';
+  document.getElementById('bottom-bar').style.visibility = 'hidden';
   document.getElementById('intro-cover').classList.remove('gone');
   document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.add('hidden');
