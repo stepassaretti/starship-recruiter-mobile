@@ -60,7 +60,8 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   font-size: 16px;
-  opacity: 0.4;
+  color: #fff;
+  opacity: 1;
 }
 .debug-overlay {
   position: fixed;
@@ -726,8 +727,6 @@ body {
 
 #screen-splash {
   background: #000;
-  justify-content: flex-end;
-  padding-bottom: 20px;
 }
 .splash-top {
   position: absolute;
@@ -742,7 +741,10 @@ body {
   display: block;
 }
 .splash-cta {
-  position: relative;
+  position: absolute;
+  bottom: 32px;
+  left: 0;
+  right: 0;
   z-index: 1;
   display: flex;
   justify-content: center;
@@ -791,7 +793,8 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
-.launch-btn-inverted { outline: 2px solid #fff; outline-offset: 0px; }
+#btn-pre-continue { outline: 2px solid #fff; outline-offset: 0px; }
+#btn-splash-cta .launch-btn-bg-inv polygon { stroke: #000; stroke-width: 2; }
 #screen-welcome {
   background: #000;
   flex-direction: column;
@@ -956,7 +959,7 @@ body {
   </div>
   <div class="splash-cta">
     <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
-      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" stroke="#000" stroke-width="4" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="btn-splash-text">Start new career</span>
     </button>
   </div>
@@ -987,7 +990,7 @@ body {
   <span class="top-title">STARSHIP//RECRUITER</span>
   <span class="debug-btn" onclick="openDebug()">[=]</span>
   <div class="top-right">
-    <span class="top-day">DAY <span id="ui-day">1</span></span>
+    <span class="top-day"><span id="ui-day-label">DAY</span> <span id="ui-day">1</span></span>
     <span class="top-cr"><span id="ui-money">800</span> CR</span>
   </div>
 </div>
@@ -1077,7 +1080,7 @@ const LANG = {
     selectLang: "Select language",
     continue: "Continue",
     // Page 1
-    newCareer: "New career",
+    newCareer: "START NEW CAREER",
     // Page 2 lore
     lore: [
       "Welcome to the Agency, Recruiter.",
@@ -1148,18 +1151,20 @@ const LANG = {
     mutual: "MUTUAL: %a dominated %b. -%p%",
     mutualDraw: "MUTUAL DRAW: Bloody stalemate. -%p%",
     conflict: "CONFLICT: %a attacked %b. -%p%",
-    missionTitles: {}
+    missionTitles: {},
+    day: "DAY",
+    applicants: "APPLICANTS"
   },
   it: {
     selectLang: "Seleziona la lingua",
     continue: "Continua",
-    newCareer: "Nuova carriera",
+    newCareer: "NUOVA CARRIERA",
     lore: [
       "Benvenuto all'Agenzia, Reclutatore.",
       "",
       "Stai sostituendo il Reclutatore #908, che... non ha raggiunto le quote.",
       "",
-      "Il tuo lavoro è semplice: assumi personale di bordo. Gestisci i conflitti. Non sforare il budget.",
+      "Il tuo lavoro è semplice: assembla l'equipaggio. Gestisci i conflitti. Non sforare il budget.",
       "",
       "Siediti alla scrivania. Il tuo primo briefing ti sta aspettando."
     ],
@@ -1235,7 +1240,9 @@ const LANG = {
       "Establishing a foothold on a hostile world": "Insediamento in un mondo ostile",
       "Breaking into a floating fortress": "Irruzione in una fortezza flottante",
       "Saving a civilization from a supernova": "Salvataggio di una civiltà da una supernova"
-    }
+    },
+    day: "GIORNO",
+    applicants: "CANDIDATI"
   }
 };
 
@@ -1348,7 +1355,9 @@ function getMissionHTML() {
   const crew = state.roster.filter(a => a !== null).length;
   const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
   const shipSrc = `images/ships_${state.ship.name.toLowerCase().replace(/\s+/g, '_')}.png`;
-  const title = missionTitle(m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase());
+  const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
+  const mType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
+  const title = `${mType}: ${missionTitle(rawTitle)}`;
   return `
     <div class="section-title" style="margin-bottom:10px;">${t('missionIntel').toUpperCase()}</div>
     <div class="mission-title" style="font-size:20px; font-family:'VT323',monospace; font-weight:700; margin-bottom:10px; line-height:1.1;">${title}</div>
@@ -1578,10 +1587,18 @@ function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + m
 // APPLICANT GENERATION
 // ══════════════════════════════════════════════
 
-function generateApplicant(id) {
+function generateApplicantForRace(id, raceKey) {
+  const savedDay = state.day;
+  state.day = 1; // ensure day-1 stat ranges
+  const app = generateApplicant(id, raceKey);
+  state.day = savedDay;
+  return app;
+}
+
+function generateApplicant(id, forceRace) {
   const races = Object.keys(RACES);
   let available = races.slice(0, Math.min(6 + Math.floor(state.day/2), races.length));
-  const raceKey = available[rand(0, available.length - 1)];
+  const raceKey = forceRace || available[rand(0, available.length - 1)];
   const rd = RACES[raceKey];
   let str = rand(rd.str[0], rd.str[1]);
   let int = rand(rd.int[0], rd.int[1]);
@@ -1644,16 +1661,43 @@ function generateMission() {
     { id: "THE GRAND HEIST", stat: ["str", "int", "cha"], t: 3, titles: ["Breaking into a floating fortress"] },
     { id: "PLANETARY EVACUATION", stat: ["str", "int", "cha"], t: 3, titles: ["Saving a civilization from a supernova"] }
   ];
-  let available = types.filter(t => t.t === 1);
-  if (state.day > 4) available = available.concat(types.filter(t => t.t === 2));
-  if (state.day > 8) available = available.concat(types.filter(t => t.t === 3));
+  let available = types.filter(mt => mt.t === 1);
+  if (state.day > 4) available = available.concat(types.filter(mt => mt.t === 2));
+  if (state.day > 8) available = available.concat(types.filter(mt => mt.t === 3));
+
+  // Day 1: always STR only
+  if (state.day === 1) available = types.filter(mt => mt.id === "ASSAULT");
+  // Day 2-3: STR or INT only (no CHA)
+  else if (state.day <= 3) available = types.filter(mt => mt.t === 1 && (mt.id === "ASSAULT" || mt.id === "RESEARCH"));
   const m = available[rand(0, available.length - 1)];
   const title = m.titles[rand(0, m.titles.length - 1)];
   const targetBase = 45 + Math.floor(state.day * 7.5);
   let targets = {};
   m.stat.forEach(s => targets[s] = targetBase + rand(-5, 5));
+
+  // Dynamic minReq from day 5 onwards; fixed progressive before
+  let minReq;
+  if (state.day < 7) {
+    minReq = Math.min(95, 65 + Math.floor(state.day * 1.2));
+  } else {
+    const maxSlots = state.ship ? state.ship.max : 5;
+    const avgTarget = m.stat.reduce((sum, s) => sum + targets[s], 0) / m.stat.length;
+    const statCountBase = 90 - (m.stat.length - 1) * 12;
+    const slotsPerTarget = maxSlots / avgTarget;
+    const pressureAdj = Math.round((slotsPerTarget - 0.07) * 300);
+    let rawMinReq = Math.round(Math.max(50, Math.min(95, statCountBase + pressureAdj)));
+
+    // Lottery spike from day 15: occasionally a brutal mission hits regardless of formula
+    if (state.day >= 15) {
+      if (m.stat.length === 2 && Math.random() < 0.12) rawMinReq = 90;
+      if (m.stat.length === 3 && Math.random() < 0.12) rawMinReq = 85;
+    }
+
+    minReq = rawMinReq;
+  }
+
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
-    minReq: Math.min(95, 65 + Math.floor(state.day * 1.2)),
+    minReq: minReq,
     reward: 500 + (state.day * 90) };
 }
 
@@ -1666,8 +1710,16 @@ function updateShip() {
     {d:13,n:"Assault Cruiser",x:9,m:5,c:5},{d:14,n:"Heavy Cruiser",x:9,m:6,c:5},
     {d:15,n:"Titan",x:10,m:6,c:6}
   ];
-  const s = ships.find(s => s.d === state.day) || {n:"Dreadnought",x:10,m:7,c:7};
-  state.ship = { name: s.n, max: s.x, min: s.m, cls: s.c };
+  const s = ships.find(s => s.d === state.day);
+  if (s) {
+    state.ship = { name: s.n, max: s.x, min: s.m, cls: s.c };
+  } else {
+    // Dreadnought: starts at day 16, grows every 2 days
+    const extra = Math.floor((state.day - 16) / 2);
+    const maxSlots = 16 + extra;
+    const minSlots = Math.round(maxSlots * 0.45); // ~45% of max, within 25-70% range
+    state.ship = { name: "Dreadnought", max: maxSlots, min: minSlots, cls: 7 + extra };
+  }
   state.roster = new Array(state.ship.max).fill(null);
 }
 
@@ -1675,14 +1727,24 @@ function startDay() {
   updateShip();
   state.speciesOrder = [];
   state.mission = generateMission();
-  const poolSize = 6 + Math.floor(state.day / 2);
   state.pool = [];
-  let attempts = 0;
-  while(state.pool.length < poolSize && attempts < 200) {
-    let newApp = generateApplicant(state.pool.length);
-    if (!state.pool.some(a => a.name === newApp.name)) state.pool.push(newApp);
-    attempts++;
+
+  if (state.day === 1) {
+    // Fixed Day 1 pool: 2 Humans, 1 Sky-Elf, 2 Droids, 1 Beetlegunner
+    const day1Species = ["Human", "Human", "Sky-Elf", "Droid", "Droid", "Beetlegunner"];
+    day1Species.forEach((race, i) => {
+      state.pool.push(generateApplicantForRace(i, race));
+    });
+  } else {
+    const poolSize = 6 + Math.floor(state.day / 2);
+    let attempts = 0;
+    while(state.pool.length < poolSize && attempts < 200) {
+      let newApp = generateApplicant(state.pool.length);
+      if (!state.pool.some(a => a.name === newApp.name)) state.pool.push(newApp);
+      attempts++;
+    }
   }
+
   // Reset scroll
   document.querySelector('.scroll-area').scrollTop = 0;
   const sr = document.getElementById('slots-row');
@@ -1718,10 +1780,11 @@ function updateUI() {
 
   // Top bar
   document.getElementById('ui-day').innerText = state.day;
+  document.getElementById('ui-day-label').innerText = t('day');
   document.getElementById('ui-money').innerText = state.money - currentCost;
 
   // Pool title — count ALL applicants (cards stay in pool)
-  document.getElementById('pool-title').innerText = `APPLICANTS [${state.pool.length}]`;
+  document.getElementById('pool-title').innerText = `${t('applicants')} [${state.pool.length}]`;
 
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
@@ -1779,13 +1842,62 @@ function renderSlots() {
   const max = state.ship.max;
 
   slotsRow.innerHTML = '';
-  for (let i = 0; i < max; i++) {
-    slotsRow.insertAdjacentHTML('beforeend', slotHTML(i));
-  }
-  slotsRow.style.justifyContent = 'flex-start';
 
-  // Update mission progress bar and info row together
+  if (max > 15) {
+    // Compact mode: SLOTS [X/MAX]: icon x count per species
+    renderSlotsCompact(slotsRow, max);
+  } else {
+    for (let i = 0; i < max; i++) {
+      slotsRow.insertAdjacentHTML('beforeend', slotHTML(i));
+    }
+    slotsRow.style.justifyContent = 'flex-start';
+  }
+
   updateMissionProgress();
+}
+
+function renderSlotsCompact(slotsRow, max) {
+  const hired = state.roster.filter(a => a !== null);
+  const count = hired.length;
+
+  // Label
+  const label = document.createElement('span');
+  label.style.cssText = 'font-family:"VT323",monospace;font-size:17px;white-space:nowrap;flex-shrink:0;margin-right:8px;';
+  label.textContent = `SLOTS [${count}/${max}]:`;
+  slotsRow.appendChild(label);
+
+  if (count === 0) {
+    const empty = document.createElement('span');
+    empty.style.cssText = 'font-family:"VT323",monospace;font-size:17px;opacity:0.5;white-space:nowrap;';
+    empty.textContent = '— AWAITING CREW —';
+    slotsRow.appendChild(empty);
+    return;
+  }
+
+  // Group by species
+  const groups = {};
+  hired.forEach(a => { groups[a.race] = (groups[a.race] || 0) + 1; });
+
+  Object.entries(groups).forEach(([race, n]) => {
+    const rd = RACES[race];
+    if (!rd) return;
+    const item = document.createElement('span');
+    item.style.cssText = 'display:inline-flex;align-items:center;gap:3px;flex-shrink:0;margin-right:6px;cursor:pointer;';
+    item.title = `Tap to remove a ${race}`;
+    item.innerHTML = `<img src="${rd.icon}" style="width:20px;height:20px;image-rendering:pixelated;" onerror="this.style.display='none'"><span style="font-family:'VT323',monospace;font-size:17px;white-space:nowrap;">x${n}</span>`;
+    item.onclick = () => {
+      // Find last slot with this race and remove it
+      for (let i = state.roster.length - 1; i >= 0; i--) {
+        if (state.roster[i] && state.roster[i].race === race) {
+          state.roster[i] = null;
+          syncAllSlots();
+          updateUI();
+          break;
+        }
+      }
+    };
+    slotsRow.appendChild(item);
+  });
 }
 
 function updateMissionProgress() {
@@ -2094,7 +2206,7 @@ function openDebug() {
   const overlay = document.getElementById('debug-overlay');
   const grid = document.getElementById('debug-days');
   grid.innerHTML = '';
-  for (let d = 1; d <= 20; d++) {
+  for (let d = 1; d <= 40; d++) {
     grid.insertAdjacentHTML('beforeend',
       `<button class="debug-day-btn" onclick="debugJumpToDay(${d})">${d}</button>`
     );
