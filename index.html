@@ -663,6 +663,68 @@ body {
   text-align: center;
 }
 
+/* ── LANGUAGE SELECTOR (Page 0) ── */
+.pre-lang-title {
+  color: #fff;
+  font-family: "VT323", monospace;
+  font-size: 22px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 32px;
+  letter-spacing: 1px;
+}
+.pre-lang-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  align-items: flex-start;
+  width: 160px;
+}
+.pre-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pre-lang-option input[type="radio"] {
+  display: none;
+}
+.pre-radio-box {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  background: transparent;
+  flex-shrink: 0;
+  position: relative;
+  image-rendering: pixelated;
+}
+.pre-radio-box::after {
+  content: '';
+  display: none;
+  position: absolute;
+  inset: 3px;
+  background: #fff;
+}
+.pre-lang-option input[type="radio"]:checked + .pre-radio-box::after {
+  display: block;
+}
+.pre-lang-label {
+  color: #fff;
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.pre-continue-row {
+  position: absolute;
+  bottom: 32px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
 #screen-splash {
   background: #000;
   justify-content: flex-end;
@@ -864,10 +926,28 @@ body {
 
 <audio id="theme-audio" src="sound/theme.mp3" loop preload="auto"></audio>
 
-<!-- PRE-PAGE (Page 0) -->
+<!-- PRE-PAGE (Page 0) — Language selector -->
 <div class="screen" id="screen-pre">
   <img class="pre-icon" src="images/pre_page1_icon.png" alt="" onerror="this.style.opacity='0'">
-  <div class="pre-tap-text">Tap anywhere to continue</div>
+  <div class="pre-lang-title" id="pre-lang-title">Select language</div>
+  <div class="pre-lang-options">
+    <label class="pre-lang-option">
+      <input type="radio" name="lang" value="en" checked onchange="selectLang('en')">
+      <div class="pre-radio-box"></div>
+      <span class="pre-lang-label">English</span>
+    </label>
+    <label class="pre-lang-option">
+      <input type="radio" name="lang" value="it" onchange="selectLang('it')">
+      <div class="pre-radio-box"></div>
+      <span class="pre-lang-label">Italiano</span>
+    </label>
+  </div>
+  <div class="pre-continue-row">
+    <button class="launch-btn-inverted" id="btn-pre-continue" onclick="bounceThen(this, goToSplash)">
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text-inv" id="btn-pre-continue-text">Continue</span>
+    </button>
+  </div>
 </div>
 
 <!-- SPLASH SCREEN (Page 1) -->
@@ -878,7 +958,7 @@ body {
   <div class="splash-cta">
     <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text-inv">Start new career</span>
+      <span class="launch-btn-text-inv" id="btn-splash-text">Start new career</span>
     </button>
   </div>
 </div>
@@ -893,7 +973,7 @@ body {
     <div class="welcome-btn-row">
       <button class="launch-btn-inverted" id="btn-welcome-cta" onclick="bounceThen(this, goToGame)">
         <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-        <span class="launch-btn-text-inv">Continue</span>
+        <span class="launch-btn-text-inv" id="btn-welcome-text">Continue</span>
       </button>
     </div>
   </div>
@@ -960,13 +1040,13 @@ body {
     </button>
     <button class="launch-btn disabled" id="btn-launch" onclick="launchMission()">
       <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text">Launch</span>
+      <span class="launch-btn-text" id="btn-launch-text">Launch</span>
     </button>
   </div>
   <div class="btn-row-acknowledge">
     <button class="launch-btn" id="btn-acknowledge" onclick="acknowledgeIntro()">
       <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text">Acknowledge</span>
+      <span class="launch-btn-text" id="btn-acknowledge-text">Tutto chiaro</span>
     </button>
   </div>
 </div>
@@ -987,6 +1067,192 @@ body {
 
 <script>
 // ══════════════════════════════════════════════
+
+
+// ── LANGUAGE SYSTEM ──
+let currentLang = 'en';
+
+const LANG = {
+  en: {
+    // Page 0
+    selectLang: "Select language",
+    continue: "Continue",
+    // Page 1
+    newCareer: "New career",
+    // Page 2 lore
+    lore: [
+      "Welcome to the Agency, Recruiter.",
+      "",
+      "You are replacing Recruiter #908, who... failed to meet their quotas.",
+      "",
+      "Your job is simple: Fill the ships. Manage the conflicts. Do not bankrupt this company.",
+      "",
+      "Sit at your desk. Your first briefing is waiting."
+    ],
+    // Bottom bar
+    hireCrew: "Hire crew to launch",
+    creditLimit: "Credit limit reached",
+    launch: "Launch",
+    acknowledge: "Acknowledge",
+    // Stats
+    str: "STR", int: "INT", cha: "CHA", hate: "HATE", exp: "EXP",
+    // Roles
+    roles: { COMMAND: "COMMAND", OPERATIONS: "OPERATIONS", SCIENCE: "SCIENCE", FORCE: "FORCE", LOGISTICS: "LOGISTICS" },
+    // Species display names
+    species: {
+      "Human": "Human", "Giant": "Giant", "Droid": "Droid", "Robomantoid": "Robomantoid",
+      "Long-Neck": "Long-Neck", "Oak-Person": "Oak-Person", "Fungi": "Fungi",
+      "Sky-Elf": "Sky-Elf", "Beetlegunner": "Beetlegunner", "Barbitulian": "Barbitulian",
+      "Velkhorian": "Velkhorian", "Squid": "Squid", "Sugorian": "Sugorian",
+      "Void-Demon": "Void-Demon", "Cheesponge": "Cheesponge", "Aquasim": "Aquasim",
+      "Space-Cat": "Space-Cat", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio"
+    },
+    // Mission overlay
+    missionIntel: "Mission intel",
+    requirements: "Requirements",
+    minSuccess: "Min Success",
+    minCrew: "Min Crew",
+    maxCrew: "Max Crew",
+    reward: "Reward",
+    yourShip: "Your Ship",
+    class: "Class",
+    // Manual
+    xenoManual: "Xeno-biology manual",
+    hates: "HATES:",
+    // Bottom info row
+    missionLabel: "MISSION:",
+    min: "MIN",
+    // Debriefing
+    debriefing: "DEBRIEFING",
+    missionSuccess: "MISSION SUCCESS",
+    missionFailed: "MISSION FAILED",
+    startOver: "START OVER",
+    basePower: "Base Power Output",
+    maxCapacity: "Ship at Max Capacity: +5% Bonus",
+    minCrewMet: "Ship Minimum Crew Met: 0% Penalty",
+    understaffed1: "Understaffed (Tier 1): -20% Penalty",
+    understaffed2: "Understaffed (Tier 2): -40% Penalty",
+    skeleton: "Skeleton Crew (Tier 3): -60% Penalty",
+    fatal: "Fatal Understaffing (Tier 4): -70% Penalty",
+    synergy: "SYNERGY BONUS: Perfect harmony. +10%",
+    fine: "FINE APPLIED: Mission requirement (%s%) not met.",
+    overperf: "OVERPERFORMANCE BONUS: +%s CR",
+    netChange: "NET FINANCIAL CHANGE: %s CR",
+    debitUsed: "DEBIT USED: -%s CR (to be repaid)",
+    // Bankruptcy
+    systemLockout: "SYSTEM LOCKOUT",
+    bankrupt: "BANKRUPT",
+    careerOver: "Your career is over.",
+    liquidating: "> Liquidating assets...",
+    reclaiming: "> Reclaiming organic material...",
+    // Conflict log
+    mutual: "MUTUAL: %a dominated %b. -%p%",
+    mutualDraw: "MUTUAL DRAW: Bloody stalemate. -%p%",
+    conflict: "CONFLICT: %a attacked %b. -%p%",
+    missionTitles: {}
+  },
+  it: {
+    selectLang: "Seleziona la lingua",
+    continue: "Continua",
+    newCareer: "Nuova carriera",
+    lore: [
+      "Benvenuto all'Agenzia, Reclutatore.",
+      "",
+      "Stai sostituendo il Reclutatore #908, che... non ha raggiunto le quote.",
+      "",
+      "Il tuo lavoro è semplice: assumi personale di bordo. Gestisci i conflitti. Non sforare il budget.",
+      "",
+      "Siediti alla scrivania. Il tuo primo briefing ti sta aspettando."
+    ],
+    hireCrew: "Devi prima assumere qualcuno",
+    creditLimit: "Limite di credito raggiunto",
+    launch: "Lancia",
+    acknowledge: "Tutto chiaro",
+    str: "FOR", int: "INT", cha: "CAR", hate: "ODIO", exp: "ESP",
+    roles: { COMMAND: "COMANDO", OPERATIONS: "OPERAZIONI", SCIENCE: "SCIENZA", FORCE: "COMBATTIMENTO", LOGISTICS: "LOGISTICA" },
+    species: {
+      "Human": "Umano", "Giant": "Gigante", "Droid": "Droide", "Robomantoid": "Robomantoide",
+      "Long-Neck": "Collolungo", "Oak-Person": "Quercio", "Fungi": "Fungoide",
+      "Sky-Elf": "Vulcaniano", "Beetlegunner": "Piattola", "Barbitulian": "Barbituliano",
+      "Velkhorian": "Aviano", "Squid": "Tentacolato", "Sugorian": "Sugoriano",
+      "Void-Demon": "Demone", "Cheesponge": "Spugnoso", "Aquasim": "Acquariano",
+      "Space-Cat": "Gattaco", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio"
+    },
+    missionIntel: "Informazioni missione",
+    requirements: "Requisiti",
+    minSuccess: "Successo minimo",
+    minCrew: "Equipaggio minimo",
+    maxCrew: "Equipaggio massimo",
+    reward: "Ricompensa",
+    yourShip: "La tua nave",
+    class: "Classe",
+    xenoManual: "Manuale di xenobiologia",
+    hates: "NEMICI:",
+    missionLabel: "MISSIONE:",
+    min: "MIN",
+    debriefing: "DEBRIEFING",
+    missionSuccess: "MISSIONE RIUSCITA",
+    missionFailed: "MISSIONE FALLITA",
+    startOver: "RICOMINCIA",
+    basePower: "Potenza base",
+    maxCapacity: "Nave a piena capacità: +5% bonus",
+    minCrewMet: "Equipaggio minimo raggiunto: 0% penalità",
+    understaffed1: "Equipaggio insufficiente (Livello 1): -20% penalità",
+    understaffed2: "Equipaggio insufficiente (Livello 2): -40% penalità",
+    skeleton: "Equipaggio ridotto all'osso (Livello 3): -60% penalità",
+    fatal: "Carenza critica di equipaggio (Livello 4): -70% penalità",
+    synergy: "BONUS SINERGIA: Armonia perfetta. +10%",
+    fine: "MULTA APPLICATA: Requisito missione (%s%) non soddisfatto.",
+    overperf: "BONUS PRESTAZIONE EXTRA: +%s CR",
+    netChange: "VARIAZIONE FINANZIARIA NETTA: %s CR",
+    debitUsed: "DEBITO UTILIZZATO: -%s CR (da restituire)",
+    systemLockout: "BLOCCO DI SISTEMA",
+    bankrupt: "BANCAROTTA",
+    careerOver: "La tua carriera è finita.",
+    liquidating: "> Liquidazione degli asset...",
+    reclaiming: "> Recupero del materiale organico...",
+    mutual: "RECIPROCO: %a ha dominato %b. -%p%",
+    mutualDraw: "PAREGGIO: Stallo sanguinoso. -%p%",
+    conflict: "CONFLITTO: %a ha attaccato %b. -%p%",
+    missionTitles: {
+      "Direct fleet engagement": "Scontro diretto con la flotta",
+      "Pirate suppression": "Soppressione dei pirati",
+      "Orbital defense": "Difesa orbitale",
+      "Treaty signing": "Firma del trattato",
+      "Trade negotiations": "Trattative commerciali",
+      "Gala attendance": "Partecipazione al gala",
+      "Analyzing black holes": "Analisi dei buchi neri",
+      "Studying alien flora": "Studio della flora aliena",
+      "Mapping nebulae": "Mappatura delle nebulose",
+      "Extracting survivors from collapsing stations": "Estrazione di sopravvissuti da stazioni in collasso",
+      "Breaking apart derelict Dreadnoughts": "Smantellamento di incrociatori abbandonati",
+      "Deploying atmospheric processors": "Installazione di processori atmosferici",
+      "Infiltrating corporate HQs": "Infiltrazione di quartieri generali aziendali",
+      "Meeting new species": "Incontro con nuove specie",
+      "Moving contraband": "Trasporto di merce di contrabbando",
+      "Policing lawless sectors": "Controllo dei settori fuorilegge",
+      "Escorting dignitaries": "Scorta di dignitari",
+      "Tracking sector kingpins": "Caccia ai signori della guerra del settore",
+      "Establishing a foothold on a hostile world": "Insediamento in un mondo ostile",
+      "Breaking into a floating fortress": "Irruzione in una fortezza flottante",
+      "Saving a civilization from a supernova": "Salvataggio di una civiltà da una supernova"
+    }
+  }
+};
+
+function t(key) { return LANG[currentLang][key] || LANG['en'][key] || key; }
+function speciesName(raceKey) { return (LANG[currentLang].species || {})[raceKey] || raceKey; }
+function roleName(role) { return (LANG[currentLang].roles || {})[role] || role; }
+function statLabel(s) { return t(s); }
+function missionTitle(enTitle) { return (LANG[currentLang].missionTitles || {})[enTitle] || enTitle; }
+
+function selectLang(lang) {
+  currentLang = lang;
+  const L = LANG[lang];
+  document.getElementById('pre-lang-title').innerText = L.selectLang;
+  document.getElementById('btn-pre-continue-text').innerText = L.continue;
+}
+
 
 let activeDrawer = null; // 'mission' | 'manual' | null
 let collapsedHeight = 0;
@@ -1081,21 +1347,20 @@ function updateIconButtons() {
 function getMissionHTML() {
   const m = state.mission;
   const crew = state.roster.filter(a => a !== null).length;
-  const reqStr = m.reqs.map(r => `${r.toUpperCase()} ${m.targets[r]}`).join(', ');
+  const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
   const shipSrc = `images/ships_${state.ship.name.toLowerCase().replace(/\s+/g, '_')}.png`;
-  // Sentence case title
-  const title = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
+  const title = missionTitle(m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase());
   return `
-    <div class="section-title" style="margin-bottom:10px;">MISSION INTEL</div>
+    <div class="section-title" style="margin-bottom:10px;">${t('missionIntel').toUpperCase()}</div>
     <div class="mission-title" style="font-size:20px; font-family:'VT323',monospace; font-weight:700; margin-bottom:10px; line-height:1.1;">${title}</div>
-    <div class="mission-flat-row"><span class="mission-flat-label">Requirements</span><span class="mission-flat-value">${reqStr}</span></div>
-    <div class="mission-flat-row"><span class="mission-flat-label">Min Success</span><span class="mission-flat-value">${m.minReq}%</span></div>
-    <div class="mission-flat-row"><span class="mission-flat-label">Min Crew</span><span class="mission-flat-value">${state.ship.min}</span></div>
-    <div class="mission-flat-row"><span class="mission-flat-label">Max Crew</span><span class="mission-flat-value">${state.ship.max}</span></div>
-    <div class="mission-flat-row"><span class="mission-flat-label">Reward</span><span class="mission-flat-value">${m.reward} cr</span></div>
-    <div class="section-title" style="margin-top:16px; margin-bottom:10px;">YOUR SHIP</div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${t('requirements')}</span><span class="mission-flat-value">${reqStr}</span></div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${t('minSuccess')}</span><span class="mission-flat-value">${m.minReq}%</span></div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${t('minCrew')}</span><span class="mission-flat-value">${state.ship.min}</span></div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${t('maxCrew')}</span><span class="mission-flat-value">${state.ship.max}</span></div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${t('reward')}</span><span class="mission-flat-value">${m.reward} cr</span></div>
+    <div class="section-title" style="margin-top:16px; margin-bottom:10px;">${t('yourShip').toUpperCase()}</div>
     <div class="ship-preview"><img src="${shipSrc}" alt="Ship" style="max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;" onerror="this.style.display='none'"></div>
-    <div style="font-size:20px; margin-top:8px;">${state.ship.name}, Class ${state.ship.cls}</div>
+    <div style="font-size:20px; margin-top:8px;">${state.ship.name}, ${t('class')} ${state.ship.cls}</div>
   `;
 }
 
@@ -1106,19 +1371,20 @@ function getUnlockedSpeciesForDay(day) {
 }
 
 function getManualHTML() {
-  let html = '<div class="section-title" style="margin-bottom:10px;">XENO-BIOLOGY MANUAL</div>';
+  let html = `<div class="section-title" style="margin-bottom:10px;">${t('xenoManual').toUpperCase()}</div>`;
   const unlockedSpecies = getUnlockedSpeciesForDay(state.day);
   const sorted = [...unlockedSpecies].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
   sorted.forEach(rKey => {
     const rd = RACES[rKey];
+    const hateNames = rd.hates.map(h => speciesName(h)).join(', ');
     html += `
       <div class="manual-entry">
         <div class="manual-name">
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
-          ${rKey}
+          ${speciesName(rKey)}
         </div>
         <div class="manual-desc">${rd.desc}</div>
-        <div class="manual-hates">HATES: <strong>${rd.hates.join(", ")}</strong></div>
+        <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
       </div>`;
   });
   return html;
@@ -1438,8 +1704,9 @@ function tagBgSVG(w) {
 }
 
 function tagWidth(species) {
-  const w = { "Human":52,"Drakhen":64,"Barbitulian":88,"Beetlegunner":96,"Sky-Elf":60,"Giant":48,"Droid":48,"Robomantoid":88,"Space-Cat":72,"Velkhorian":80,"Aquasim":60,"Void-Demon":80,"Fungi":48,"Oak-Person":80,"Long-Neck":72,"Squid":48,"Sugorian":68,"Cheesponge":84,"Sodio":48,"Blorg":48 };
-  return w[species] || 72;
+  const name = speciesName(species).toUpperCase();
+  // ~7.2px per char for VT323 14px, minimum 48
+  return Math.max(48, name.length * 8 + 8);
 }
 
 // ══════════════════════════════════════════════
@@ -1471,15 +1738,15 @@ function updateUI() {
       <div class="mc-inner">
         <div class="mc-head">
           <div class="mc-name">${app.name}</div>
-          <div class="mc-tag">${tagBgSVG(tagWidth(app.race))}<span class="mc-tag-text" style="position:relative;z-index:1;">${app.race}</span></div>
+          <div class="mc-tag">${tagBgSVG(tagWidth(app.race))}<span class="mc-tag-text" style="position:relative;z-index:1;">${speciesName(app.race)}</span></div>
         </div>
         <div class="mc-portrait"><img src="${app.portrait}" draggable="false" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;font-size:32px;color:#ccc;display:flex;align-items:center;justify-content:center;height:100%;&quot;>?</span>';"></div>
-        <div class="mc-skills"><span class="${hl('str')}">STR ${app.str}</span><span class="${hl('int')}">INT ${app.int}</span><span class="${hl('cha')}">CHA ${app.cha}</span></div>
-        <div class="mc-exp">EXP: ${app.exp}</div>
+        <div class="mc-skills"><span class="${hl('str')}">${t('str')} ${app.str}</span><span class="${hl('int')}">${t('int')} ${app.int}</span><span class="${hl('cha')}">${t('cha')} ${app.cha}</span></div>
+        <div class="mc-exp">${t('exp')}: ${roleName(app.exp)}</div>
         <hr class="mc-div">
         <div class="mc-foot">
           <div class="mc-hate-row">
-            <div class="mc-hate-label">HATE</div>
+            <div class="mc-hate-label">${t('hate')}</div>
             <div class="mc-hate-bar-track"><div class="mc-hate-bar-fill" style="width:${app.hate}%"></div></div>
             <div class="mc-hate-pct${app.hate >= 70 ? ' high' : ''}">${app.hate}%</div>
           </div>
@@ -1547,17 +1814,17 @@ function updateMissionProgress() {
   const minPct = m.minReq;
   const reqParts = m.reqs.map(r => {
     const met = statMet[r];
-    return `<span class="stat-val${met ? ' met' : ''}">${r.toUpperCase()} ${m.targets[r]}</span>`;
+    return `<span class="stat-val${met ? ' met' : ''}">${t(r)} ${m.targets[r]}</span>`;
   }).join(' &nbsp;|&nbsp; ');
 
   const minMet = avg >= minPct;
-  const minSpan = `<span class="stat-val${minMet ? ' met' : ''}">MIN ${minPct}%</span>`;
+  const minSpan = `<span class="stat-val${minMet ? ' met' : ''}">${t('min')} ${minPct}%</span>`;
 
   const shipMet = crewCount >= state.ship.min;
   const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${max}</span>`;
 
   document.getElementById('slot-info-row').innerHTML =
-    `MISSION:&nbsp;${reqParts} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
+    `${t('missionLabel')}&nbsp;${reqParts} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
 
   // Compress letter-spacing only if content overflows one line
   const row = document.getElementById('slot-info-row');
@@ -1637,9 +1904,9 @@ function tapCard(appId) {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   if (state.money - currentCost - app.cost < -100) {
     const warn = document.getElementById('launch-warning');
-    warn.innerText = 'CREDIT LIMIT REACHED';
+    warn.innerText = t('creditLimit');
     warn.style.display = 'block';
-    setTimeout(() => { warn.innerText = 'HIRE CREW TO LAUNCH'; warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
+    setTimeout(() => { warn.innerText = t('hireCrew'); warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
     return;
   }
 
@@ -1718,16 +1985,16 @@ function launchMission() {
     statScores.push((sum / state.mission.targets[stat]) * 100);
   });
   let rawScore = statScores.reduce((a,b)=>a+b, 0) / statScores.length;
-  logs.push(`Base Power Output: ${Math.floor(rawScore)}%`);
+  logs.push(`${t('basePower')}: ${Math.floor(rawScore)}%`);
 
   // 2. SHIP EFFICIENCY
   let effPct = hired.length / state.ship.min, effMod = 0;
-  if (hired.length === state.ship.max) { effMod = 5; logs.push(`Ship at Max Capacity: +5% Bonus`); }
-  else if (effPct >= 1) { effMod = 0; logs.push(`Ship Minimum Crew Met: 0% Penalty`); }
-  else if (effPct >= 0.7) { effMod = -20; logs.push(`Understaffed (Tier 1): -20% Penalty`); }
-  else if (effPct >= 0.4) { effMod = -40; logs.push(`Understaffed (Tier 2): -40% Penalty`); }
-  else if (effPct >= 0.15) { effMod = -60; logs.push(`Skeleton Crew (Tier 3): -60% Penalty`); }
-  else { effMod = -70; logs.push(`Fatal Understaffing (Tier 4): -70% Penalty`); }
+  if (hired.length === state.ship.max) { effMod = 5; logs.push(t('maxCapacity')); }
+  else if (effPct >= 1) { effMod = 0; logs.push(t('minCrewMet')); }
+  else if (effPct >= 0.7) { effMod = -20; logs.push(t('understaffed1')); }
+  else if (effPct >= 0.4) { effMod = -40; logs.push(t('understaffed2')); }
+  else if (effPct >= 0.15) { effMod = -60; logs.push(t('skeleton')); }
+  else { effMod = -70; logs.push(t('fatal')); }
 
   // 3. CONFLICTS
   let conflictPenalty = 0, conflictCount = 0;
@@ -1741,17 +2008,17 @@ function launchMission() {
         if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
         if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
         if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`MUTUAL: ${a.race} dominated ${b.race}. -${Math.floor(p)}%`);}
-        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`MUTUAL: ${b.race} dominated ${a.race}. -${Math.floor(p)}%`);}
-        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;logs.push(`MUTUAL DRAW: Bloody stalemate. -${Math.floor(pA+pB)}%`);}
-      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`CONFLICT: ${a.race} attacked ${b.race}. -${Math.floor(p)}%`);}
-      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(`CONFLICT: ${b.race} attacked ${a.race}. -${Math.floor(p)}%`);}
+        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('mutual').replace('%a',speciesName(a.race)).replace('%b',speciesName(b.race)).replace('%p',Math.floor(p)));}
+        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('mutual').replace('%a',speciesName(b.race)).replace('%b',speciesName(a.race)).replace('%p',Math.floor(p)));}
+        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;logs.push(t('mutualDraw').replace('%p',Math.floor(pA+pB)));}
+      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('conflict').replace('%a',speciesName(a.race)).replace('%b',speciesName(b.race)).replace('%p',Math.floor(p)));}
+      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('conflict').replace('%a',speciesName(b.race)).replace('%b',speciesName(a.race)).replace('%p',Math.floor(p)));}
     }
   }
 
   // 4. SYNERGY
   let synergy = 0;
-  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; logs.push(`SYNERGY BONUS: Perfect harmony. +10%`); }
+  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; logs.push(t('synergy')); }
 
   score = Math.floor(rawScore + effMod - conflictPenalty + synergy);
   let overperformance = 0;
@@ -1763,24 +2030,25 @@ function launchMission() {
   if (score >= state.mission.minReq) {
     isSuccess = true;
     earned = Math.floor(state.mission.reward * (score/100));
-    if (overperformance > 0) { let bonus = Math.floor(state.mission.reward * (overperformance/100)); earned += bonus; logs.push(`OVERPERFORMANCE BONUS: +${bonus} CR`); }
+    if (overperformance > 0) { let bonus = Math.floor(state.mission.reward * (overperformance/100)); earned += bonus; logs.push(t('overperf').replace('%s', bonus)); }
   } else {
     let diff = (state.mission.minReq - score) / 100;
     earned = -Math.floor(state.mission.reward * diff);
-    logs.push(`FINE APPLIED: Mission requirement (${state.mission.minReq}%) not met.`);
+    logs.push(t('fine').replace('%s', state.mission.minReq));
   }
   state.money += earned;
 
   document.getElementById('res-score').innerText = score + "%";
   document.getElementById('res-score').style.color = "";
-  document.getElementById('res-msg').innerText = isSuccess ? "MISSION SUCCESS" : "MISSION FAILED";
+  document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
   let logHTML = logs.map(l => `<div>> ${l}</div>`).join('');
-  logHTML += `<br><div>> NET FINANCIAL CHANGE: ${earned >= 0 ? '+'+earned : earned} CR</div>`;
-  if (debitUsed > 0) logHTML += `<div>> DEBIT USED: -${Math.ceil(debitUsed)} CR (to be repaid)</div>`;
+  const netStr = earned >= 0 ? '+'+earned : String(earned);
+  logHTML += `<br><div>> ${t('netChange').replace('%s', netStr)}</div>`;
+  if (debitUsed > 0) logHTML += `<div>> ${t('debitUsed').replace('%s', Math.ceil(debitUsed))}</div>`;
   document.getElementById('res-log').innerHTML = logHTML;
-  document.getElementById('res-title').innerText = "DEBRIEFING";
+  document.getElementById('res-title').innerText = t('debriefing');
   document.getElementById('modal-btn').onclick = nextDay;
-  document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
+  document.querySelector('#modal-btn .launch-btn-text').innerText = t('continue');
   document.getElementById('result-overlay').classList.add('visible');
   if (state.money < -100) state.gameOver = true;
 }
@@ -1792,16 +2060,16 @@ function nextDay() {
   if (!state.gameOver && state.money <= 0) state.gameOver = true;
 
   if (state.gameOver) {
-    document.getElementById('res-title').innerText = "SYSTEM LOCKOUT";
-    document.getElementById('res-score').innerText = "BANKRUPT";
+    document.getElementById('res-title').innerText = t('systemLockout');
+    document.getElementById('res-score').innerText = t('bankrupt');
     document.getElementById('res-score').style.color = "red";
-    document.getElementById('res-msg').innerText = "Your career is over.";
-    document.getElementById('res-log').innerHTML = "> Liquidating assets...<br>> Reclaiming organic material...";
-    document.querySelector('#modal-btn .launch-btn-text').innerText = "START OVER";
+    document.getElementById('res-msg').innerText = t('careerOver');
+    document.getElementById('res-log').innerHTML = `${t('liquidating')}<br>${t('reclaiming')}`;
+    document.querySelector('#modal-btn .launch-btn-text').innerText = t('startOver');
     document.getElementById('modal-btn').onclick = function() {
       state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
       document.getElementById('res-score').style.color = "";
-      document.querySelector('#modal-btn .launch-btn-text').innerText = "CONTINUE";
+      document.querySelector('#modal-btn .launch-btn-text').innerText = t('continue');
       document.getElementById('modal-btn').onclick = nextDay;
       document.getElementById('result-overlay').classList.remove('visible');
       closeDrawer();
@@ -1941,7 +2209,6 @@ function fadeOutTheme(duration) {
   }, duration);
 }
 
-// Typewriter for welcome screen
 const LORE_TEXT = [
   "Welcome to the Agency, Recruiter.",
   "",
@@ -1957,7 +2224,7 @@ let typewriterTimer = null;
 function startTypewriter() {
   const el = document.getElementById('welcome-lore-text');
   el.innerHTML = '';
-  const fullText = LORE_TEXT.join('\n');
+  const fullText = LANG[currentLang].lore.join('\n');
   let i = 0;
   if (typewriterTimer) clearInterval(typewriterTimer);
   typewriterTimer = setInterval(() => {
@@ -2026,6 +2293,18 @@ function pixelFadeIn(onComplete) {
 
 function goToSplash() {
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
+
+  // Apply language to all screens
+  const L = LANG[currentLang];
+  document.getElementById('btn-splash-text').innerText = L.newCareer;
+  document.getElementById('btn-welcome-text').innerText = L.continue;
+  document.getElementById('btn-acknowledge-text').innerText = L.acknowledge;
+  document.querySelector('#modal-btn .launch-btn-text').innerText = L.continue;
+  document.querySelector('#btn-launch .launch-btn-text').innerText = L.launch;
+
+  // Re-render cards and UI with selected language
+  updateUI();
+
   playTheme();
 
   const canvas = document.getElementById('pixel-transition');
@@ -2107,11 +2386,9 @@ function goToSplashFromGame() {
   });
 }
 
+
 // INIT
 startDay();
-document.getElementById('screen-pre').addEventListener('pointerup', function() {
-  goToSplash();
-}, { once: true });
 </script>
 </body>
 </html>
