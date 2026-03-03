@@ -1354,7 +1354,7 @@ function getMissionHTML() {
   const m = state.mission;
   const crew = state.roster.filter(a => a !== null).length;
   const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
-  const shipSrc = `images/ships_${state.ship.name.toLowerCase().replace(/\s+/g, '_')}.png`;
+  const shipSrc = `images/ships_${(state.ship.base || state.ship.name).toLowerCase().replace(/\s+/g, '_')}.png`;
   const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
   const mType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
   const title = `${mType}: ${missionTitle(rawTitle)}`;
@@ -1368,7 +1368,7 @@ function getMissionHTML() {
     <div class="mission-flat-row"><span class="mission-flat-label">${t('reward')}</span><span class="mission-flat-value">${m.reward} cr</span></div>
     <div class="section-title" style="margin-top:16px; margin-bottom:10px;">${t('yourShip').toUpperCase()}</div>
     <div class="ship-preview"><img src="${shipSrc}" alt="Ship" style="max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;" onerror="this.style.display='none'"></div>
-    <div style="font-size:20px; margin-top:8px;">${state.ship.name}, ${t('class')} ${state.ship.cls}</div>
+    <div style="font-size:20px; margin-top:8px;">${state.ship.name}</div>
   `;
 }
 
@@ -1391,7 +1391,7 @@ function getManualHTML() {
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${speciesName(rKey)}
         </div>
-        
+        <div class="manual-desc">${rd.desc}</div>
         <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
       </div>`;
   });
@@ -1702,24 +1702,70 @@ function generateMission() {
 }
 
 function updateShip() {
-  const ships = [
-    {d:1,n:"Speeder",x:5,m:3,c:1},{d:2,n:"Courier",x:5,m:3,c:1},{d:3,n:"Interceptor",x:5,m:3,c:1},
-    {d:4,n:"Scout",x:6,m:4,c:2},{d:5,n:"Shuttle",x:6,m:4,c:2},{d:6,n:"Gunship",x:6,m:4,c:2},
-    {d:7,n:"Cargo",x:7,m:4,c:3},{d:8,n:"Corvette",x:7,m:4,c:3},{d:9,n:"Transport",x:7,m:4,c:3},
-    {d:10,n:"Destroyer",x:7,m:4,c:3},{d:11,n:"Battleship",x:8,m:5,c:4},{d:12,n:"Battlecruiser",x:9,m:5,c:4},
-    {d:13,n:"Assault Cruiser",x:9,m:5,c:5},{d:14,n:"Heavy Cruiser",x:9,m:6,c:5},
-    {d:15,n:"Titan",x:10,m:6,c:6}
-  ];
+  // Build ship table: {d, baseName, displayName, max, min}
+  // PNG always uses baseName (e.g. "Cargo", "Dreadnought")
+  const ships = [];
+  let day = 1;
+  let maxSlots = 5;
+
+  const earlyMins = {
+    'Speeder': 3, 'Courier': 4, 'Interceptor': 4,
+    'Scout': 5, 'Shuttle': 5, 'Gunship': 6,
+  };
+
+  function addFlat(name, max, min) {
+    for (let i = 0; i < 3; i++) {
+      ships.push({ d: day++, base: name, display: name, x: max, m: min });
+    }
+  }
+
+  function addClassed(name, classes) {
+    for (let c = 1; c <= classes; c++) {
+      ships.push({ d: day++, base: name, display: name + ' [class ' + c + ']', x: maxSlots, m: Math.round(maxSlots * 0.75) });
+      maxSlots++;
+    }
+  }
+
+  // Phase 1: flat ships x3
+  addFlat('Speeder',     5, 3);
+  addFlat('Courier',     6, 4);
+  addFlat('Interceptor', 7, 4);
+  addFlat('Scout',       8, 5);
+  addFlat('Shuttle',     9, 5);
+  addFlat('Gunship',    10, 6);
+
+  // Phase 2: 3 classes each
+  maxSlots = 11;
+  addClassed('Cargo',      3);
+  addClassed('Corvette',   3);
+  addClassed('Transport',  3);
+
+  // Phase 3: 5 classes each
+  addClassed('Destroyer',       5);
+  addClassed('Battleship',      5);
+  addClassed('Battlecruiser',   5);
+  addClassed('Assault Cruiser', 5);
+  addClassed('Heavy Cruiser',   5);
+  addClassed('Titan',           5);
+
+  const dreadStart = day;
+  const dreadMaxStart = maxSlots;
+
   const s = ships.find(s => s.d === state.day);
   if (s) {
-    state.ship = { name: s.n, max: s.x, min: s.m, cls: s.c };
+    state.ship = { name: s.display, base: s.base, max: s.x, min: s.m };
   } else {
-    // Dreadnought: starts at day 16, grows every 2 days
-    const extra = Math.floor((state.day - 16) / 2);
-    const maxSlots = 16 + extra;
-    const minSlots = Math.round(maxSlots * 0.45); // ~45% of max, within 25-70% range
-    state.ship = { name: "Dreadnought", max: maxSlots, min: minSlots, cls: 7 + extra };
+    // Dreadnought: +1 max every 2 days
+    const cls = Math.floor((state.day - dreadStart) / 2) + 1;
+    const maxSlotsDread = dreadMaxStart + Math.floor((state.day - dreadStart) / 2);
+    state.ship = {
+      name: 'Dreadnought [class ' + cls + ']',
+      base: 'Dreadnought',
+      max: maxSlotsDread,
+      min: Math.round(maxSlotsDread * 0.75)
+    };
   }
+
   state.roster = new Array(state.ship.max).fill(null);
 }
 
@@ -1736,7 +1782,9 @@ function startDay() {
       state.pool.push(generateApplicantForRace(i, race));
     });
   } else {
-    const poolSize = 6 + Math.floor(state.day / 2);
+    // Pool must be at least 15-20% more than max slots
+    const minPool = Math.ceil(state.ship.max * (1.15 + Math.random() * 0.05));
+    const poolSize = Math.max(6 + Math.floor(state.day / 2), minPool);
     let attempts = 0;
     while(state.pool.length < poolSize && attempts < 200) {
       let newApp = generateApplicant(state.pool.length);
