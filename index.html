@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
 <meta name="theme-color" content="#ffffff" id="meta-theme-color">
-<meta name="apple-mobile-web-app-status-bar-style" content="default" id="meta-apple-status">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SR//">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/pre_page1_icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <title>Starship Recruiter</title>
 <style>
@@ -38,6 +42,8 @@ body {
   display: flex;
   flex-direction: column;
   color: #000;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ── TOP BAR ── */
@@ -3230,9 +3236,7 @@ function fixScrollPadding() {
 
 function setStatusBar(mode) {
   const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
-  const appleStyle = mode === 'dark' ? 'black' : 'default';
   document.getElementById('meta-theme-color').setAttribute('content', themeColor);
-  document.getElementById('meta-apple-status').setAttribute('content', appleStyle);
   document.documentElement.style.backgroundColor = themeColor;
   document.body.style.backgroundColor = themeColor;
 }
