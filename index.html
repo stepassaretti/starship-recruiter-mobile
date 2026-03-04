@@ -653,9 +653,9 @@ body {
   justify-content: center;
 }
 .screen.hidden { display: none; }
-#screen-pre     { z-index: 303; }
-#screen-splash  { z-index: 302; }
-#screen-welcome { z-index: 301; }
+#screen-pre     { z-index: 303; inset: 0; }
+#screen-splash  { z-index: 302; inset: 0; }
+#screen-welcome { z-index: 301; inset: 0; }
 #screen-rules   { z-index: 300; }
 
 /* ── PRE-PAGE ── */
@@ -3058,7 +3058,7 @@ let gainNode = null;
 let audioSourceCreated = false;
 let fadeTimer = null;
 
-// ── SFX SYSTEM ──
+// ── SFX SYSTEM — Audio element pool (reliable on iOS/Android) ──
 const SFX_FILES = {
   button:       'sound/button.mp3',
   page1:        'sound/page1.mp3',
@@ -3073,44 +3073,33 @@ const SFX_FILES = {
   menu_open:    'sound/menu_open.mp3',
   menu_close:   'sound/menu_close.mp3',
 };
-const sfxBuffers = {};
-let sfxCtx = null;
 
-function getSfxCtx() {
-  if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return sfxCtx;
-}
-
-function loadSfx(key) {
-  if (sfxBuffers[key]) return;
-  const ctx = getSfxCtx();
-  fetch(SFX_FILES[key])
-    .then(r => r.arrayBuffer())
-    .then(buf => ctx.decodeAudioData(buf, decoded => { sfxBuffers[key] = decoded; }))
-    .catch(() => {});
-}
+// Pool of Audio elements per key — allows overlapping playback
+const sfxPool = {};
 
 function preloadSfx() {
-  Object.keys(SFX_FILES).forEach(loadSfx);
+  Object.keys(SFX_FILES).forEach(key => {
+    const a = new Audio(SFX_FILES[key]);
+    a.preload = 'auto';
+    a.load();
+    sfxPool[key] = [a];
+  });
 }
 
 function playSfx(key, volume, rate) {
-  const ctx = getSfxCtx();
-  if (ctx.state === 'suspended') ctx.resume();
-  const buf = sfxBuffers[key];
-  if (!buf) return;
-  const src = ctx.createBufferSource();
-  src.buffer = buf;
-  if (rate) src.playbackRate.value = rate;
-  if (volume !== undefined && volume !== 1) {
-    const g = ctx.createGain();
-    g.gain.value = volume;
-    src.connect(g);
-    g.connect(ctx.destination);
-  } else {
-    src.connect(ctx.destination);
+  const pool = sfxPool[key];
+  if (!pool) return;
+  // Find a free element or clone a new one
+  let a = pool.find(el => el.paused || el.ended);
+  if (!a) {
+    a = new Audio(SFX_FILES[key]);
+    a.preload = 'auto';
+    pool.push(a);
   }
-  src.start(0);
+  a.currentTime = 0;
+  a.volume = (volume !== undefined) ? volume : 1;
+  a.playbackRate = (rate !== undefined) ? rate : 1;
+  a.play().catch(() => {});
 }
 
 function playSfxPage() {
