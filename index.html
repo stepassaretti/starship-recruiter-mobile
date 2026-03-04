@@ -2595,6 +2595,7 @@ function tapCard(appId) {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   if (state.money - currentCost - app.cost < -100) {
     const warn = document.getElementById('launch-warning');
+    playSfx('wrong');
     warn.innerText = t('creditLimit');
     warn.style.display = 'block';
     setTimeout(() => { warn.innerText = t('hireCrew'); warn.style.display = state.roster.some(a=>a) ? 'none' : 'block'; }, 1500);
@@ -2603,7 +2604,7 @@ function tapCard(appId) {
 
   // Find next empty slot
   const nextSlot = state.roster.indexOf(null);
-  if (nextSlot === -1) return;
+  if (nextSlot === -1) { playSfx('wrong'); return; }
 
   // Assign — instant visual feedback first
   card.classList.add('selected');
@@ -2659,6 +2660,7 @@ function updateCostDisplay() {
 
 function launchMission() {
   // Bounce
+  playSfx('button');
   const lBtn = document.getElementById('btn-launch');
   if (lBtn) { lBtn.classList.remove('bounce'); requestAnimationFrame(() => lBtn.classList.add('bounce')); }
 
@@ -2833,9 +2835,9 @@ function launchMission() {
     const eased = 1 - Math.pow(1 - t0, 3);
     const current = Math.floor(eased * targetScore);
     scoreEl.innerText = current + '%';
-    // Play typing tick on each integer change, max ~10 ticks per second
-    if (current !== lastDisplayed && current % Math.max(1, Math.floor(targetScore / 10)) === 0) {
-      playSfx('typing', 0.6);
+    // Play typing tick on every integer change
+    if (current !== lastDisplayed) {
+      playSfx('typing', 0.4);
     }
     lastDisplayed = current;
     if (t0 < 1) {
@@ -2875,7 +2877,7 @@ function launchMission() {
       if (clone.nodeType === Node.TEXT_NODE) {
         logEl.appendChild(clone); i++;
         smoothScroll();
-        setTimeout(showNext, 200);
+        setTimeout(showNext, 0);
         return;
       }
 
@@ -2902,7 +2904,7 @@ function launchMission() {
         const perItem = Math.min(200, Math.round(500 / total));
         let ci = 0;
         function showConflict() {
-          if (ci >= total) { setTimeout(showNext, 200); return; }
+          if (ci >= total) { setTimeout(showNext, 0); return; }
           logEl.appendChild(conflictNodes[ci++]);
           smoothScroll();
           setTimeout(showConflict, perItem);
@@ -2927,7 +2929,7 @@ function launchMission() {
         typewriteElement(liveLabelEl, fullLabel, 0, () => {
           liveValueEl.textContent = fullValue;
           smoothScroll();
-          setTimeout(showNext, 200);
+          setTimeout(showNext, 0);
         });
         return;
       }
@@ -2939,7 +2941,7 @@ function launchMission() {
       const liveEl = logEl.lastElementChild;
       typewriteElement(liveEl, fullText, 0, () => {
         smoothScroll();
-        setTimeout(showNext, 200);
+        setTimeout(showNext, 0);
       });
     }
     showNext();
@@ -3079,6 +3081,7 @@ const SFX_FILES = {
   target:       'sound/target.m4a',
   menu_open:    'sound/menu_open.m4a',
   menu_close:   'sound/menu_close.m4a',
+  wrong:        'sound/wrong.m4a',
 };
 
 // Pool of Audio elements per key — allows overlapping playback
