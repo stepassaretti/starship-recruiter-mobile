@@ -49,8 +49,15 @@ body {
   font-size: 20px;
   text-transform: uppercase;
   border-bottom: 2px solid #000;
-  z-index: 50;
+  z-index: 250;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-110%);
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0.3, 1);
 }
+.top-bar.slid-in { transform: translateY(0); }
 .top-title { font-weight: 700; }
 .top-right { display: flex; gap: 16px; align-items: center; }
 .top-cr { font-weight: 700; }
@@ -102,6 +109,8 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 12px 16px 16px;
+  padding-top: calc(12px + 44px);
+  padding-bottom: calc(16px + 120px);
 }
 
 /* ── SECTION TITLE ROW ── */
@@ -396,9 +405,15 @@ body {
   align-items: flex-start;
   gap: 6px;
   border-top: 2px solid #000;
-  position: relative;
-  z-index: 60;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 250;
+  transform: translateY(110%);
+  transition: transform 0.35s cubic-bezier(0.2, 0, 0.3, 1);
 }
+.bottom-bar.slid-in { transform: translateY(0); }
 
 /* ── BUTTON ROW ── */
 .btn-row {
@@ -475,9 +490,7 @@ body {
   align-items: center;
   gap: 8px;
   border-top: 2px solid #000;
-  position: relative;
-  z-index: 60;
-  transition: none;
+  z-index: 250;
 }
 
 /* When expanded: fixed to bottom, animates max-height */
@@ -641,6 +654,7 @@ body {
 #screen-pre     { z-index: 303; }
 #screen-splash  { z-index: 302; }
 #screen-welcome { z-index: 301; }
+#screen-rules   { z-index: 300; }
 
 /* ── PRE-PAGE ── */
 #screen-pre {
@@ -818,8 +832,9 @@ body {
   background: #000;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 24px 20px 20px;
+  justify-content: flex-start;
+  padding: 24px 20px 0;
+  position: relative;
 }
 .welcome-lore {
   color: #fff;
@@ -830,12 +845,276 @@ body {
   text-align: center;
 }
 .welcome-btn-row {
-  margin-top: 24px;
+  padding: 0 0 32px 0;
   display: flex;
   justify-content: center;
 }
 
+/* ── RULES SCREEN ── */
+#screen-rules {
+  background-color: #fff;
+  background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
+  background-size: 16px 16px;
+  z-index: 300;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Acknowledge button on screen-rules (outside sheet) */
+.rules-ack-btn-row {
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  width: 100%;
+}
+.rules-ack-btn-row.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.rules-sheet-wrapper {
+  position: relative;
+  width: 300px;
+  height: 420px;
+}
+
+.rules-touch-zone {
+  position: absolute;
+  top: -40px;
+  bottom: -40px;
+  width: 245px;
+  cursor: pointer;
+  z-index: 100;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.rules-touch-zone.left  { left: -50px; }
+.rules-touch-zone.right { right: -50px; }
+
+.rules-sheet-container {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  position: relative;
+  clip-path: polygon(
+    0 2px, 2px 2px, 2px 0,
+    calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px,
+    100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px),
+    calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)
+  );
+}
+
+.rules-top-dotted-line {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-image: linear-gradient(to right, #000 50%, transparent 50%);
+  background-size: 4px 2px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.rules-sheet-content {
+  position: absolute;
+  inset: 2px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.rules-pages-container {
+  flex: 1;
+  position: relative;
+  padding: 16px 16px 36px 16px;
+  overflow: hidden;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: #000;
+  line-height: 1.3;
+}
+
+.rules-page { display: none; height: 100%; overflow: hidden; position: relative; }
+.rules-page.active { display: flex; flex-direction: column; }
+.rules-page ul { margin: 16px 0 0 0; padding-left: 18px; list-style-type: square; }
+.rules-page li { margin-bottom: 14px; font-size: 18px; line-height: 1.35; }
+.rules-page li:last-child { margin-bottom: 0; }
+
+/* Page 1: Mission briefing */
+.rules-briefing-header {
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  font-family: 'VT323', monospace;
+}
+.rules-briefing-day {
+  font-size: 22px;
+  font-weight: bold;
+  display: block;
+}
+.rules-briefing-sub {
+  font-size: 18px;
+  display: block;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.rules-mission-title {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.rules-mission-type-tag {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  font-size: 18px;
+  padding: 1px 6px;
+  margin-bottom: 6px;
+}
+.rules-flat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  padding: 4px 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(0,0,0,0.25) 0px,
+    rgba(0,0,0,0.25) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  background-position: bottom;
+  background-size: 4px 2px;
+  background-repeat: repeat-x;
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+}
+.rules-flat-row:last-child {
+  background-image: none;
+  padding-bottom: 4px;
+  margin-bottom: 0;
+}
+.rules-flat-label { color: #555; }
+.rules-flat-value { font-weight: bold; text-align: right; }
+
+/* New species section pushed ~25% down */
+.rules-species-section {
+  margin-top: 25%;
+}
+
+/* Page 2: Ship + new species */
+.rules-ship-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.rules-ship-img {
+  width: 100%;
+  height: 90px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  display: block;
+  margin-bottom: 4px;
+}
+.rules-ship-name {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+.rules-new-species-header {
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+.rules-species-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+}
+.rules-species-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rules-species-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.rules-species-name {
+  font-size: 18px;
+  font-family: 'VT323', monospace;
+  color: #000;
+}
+.rules-divider {
+  width: 100%;
+  height: 1px;
+  background: #000;
+  margin: 8px 0;
+  opacity: 0.15;
+}
+
+.rules-cover-title {
+  font-family: 'VT323', monospace;
+  font-size: 28px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.rules-page-num {
+  position: absolute;
+  bottom: 2px;
+  right: 32px;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #000;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.rules-corner-icon {
+  position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #fff;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+}
+.rules-corner-icon.icon-right { right: 0; border-top: 2px solid #000; border-left: 2px solid #000; }
+.rules-corner-icon.icon-left  { left: 0;  border-top: 2px solid #000; border-right: 2px solid #000; display: none; }
+
+.rules-corner-icon svg { display: block; width: 100%; height: 100%; }
+
+/* Acknowledged link on last page */
+/* Sheet slide-out */
+#screen-rules {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.6, 1);
+}
+#screen-rules.slide-out {
+  transform: translateY(110%);
+}
+
 /* ── INTRO MODE — acknowledge button replaces normal btn-row ── */
+.btn-row-acknowledge { display: none !important; }
 .btn-row-acknowledge {
   display: none;
   width: 100%;
@@ -843,12 +1122,7 @@ body {
   justify-content: center;
   align-items: center;
 }
-.intro-mode .btn-row { display: none; }
-.intro-mode .slots-row { display: none !important; }
-.intro-mode .launch-warning { display: none !important; }
-.intro-mode .slot-info-row { display: none !important; }
-.intro-mode .mission-progress-track { display: none !important; }
-.intro-mode .btn-row-acknowledge { display: flex; }
+/* intro-mode removed */
 
 /* ── GAME UI — hidden until screens are done ── */
 #intro-cover {
@@ -873,54 +1147,151 @@ body {
 .result-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.92);
-  z-index: 200;
+  background: #000;
+  z-index: 400;
   display: none;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 32px 24px 24px;
+  overflow-y: auto;
 }
 .result-overlay.visible { display: flex; }
 
-.result-modal {
-  background: #fff;
-  border: 4px solid #000;
-  padding: 20px;
-  width: 100%;
-  max-width: 360px;
-  max-height: 80vh;
+.result-inner {
   display: flex;
   flex-direction: column;
-  box-shadow: 6px 6px 0 #000;
+  align-items: center;
+  width: 100%;
+  max-width: 340px;
+  flex: 1;
 }
-.result-modal h2 {
-  font-size: 24px;
+
+/* Title */
+.result-title {
+  font-size: 20px;
   text-transform: uppercase;
-  border-bottom: 2px solid #000;
-  padding-bottom: 6px;
-  margin-bottom: 10px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 16px;
+  font-family: 'VT323', monospace;
+  line-height: 1;
+  letter-spacing: 1px;
 }
+
+/* Score + outcome */
 .result-score {
-  font-size: 56px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 36px;
   font-weight: bold;
   text-align: center;
-  margin: 8px 0;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 4px;
 }
 .result-msg {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 12px;
+  color: #fff;
+  margin-bottom: 20px;
+  text-transform: uppercase;
 }
+
+/* Outcome rows table */
 .result-log {
-  border: 2px dashed #000;
-  max-height: 160px;
-  overflow-y: auto;
-  padding: 8px;
-  font-size: 15px;
-  margin-bottom: 16px;
-  background: #fafafa;
-  flex-shrink: 1;
+  width: 100%;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.3;
+  margin-bottom: 24px;
+}
+
+/* Standard row: label left, value right */
+.res-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+}
+.res-row-label { flex: 1; text-align: left; }
+.res-row-value { text-align: right; white-space: nowrap; }
+
+/* Dotted divider under each row (except last) */
+.res-divider {
+  width: 100%;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255,255,255,0.5) 0px,
+    rgba(255,255,255,0.5) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  margin: 0;
+}
+
+/* Conflicts block */
+.res-conflicts-header {
+  padding: 6px 0 4px;
+  font-weight: bold;
+  color: #fff;
+}
+.res-conflict-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  color: rgba(255,255,255,0.75);
+  font-size: 16px;
+  line-height: 1.3;
+}
+.res-conflict-icons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.res-conflict-icon {
+  width: 12px;
+  height: 12px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.res-conflict-vs {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  flex-shrink: 0;
+}
+.res-conflict-text {
+  flex: 1;
+}
+
+/* Fine block */
+.res-fine-header {
+  padding: 6px 0 2px;
+  font-weight: bold;
+  color: #fff;
+  text-align: left;
+}
+.res-fine-detail {
+  padding: 1px 0 6px;
+  color: rgba(255,255,255,0.75);
+  font-size: 16px;
+}
+
+/* Net income row — no divider, bold */
+.res-row.net { font-weight: bold; padding-top: 8px; }
+
+.result-btn-row {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+.result-btn-row .launch-btn-inverted {
+  width: 200px;
 }
 </style>
 </head>
@@ -981,12 +1352,50 @@ body {
   </div>
 </div>
 
+<!-- RULES SCREEN (Mission Briefing Sheet — shown every day) -->
+<div class="screen hidden" id="screen-rules">
+  <div class="rules-sheet-wrapper">
+    <div class="rules-touch-zone left" id="rules-zone-prev"></div>
+    <div class="rules-touch-zone right" id="rules-zone-next"></div>
+    <div class="rules-sheet-container">
+      <div class="rules-top-dotted-line"></div>
+      <div class="rules-sheet-content">
+        <div class="rules-pages-container">
+          <div id="rules-page-1" class="rules-page active"></div>
+          <div id="rules-page-2" class="rules-page"></div>
+          <div id="rules-page-3" class="rules-page"></div>
+          <div id="rules-page-4" class="rules-page"></div>
+          <div id="rules-page-5" class="rules-page"></div>
+          <div id="rules-page-6" class="rules-page"></div>
+        </div>
+        <div class="rules-page-num" id="rules-page-text">1/2</div>
+        <div class="rules-corner-icon icon-left" id="rules-icon-prev">
+          <svg id="rules-svg-prev" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path id="rules-path-prev" fill="#000" />
+          </svg>
+        </div>
+        <div class="rules-corner-icon icon-right" id="rules-icon-next">
+          <svg id="rules-svg-next" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path id="rules-path-next" fill="#000" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rules-ack-btn-row" id="rules-ack-btn-row">
+    <button class="launch-btn" id="btn-ack" onclick="bounceThen(this, acknowledgeRules)">
+      <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text" id="btn-ack-text">ACKNOWLEDGE</span>
+    </button>
+  </div>
+</div>
+
 <canvas id="pixel-transition"></canvas>
 
 <div id="intro-cover"></div>
 
 <!-- TOP BAR -->
-<div class="top-bar" id="top-bar" style="visibility:hidden;">
+<div class="top-bar" id="top-bar">
   <span class="top-title">STARSHIP//RECRUITER</span>
   <span class="debug-btn" onclick="openDebug()">[=]</span>
   <div class="top-right">
@@ -1022,7 +1431,7 @@ body {
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 
 <!-- BOTTOM BAR -->
-<div class="bottom-bar" id="bottom-bar" style="visibility:hidden;">
+<div class="bottom-bar" id="bottom-bar">
   <div class="bar-handle" id="bar-handle">
     <div class="bar-handle-line"></div>
   </div>
@@ -1045,24 +1454,20 @@ body {
       <span class="launch-btn-text" id="btn-launch-text">Launch</span>
     </button>
   </div>
-  <div class="btn-row-acknowledge">
-    <button class="launch-btn" id="btn-acknowledge" onclick="acknowledgeIntro()">
-      <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text" id="btn-acknowledge-text">Tutto chiaro</span>
-    </button>
-  </div>
 </div>
 
 <!-- RESULT OVERLAY -->
 <div class="result-overlay" id="result-overlay">
-  <div class="result-modal">
-    <h2 id="res-title">DEBRIEFING</h2>
+  <div class="result-inner">
+    <div class="result-title" id="res-title">DEBRIEFING</div>
     <div class="result-score" id="res-score">100%</div>
     <div class="result-msg" id="res-msg">SUCCESS</div>
     <div class="result-log" id="res-log"></div>
-    <button class="launch-btn" id="modal-btn" onclick="nextDay()">
-      <svg class="launch-btn-bg" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text">Continue</span>
+  </div>
+  <div class="result-btn-row">
+    <button class="launch-btn-inverted" id="modal-btn">
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text-inv" id="modal-btn-text">NEXT DAY</span>
     </button>
   </div>
 </div>
@@ -1128,6 +1533,7 @@ const LANG = {
     debriefing: "DEBRIEFING",
     missionSuccess: "MISSION SUCCESS",
     missionFailed: "MISSION FAILED",
+    nextDay: "NEXT DAY",
     startOver: "START OVER",
     basePower: "Base Power Output",
     maxCapacity: "Ship at Max Capacity: +5% Bonus",
@@ -1197,6 +1603,7 @@ const LANG = {
     debriefing: "DEBRIEFING",
     missionSuccess: "MISSIONE RIUSCITA",
     missionFailed: "MISSIONE FALLITA",
+    nextDay: "GIORNO SUCCESSIVO",
     startOver: "RICOMINCIA",
     basePower: "Potenza base",
     maxCapacity: "Nave a piena capacità: +5% bonus",
@@ -1798,6 +2205,16 @@ function startDay() {
   const sr = document.getElementById('slots-row');
   if (sr) sr.scrollLeft = 0;
   updateUI();
+
+  // Show briefing sheet for every day (day 1 handled by goToGame, day 2+ handled here)
+  if (document.getElementById('top-bar').classList.contains('slid-in')) {
+    // Bars already visible (day 2+): hide cards, show sheet
+    document.getElementById('scroll-area').style.visibility = 'hidden';
+    const rulesScreen = document.getElementById('screen-rules');
+    rulesScreen.classList.remove('hidden');
+    rulesScreen.style.transform = '';
+    initRulesSheet();
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2135,7 +2552,7 @@ function launchMission() {
   const preDeductionBalance = state.money;
   state.money -= cost;
   const debitUsed = state.money < 0 ? Math.abs(state.money) : 0;
-  let logs = [], score = 0;
+  let score = 0;
 
   // 1. RAW SKILL
   let statScores = [];
@@ -2144,19 +2561,19 @@ function launchMission() {
     statScores.push((sum / state.mission.targets[stat]) * 100);
   });
   let rawScore = statScores.reduce((a,b)=>a+b, 0) / statScores.length;
-  logs.push(`${t('basePower')}: ${Math.floor(rawScore)}%`);
 
   // 2. SHIP EFFICIENCY
   let effPct = hired.length / state.ship.min, effMod = 0;
-  if (hired.length === state.ship.max) { effMod = 5; logs.push(t('maxCapacity')); }
-  else if (effPct >= 1) { effMod = 0; logs.push(t('minCrewMet')); }
-  else if (effPct >= 0.7) { effMod = -20; logs.push(t('understaffed1')); }
-  else if (effPct >= 0.4) { effMod = -40; logs.push(t('understaffed2')); }
-  else if (effPct >= 0.15) { effMod = -60; logs.push(t('skeleton')); }
-  else { effMod = -70; logs.push(t('fatal')); }
+  if (hired.length === state.ship.max) { effMod = 5; }
+  else if (effPct >= 1) { effMod = 0; }
+  else if (effPct >= 0.7) { effMod = -20; }
+  else if (effPct >= 0.4) { effMod = -40; }
+  else if (effPct >= 0.15) { effMod = -60; }
+  else { effMod = -70; }
 
-  // 3. CONFLICTS
+  // 3. CONFLICTS — collect all into a list
   let conflictPenalty = 0, conflictCount = 0;
+  let conflictLines = [];
   for(let i=0;i<hired.length;i++) {
     for(let j=i+1;j<hired.length;j++) {
       let a=hired[i], rA=RACES[a.race], b=hired[j], rB=RACES[b.race];
@@ -2167,17 +2584,17 @@ function launchMission() {
         if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
         if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
         if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('mutual').replace('%a',speciesName(a.race)).replace('%b',speciesName(b.race)).replace('%p',Math.floor(p)));}
-        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('mutual').replace('%a',speciesName(b.race)).replace('%b',speciesName(a.race)).replace('%p',Math.floor(p)));}
-        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;logs.push(t('mutualDraw').replace('%p',Math.floor(pA+pB)));}
-      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('conflict').replace('%a',speciesName(a.race)).replace('%b',speciesName(b.race)).replace('%p',Math.floor(p)));}
-      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;logs.push(t('conflict').replace('%a',speciesName(b.race)).replace('%b',speciesName(a.race)).replace('%p',Math.floor(p)));}
+        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
+      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
     }
   }
 
   // 4. SYNERGY
   let synergy = 0;
-  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; logs.push(t('synergy')); }
+  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; }
 
   score = Math.floor(rawScore + effMod - conflictPenalty + synergy);
   let overperformance = 0;
@@ -2186,28 +2603,95 @@ function launchMission() {
 
   // 5. PAYOUT
   let earned = 0, isSuccess = false;
+  let fineDetail = '';
   if (score >= state.mission.minReq) {
     isSuccess = true;
     earned = Math.floor(state.mission.reward * (score/100));
-    if (overperformance > 0) { let bonus = Math.floor(state.mission.reward * (overperformance/100)); earned += bonus; logs.push(t('overperf').replace('%s', bonus)); }
+    if (overperformance > 0) { let bonus = Math.floor(state.mission.reward * (overperformance/100)); earned += bonus; }
   } else {
     let diff = (state.mission.minReq - score) / 100;
     earned = -Math.floor(state.mission.reward * diff);
-    logs.push(t('fine').replace('%s', state.mission.minReq));
+    fineDetail = `Required ${state.mission.minReq}%, achieved ${score}%`;
   }
   state.money += earned;
+
+  // Build structured HTML
+  function resRow(label, value, isNet) {
+    return `<div class="res-row${isNet?' net':''}"><span class="res-row-label">${label}</span><span class="res-row-value">${value}</span></div>`;
+  }
+  function resDivider() { return `<div class="res-divider"></div>`; }
+
+  let html = '';
+
+  // Base power
+  html += resRow('Base power output', `${Math.floor(rawScore)}%`);
+  html += resDivider();
+
+  // Ship efficiency
+  let effLabel = '', effVal = '';
+  if (hired.length === state.ship.max) { effLabel = 'Max capacity bonus'; effVal = '+5%'; }
+  else if (effPct >= 1) { effLabel = 'Min crew met'; effVal = '0%'; }
+  else if (effPct >= 0.7) { effLabel = 'Understaffed (tier 1)'; effVal = '-20%'; }
+  else if (effPct >= 0.4) { effLabel = 'Understaffed (tier 2)'; effVal = '-40%'; }
+  else if (effPct >= 0.15) { effLabel = 'Critical understaffing'; effVal = '-60%'; }
+  else { effLabel = 'Fatal understaffing'; effVal = '-70%'; }
+  html += resRow(effLabel, effVal);
+  html += resDivider();
+
+  // Conflicts block
+  if (conflictCount > 0) {
+    html += `<div class="res-conflicts-header">CONFLICTS [${conflictCount}]</div>`;
+    conflictLines.forEach(c => {
+      const iconA = RACES[c.raceA] ? RACES[c.raceA].icon : '';
+      const iconB = RACES[c.raceB] ? RACES[c.raceB].icon : '';
+      html += `<div class="res-conflict-line">
+        <div class="res-conflict-icons">
+          <img class="res-conflict-icon" src="${iconA}" onerror="this.style.display='none'">
+          <span class="res-conflict-vs">VS</span>
+          <img class="res-conflict-icon" src="${iconB}" onerror="this.style.display='none'">
+        </div>
+        <span class="res-conflict-text">${c.text}</span>
+      </div>`;
+    });
+    html += `<div class="res-row"><span class="res-row-label"></span><span class="res-row-value">-${Math.floor(conflictPenalty)}%</span></div>`;
+    html += resDivider();
+  }
+
+  // Synergy
+  if (synergy > 0) {
+    html += resRow('Synergy bonus', '+10%');
+    html += resDivider();
+  }
+
+  // Overperformance
+  if (overperformance > 0) {
+    let bonus = Math.floor(state.mission.reward * (overperformance/100));
+    html += resRow('Overperformance bonus', `+${bonus} CR`);
+    html += resDivider();
+  }
+
+  // Fine
+  if (fineDetail) {
+    html += `<div class="res-fine-header">FINE APPLIED</div>`;
+    html += `<div class="res-fine-detail">${fineDetail}</div>`;
+    html += resDivider();
+  }
+
+  // Net income (no divider after)
+  const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
+  html += resRow('Net income', netStr, true);
 
   document.getElementById('res-score').innerText = score + "%";
   document.getElementById('res-score').style.color = "";
   document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
-  let logHTML = logs.map(l => `<div>> ${l}</div>`).join('');
-  const netStr = earned >= 0 ? '+'+earned : String(earned);
-  logHTML += `<br><div>> ${t('netChange').replace('%s', netStr)}</div>`;
-  if (debitUsed > 0) logHTML += `<div>> ${t('debitUsed').replace('%s', Math.ceil(debitUsed))}</div>`;
-  document.getElementById('res-log').innerHTML = logHTML;
+  document.getElementById('res-log').innerHTML = html;
   document.getElementById('res-title').innerText = t('debriefing');
-  document.getElementById('modal-btn').onclick = nextDay;
-  document.querySelector('#modal-btn .launch-btn-text').innerText = t('continue');
+  document.getElementById('modal-btn').onclick = function() {
+    bounceThen(document.getElementById('modal-btn'), nextDay);
+  };
+  // Peek ahead: if this leads to bankruptcy, label the button CONTINUE
+  const willBankrupt = (state.money < -100) || (state.money <= 0);
+  document.getElementById('modal-btn-text').innerText = willBankrupt ? t('continue') : t('nextDay');
   document.getElementById('result-overlay').classList.add('visible');
   if (state.money < -100) state.gameOver = true;
 }
@@ -2221,19 +2705,23 @@ function nextDay() {
   if (state.gameOver) {
     document.getElementById('res-title').innerText = t('systemLockout');
     document.getElementById('res-score').innerText = t('bankrupt');
-    document.getElementById('res-score').style.color = "red";
+    document.getElementById('res-score').style.color = "#ff4444";
     document.getElementById('res-msg').innerText = t('careerOver');
     document.getElementById('res-log').innerHTML = `${t('liquidating')}<br>${t('reclaiming')}`;
-    document.querySelector('#modal-btn .launch-btn-text').innerText = t('startOver');
+    document.getElementById('modal-btn-text').innerText = t('startOver');
     document.getElementById('modal-btn').onclick = function() {
-      state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
-      document.getElementById('res-score').style.color = "";
-      document.querySelector('#modal-btn .launch-btn-text').innerText = t('continue');
-      document.getElementById('modal-btn').onclick = nextDay;
-      document.getElementById('result-overlay').classList.remove('visible');
-      closeDrawer();
-      startDay();
-      goToSplashFromGame();
+      bounceThen(document.getElementById('modal-btn'), function() {
+        state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
+        document.getElementById('res-score').style.color = "";
+        document.getElementById('modal-btn-text').innerText = t('nextDay');
+        document.getElementById('modal-btn').onclick = function() {
+          bounceThen(document.getElementById('modal-btn'), nextDay);
+        };
+        document.getElementById('result-overlay').classList.remove('visible');
+        closeDrawer();
+        startDay();
+        goToSplashFromGame();
+      });
     };
     document.getElementById('result-overlay').classList.add('visible');
   } else {
@@ -2457,8 +2945,7 @@ function goToSplash() {
   const L = LANG[currentLang];
   document.getElementById('btn-splash-text').innerText = L.newCareer;
   document.getElementById('btn-welcome-text').innerText = L.continue;
-  document.getElementById('btn-acknowledge-text').innerText = L.acknowledge;
-  document.querySelector('#modal-btn .launch-btn-text').innerText = L.continue;
+  document.getElementById('modal-btn-text').innerText = L.nextDay;
   document.querySelector('#btn-launch .launch-btn-text').innerText = L.launch;
 
   // Re-render cards and UI with selected language
@@ -2505,39 +2992,94 @@ function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   fadeOutTheme(1500);
-  document.getElementById('bottom-bar').classList.add('intro-mode');
-  // Small delay before removing cover to prevent tap-bleed from welcome button
-  setTimeout(() => {
-    document.body.style.backgroundColor = '#fff';
-    document.body.style.backgroundImage = 'radial-gradient(circle, #ccc 1px, transparent 1px)';
-    document.body.style.backgroundSize = '16px 16px';
-    document.getElementById('top-bar').style.visibility = '';
-    document.getElementById('scroll-area').style.visibility = '';
-    document.getElementById('bottom-bar').style.visibility = '';
+
+  // Prep game background
+  document.body.style.backgroundColor = '#fff';
+  document.body.style.backgroundImage = 'radial-gradient(circle, #ccc 1px, transparent 1px)';
+  document.body.style.backgroundSize = '16px 16px';
+
+  // Bars start off-screen via transform (already set in CSS), just make visible
+  document.getElementById('top-bar').style.visibility = '';
+  // scroll-area hidden until rules dismissed
+  document.getElementById('scroll-area').style.visibility = 'hidden';
+  document.getElementById('bottom-bar').style.visibility = '';
+
+  // Remove cover so game renders behind rules screen
+  document.getElementById('intro-cover').classList.add('gone');
+
+  // Show rules screen
+  document.getElementById('screen-rules').classList.remove('hidden');
+  initRulesSheet();
+}
+
+function fixScrollPadding() {
+  const bb = document.getElementById('bottom-bar');
+  const sa = document.getElementById('scroll-area');
+  if (!bb || !sa) return;
+  const bbH = bb.getBoundingClientRect().height;
+  sa.style.paddingBottom = (bbH + 24) + 'px';
+}
+
+function goToGameForReal() {
+  const rulesScreen = document.getElementById('screen-rules');
+  const topBar = document.getElementById('top-bar');
+  const bottomBar = document.getElementById('bottom-bar');
+  const scrollArea = document.getElementById('scroll-area');
+  const barsAlreadyIn = topBar.classList.contains('slid-in');
+
+  // Step 1: slide sheet down and out
+  rulesScreen.classList.add('slide-out');
+
+  rulesScreen.addEventListener('transitionend', () => {
+    rulesScreen.classList.add('hidden');
+    rulesScreen.classList.remove('slide-out');
     document.getElementById('intro-cover').classList.add('gone');
-    requestAnimationFrame(() => openDrawer('mission'));
-  }, 80);
+
+    if (barsAlreadyIn) {
+      // Day 2+: bars already visible, just reveal cards
+      fixScrollPadding();
+      scrollArea.style.visibility = '';
+    } else {
+      // Day 1: bars slide in for first time
+      topBar.classList.add('slid-in');
+      bottomBar.classList.add('slid-in');
+      topBar.addEventListener('transitionend', () => {
+        fixScrollPadding();
+        scrollArea.style.visibility = '';
+      }, { once: true });
+    }
+  }, { once: true });
 }
 
 function acknowledgeIntro() {
-  const bar = document.getElementById('bottom-bar');
-  bar.classList.remove('intro-mode');
-  closeDrawer();
+  // no-op — acknowledge flow replaced by rules sheet
 }
+
+
 
 // When returning from game over, restore intro-cover then pixel fade
 function goToSplashFromGame() {
   document.body.style.backgroundColor = '#000';
   document.body.style.backgroundImage = 'none';
-  document.getElementById('top-bar').style.visibility = 'hidden';
+  // Reset bars back off-screen (no transition during reset)
+  const topBar = document.getElementById('top-bar');
+  const bottomBar = document.getElementById('bottom-bar');
+  topBar.style.transition = 'none';
+  bottomBar.style.transition = 'none';
+  topBar.classList.remove('slid-in');
+  bottomBar.classList.remove('slid-in');
   document.getElementById('scroll-area').style.visibility = 'hidden';
-  document.getElementById('bottom-bar').style.visibility = 'hidden';
   document.getElementById('intro-cover').classList.remove('gone');
   document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
   playTheme();
   requestAnimationFrame(() => {
+    // Re-enable transitions after a frame
+    requestAnimationFrame(() => {
+      topBar.style.transition = '';
+      bottomBar.style.transition = '';
+    });
     pixelFadeIn(() => {
       document.getElementById('intro-cover').classList.add('gone');
       document.getElementById('screen-splash').classList.remove('hidden');
@@ -2548,6 +3090,233 @@ function goToSplashFromGame() {
 
 // INIT
 startDay();
+
+// ══════════════════════════════════════════════
+// RULES SHEET (Mission Briefing — shown every day)
+// ══════════════════════════════════════════════
+(function() {
+  let rulesPage = 1;
+  let RULES_TOTAL = 2;
+
+  const BASE_SIZE = 24;
+  const SHRINK_SIZE = 16;
+  const MAX_SIZE = 196;
+  let activeDrag = null;
+  let startX = 0;
+
+  function generateSteps(size, isLeft) {
+    let path = '';
+    for (let i = 0; i < size; i += 2) {
+      let x = isLeft ? (size - 2 - i) : i;
+      let y = size - 2 - i;
+      path += `M${x} ${y} h2 v2 h-2 z `;
+    }
+    return path;
+  }
+
+  function updateCornerVisuals(side, size) {
+    const icon = document.getElementById(`rules-icon-${side}`);
+    if (!icon) return;
+    icon.style.width = size + 'px';
+    icon.style.height = size + 'px';
+    const svg = document.getElementById(`rules-svg-${side}`);
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+    const path = document.getElementById(`rules-path-${side}`);
+    path.setAttribute('d', generateSteps(size, side === 'prev'));
+  }
+
+  function buildMissionPage(pageEl) {
+    const m = state.mission;
+    const s = state.ship;
+    const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
+    const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
+    const mType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
+    const missionLabel = `${mType}: ${missionTitle(rawTitle)}`;
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+        <span class="rules-briefing-sub">Mission Briefing</span>
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-mission-title">${missionLabel}</div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('requirements')}</span><span class="rules-flat-value">${reqStr}</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('minSuccess')}</span><span class="rules-flat-value">${m.minReq}%</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('minCrew')}</span><span class="rules-flat-value">${s.min}</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('maxCrew')}</span><span class="rules-flat-value">${s.max}</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('reward')}</span><span class="rules-flat-value">${m.reward} CR</span></div>
+    `;
+  }
+
+  function buildShipPage(pageEl) {
+    const s = state.ship;
+    const shipSrc = `images/ships_${(s.base || s.name).toLowerCase().replace(/\s+/g, '_')}.png`;
+    // Species newly unlocked this day vs yesterday
+    const prevUnlocked = state.day > 1 ? new Set(getUnlockedSpeciesForDay(state.day - 1)) : new Set();
+    const newSpecies = getUnlockedSpeciesForDay(state.day).filter(r => !prevUnlocked.has(r));
+    const speciesRows = newSpecies.map(r => {
+      const icon = RACES[r] ? RACES[r].icon : '';
+      return `<div class="rules-species-row">
+        <img class="rules-species-icon" src="${icon}" onerror="this.style.display='none'">
+        <span class="rules-species-name">${speciesName(r)}</span>
+      </div>`;
+    }).join('');
+    const newSpeciesBlock = newSpecies.length > 0 && state.day > 1 ? `
+      <div class="rules-species-section">
+        <div class="rules-new-species-header">New species applying</div>
+        <div class="rules-species-list">${speciesRows}</div>
+      </div>` : '';
+
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+        <span class="rules-briefing-sub">Your Ship</span>
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-ship-section">
+        <img class="rules-ship-img" src="${shipSrc}" onerror="this.style.display='none'">
+        <div class="rules-ship-name">${s.name}</div>
+      </div>
+      ${newSpeciesBlock}
+    `;
+  }
+
+  function populateSheetContent() {
+    // Clear all pages first
+    for (let i = 1; i <= 6; i++) {
+      const p = document.getElementById('rules-page-' + i);
+      if (p) p.innerHTML = '';
+    }
+
+    if (state.day === 1) {
+      // Day 1: 5 pages — cover, rules 1-2 (merged), mission briefing, ship
+      document.getElementById('rules-page-1').innerHTML = `
+        <div style="margin-top: 60px; text-align: center; font-family: 'VT323', monospace; font-size: 26px; font-weight: bold; line-height: 1.3;">
+          RULES<br>AND<br>BRIEFING
+        </div>
+        <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
+          <img src="images/doc_icon.png" style="width:80px;height:80px;image-rendering:pixelated;display:block;" onerror="this.style.display='none'">
+        </div>
+      `;
+      document.getElementById('rules-page-2').innerHTML = `
+        <ul>
+          <li>Read the contract carefully. Meet the required stats and the min success %, or the contract fails.</li>
+          <li>Understaffed ships underperform — keep an eye on the min crew requirement.</li>
+          <li>Every applicant has a HATE value. Higher HATE means more damage if an interspecies conflict breaks out.</li>
+          <li>Some species don't work well together. This will not be announced in advance.</li>
+        </ul>
+      `;
+      document.getElementById('rules-page-3').innerHTML = `
+        <ul>
+          <li>Salaries are deducted before launch. Revenue is not guaranteed.</li>
+          <li>Results are calculated from crew power, ship efficiency and conflict penalties. Luck is not involved.</li>
+          <li>Try to stay within budget. We replace recruiters regularly.</li>
+        </ul>
+        <div style="margin-top: 28px; font-family: 'VT323', monospace; font-size: 18px; line-height: 1.4; color: #000;">Now you can review your first mission briefing.</div>
+      `;
+      document.getElementById('rules-page-4').innerHTML = '';
+      buildMissionPage(document.getElementById('rules-page-4'));
+      buildShipPage(document.getElementById('rules-page-5'));
+    } else {
+      // Day 2+: 2 pages — mission briefing, ship + new species
+      buildMissionPage(document.getElementById('rules-page-1'));
+      buildShipPage(document.getElementById('rules-page-2'));
+    }
+  }
+
+  function updateRulesUI() {
+    document.getElementById('rules-page-text').innerText = `${rulesPage}/${RULES_TOTAL}`;
+    document.querySelectorAll('.rules-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('rules-page-' + rulesPage).classList.add('active');
+
+    const showPrev = rulesPage > 1;
+    document.getElementById('rules-zone-prev').style.display = showPrev ? 'block' : 'none';
+    document.getElementById('rules-icon-prev').style.display = showPrev ? 'block' : 'none';
+
+    const isLast = rulesPage === RULES_TOTAL;
+    document.getElementById('rules-zone-next').style.display = isLast ? 'none' : 'block';
+    document.getElementById('rules-icon-next').style.display = isLast ? 'none' : 'block';
+
+    // Ack button: show once last page reached, never hide again
+    const ackRow = document.getElementById('rules-ack-btn-row');
+    if (ackRow && isLast) ackRow.classList.add('visible');
+  }
+
+  function nextRulesPage() {
+    if (rulesPage < RULES_TOTAL) { rulesPage++; updateRulesUI(); }
+  }
+
+  function prevRulesPage() {
+    if (rulesPage > 1) { rulesPage--; updateRulesUI(); }
+  }
+
+  function handlePointerDown(e, side) {
+    if (activeDrag) return;
+    activeDrag = side;
+    startX = e.clientX;
+    e.target.setPointerCapture(e.pointerId);
+    updateCornerVisuals(side, SHRINK_SIZE);
+  }
+
+  function handlePointerMove(e) {
+    if (!activeDrag) return;
+    let deltaX = e.clientX - startX;
+    let targetSize = SHRINK_SIZE;
+    if (activeDrag === 'next') targetSize += -deltaX;
+    else targetSize += deltaX;
+    targetSize = Math.max(SHRINK_SIZE, Math.min(MAX_SIZE, targetSize));
+    targetSize = Math.round(targetSize / 2) * 2;
+    updateCornerVisuals(activeDrag, targetSize);
+    if (targetSize >= MAX_SIZE) {
+      const side = activeDrag;
+      activeDrag = null;
+      if (side === 'next') nextRulesPage();
+      else prevRulesPage();
+      updateCornerVisuals(side, BASE_SIZE);
+    }
+  }
+
+  function handlePointerUp(e) {
+    if (!activeDrag) return;
+    const side = activeDrag;
+    activeDrag = null;
+    if (side === 'next') nextRulesPage();
+    else prevRulesPage();
+    updateCornerVisuals(side, BASE_SIZE);
+  }
+
+  window.initRulesSheet = function() {
+    rulesPage = 1;
+    RULES_TOTAL = state.day === 1 ? 5 : 2;
+    // Reset ack button — starts hidden each day
+    const ackRow = document.getElementById('rules-ack-btn-row');
+    if (ackRow) ackRow.classList.remove('visible');
+    populateSheetContent();
+    updateCornerVisuals('prev', BASE_SIZE);
+    updateCornerVisuals('next', BASE_SIZE);
+    updateRulesUI();
+
+    const zonePrev = document.getElementById('rules-zone-prev');
+    const zoneNext = document.getElementById('rules-zone-next');
+    const newPrev = zonePrev.cloneNode(true);
+    const newNext = zoneNext.cloneNode(true);
+    zonePrev.parentNode.replaceChild(newPrev, zonePrev);
+    zoneNext.parentNode.replaceChild(newNext, zoneNext);
+
+    newPrev.addEventListener('pointerdown', (e) => handlePointerDown(e, 'prev'));
+    newPrev.addEventListener('pointermove', handlePointerMove);
+    newPrev.addEventListener('pointerup', handlePointerUp);
+    newPrev.addEventListener('pointercancel', handlePointerUp);
+
+    newNext.addEventListener('pointerdown', (e) => handlePointerDown(e, 'next'));
+    newNext.addEventListener('pointermove', handlePointerMove);
+    newNext.addEventListener('pointerup', handlePointerUp);
+    newNext.addEventListener('pointercancel', handlePointerUp);
+  };
+
+  window.acknowledgeRules = function() {
+    goToGameForReal();
+  };
+})();
 </script>
 </body>
 </html>
