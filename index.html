@@ -808,7 +808,7 @@ body {
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
 #btn-pre-continue { outline: 2px solid #fff; outline-offset: 0px; }
-#btn-splash-cta .launch-btn-bg-inv polygon { stroke: #000; stroke-width: 2; }
+#btn-splash-cta .launch-btn-bg-inv polygon { stroke: #000; stroke-width: 4; }
 #screen-welcome {
   background: #000;
   flex-direction: column;
@@ -1280,7 +1280,7 @@ body {
   font-size: 16px;
 }
 
-/* Net Financial Change row — no divider, bold */
+/* Net income row — no divider, bold */
 .res-row.net { font-weight: bold; padding-top: 8px; }
 
 .result-btn-row {
@@ -1535,6 +1535,29 @@ const LANG = {
     missionFailed: "MISSION FAILED",
     nextDay: "NEXT DAY",
     startOver: "START OVER",
+    crewPowerOutput: "Crew power output",
+    effMaxCapacity: "Max capacity bonus",
+    effMinMet: "Min crew met",
+    effTier1: "Understaffed (tier 1)",
+    effTier2: "Understaffed (tier 2)",
+    effCritical: "Critical understaffing",
+    effFatal: "Fatal understaffing",
+    synergyBonus: "Synergy bonus",
+    overperformBonus: "Overperformance bonus",
+    fineApplied: "FINE APPLIED",
+    fineDetail: "Required %min%%, achieved %score%%",
+    netFinancialChange: "Net financial change",
+    conflictsHeader: "CONFLICTS",
+    missionBriefing: "Mission Briefing",
+    yourShip: "Your Ship",
+    newSpeciesApplying: "New species applying",
+    missionTypes: {
+      "ASSAULT": "ASSAULT", "DIPLOMACY": "DIPLOMACY", "RESEARCH": "RESEARCH",
+      "RESCUE OP": "RESCUE OP", "SALVAGE": "SALVAGE", "TERRAFORMING": "TERRAFORMING",
+      "ESPIONAGE": "ESPIONAGE", "FIRST CONTACT": "FIRST CONTACT", "SMUGGLING": "SMUGGLING",
+      "ENFORCEMENT": "ENFORCEMENT", "VIP PROTECTION": "VIP PROTECTION", "WARLORD HUNT": "WARLORD HUNT",
+      "COLONIZATION": "COLONIZATION", "THE GRAND HEIST": "THE GRAND HEIST", "PLANETARY EVACUATION": "PLANETARY EVACUATION"
+    },
     basePower: "Base Power Output",
     maxCapacity: "Ship at Max Capacity: +5% Bonus",
     minCrewMet: "Ship Minimum Crew Met: 0% Penalty",
@@ -1559,7 +1582,15 @@ const LANG = {
     conflict: "CONFLICT: %a attacked %b. -%p%",
     missionTitles: {},
     day: "DAY",
-    applicants: "APPLICANTS"
+    applicants: "APPLICANTS",
+    rule1: "Read the mission intel carefully. Meet the <u>required stats</u> and the <u>min success %</u>, or the contract fails.",
+    rule2: "Understaffed ships underperform — keep an eye on the <u>min crew requirement</u>.",
+    rule3: "Some species don't work well together. Always consult the <u>Xeno-Biology Manual</u>.",
+    rule4: "Every applicant has a <u>HATE value</u>. Higher HATE means more damage if an interspecies conflict breaks out.",
+    rule5: "<u>Salaries</u> are deducted before launch. Stay within budget.",
+    rule6: "Results are calculated from crew power, ship efficiency and conflict penalties. Luck is not involved.",
+    rulesClosing: "Now you can review your first mission briefing.",
+    rulesAndBriefing: "RULES<br>AND<br>BRIEFING"
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -1600,11 +1631,34 @@ const LANG = {
     hates: "NEMICI:",
     missionLabel: "MISSIONE:",
     min: "MIN",
-    debriefing: "DEBRIEFING",
+    debriefing: "RISULTATO",
     missionSuccess: "MISSIONE RIUSCITA",
     missionFailed: "MISSIONE FALLITA",
     nextDay: "GIORNO SUCCESSIVO",
     startOver: "RICOMINCIA",
+    crewPowerOutput: "Potenza equipaggio",
+    effMaxCapacity: "Bonus piena capacità",
+    effMinMet: "Equipaggio minimo raggiunto",
+    effTier1: "Equipaggio ridotto (livello 1)",
+    effTier2: "Equipaggio ridotto (livello 2)",
+    effCritical: "Carenza critica di equipaggio",
+    effFatal: "Carenza fatale di equipaggio",
+    synergyBonus: "Bonus sinergia",
+    overperformBonus: "Bonus prestazione extra",
+    fineApplied: "MULTA APPLICATA",
+    fineDetail: "Richiesto %min%%, ottenuto %score%%",
+    netFinancialChange: "Compenso",
+    conflictsHeader: "CONFLITTI",
+    missionBriefing: "Briefing di missione",
+    yourShip: "La tua astronave",
+    newSpeciesApplying: "Nuove specie tra i candidati",
+    missionTypes: {
+      "ASSAULT": "ASSALTO", "DIPLOMACY": "DIPLOMAZIA", "RESEARCH": "RICERCA",
+      "RESCUE OP": "OPERAZIONE SALVATAGGIO", "SALVAGE": "RECUPERO", "TERRAFORMING": "TERRAFORMAZIONE",
+      "ESPIONAGE": "SPIONAGGIO", "FIRST CONTACT": "PRIMO CONTATTO", "SMUGGLING": "CONTRABBANDO",
+      "ENFORCEMENT": "PATTUGLIAMENTO", "VIP PROTECTION": "PROTEZIONE VIP", "WARLORD HUNT": "CACCIA AL SIGNORE DELLA GUERRA",
+      "COLONIZATION": "COLONIZZAZIONE", "THE GRAND HEIST": "IL GRANDE COLPO", "PLANETARY EVACUATION": "EVACUAZIONE PLANETARIA"
+    },
     basePower: "Potenza base",
     maxCapacity: "Nave a piena capacità: +5% bonus",
     minCrewMet: "Equipaggio minimo raggiunto: 0% penalità",
@@ -1649,7 +1703,15 @@ const LANG = {
       "Saving a civilization from a supernova": "Salvataggio di una civiltà da una supernova"
     },
     day: "GIORNO",
-    applicants: "CANDIDATI"
+    applicants: "CANDIDATI",
+    rule1: "Leggi il briefing con attenzione. Raggiungi le <u>statistiche richieste</u> e la <u>% di successo minima</u>, o la missione fallisce.",
+    rule2: "Le navi con equipaggio insufficiente rendono meno — tieni d'occhio il <u>requisito minimo di equipaggio</u>.",
+    rule3: "Alcune specie non vanno d'accordo. Consulta sempre il <u>Manuale di Xenobiologia</u>.",
+    rule4: "Ogni candidato ha un valore <u>ODIO</u>. Se elevato, può causare più danni se scoppia un conflitto tra specie.",
+    rule5: "Gli <u>stipendi</u> vengono detratti prima del lancio. Resta nei limiti del budget.",
+    rule6: "I risultati dipendono dalla potenza dell'equipaggio, dall'efficienza della nave e dalle penalità per conflitti. La fortuna non c'entra.",
+    rulesClosing: "Ora consulta il briefing di missione.",
+    rulesAndBriefing: "REGOLE<br>E<br>BRIEFING"
   }
 };
 
@@ -1658,6 +1720,7 @@ function speciesName(raceKey) { return (LANG[currentLang].species || {})[raceKey
 function roleName(role) { return (LANG[currentLang].roles || {})[role] || role; }
 function statLabel(s) { return t(s); }
 function missionTitle(enTitle) { return (LANG[currentLang].missionTitles || {})[enTitle] || enTitle; }
+function missionTypeName(typeId) { return (LANG[currentLang].missionTypes || {})[typeId] || typeId; }
 
 function selectLang(lang) {
   currentLang = lang;
@@ -1763,7 +1826,7 @@ function getMissionHTML() {
   const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
   const shipSrc = `images/ships_${(state.ship.base || state.ship.name).toLowerCase().replace(/\s+/g, '_')}.png`;
   const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
-  const mType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
+  const mType = missionTypeName(m.type);
   const title = `${mType}: ${missionTitle(rawTitle)}`;
   return `
     <div class="section-title" style="margin-bottom:10px;">${t('missionIntel').toUpperCase()}</div>
@@ -2583,11 +2646,11 @@ function launchMission() {
         if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
         if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
         if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-        else if(bW>aW){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
-        else{let pA=(10+(a.hate/4))/2,pB=(10+(b.hate/4))/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
-      } else if(aHatesB){let p=10+(a.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-      else if(bHatesA){let p=10+(b.hate/4);conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        if(aW>bW){let p=a.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+        else if(bW>aW){let p=b.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        else{let pA=(a.hate*0.3)/2,pB=(b.hate*0.3)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
+      } else if(aHatesB){let p=a.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+      else if(bHatesA){let p=b.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
     }
   }
 
@@ -2610,7 +2673,7 @@ function launchMission() {
   } else {
     let diff = (state.mission.minReq - score) / 100;
     earned = -Math.floor(state.mission.reward * diff);
-    fineDetail = `Required ${state.mission.minReq}%, achieved ${score}%`;
+    fineDetail = t('fineDetail').replace('%min%', state.mission.minReq).replace('%score%', score);
   }
   state.money += earned;
 
@@ -2623,23 +2686,23 @@ function launchMission() {
   let html = '';
 
   // Base power
-  html += resRow('Base power output', `${Math.floor(rawScore)}%`);
+  html += resRow(t('crewPowerOutput'), `${Math.floor(rawScore)}%`);
   html += resDivider();
 
   // Ship efficiency
   let effLabel = '', effVal = '';
-  if (hired.length === state.ship.max) { effLabel = 'Max capacity bonus'; effVal = '+5%'; }
-  else if (effPct >= 1) { effLabel = 'Min crew met'; effVal = '0%'; }
-  else if (effPct >= 0.7) { effLabel = 'Understaffed (tier 1)'; effVal = '-20%'; }
-  else if (effPct >= 0.4) { effLabel = 'Understaffed (tier 2)'; effVal = '-40%'; }
-  else if (effPct >= 0.15) { effLabel = 'Critical understaffing'; effVal = '-60%'; }
-  else { effLabel = 'Fatal understaffing'; effVal = '-70%'; }
+  if (hired.length === state.ship.max) { effLabel = t('effMaxCapacity'); effVal = '+5%'; }
+  else if (effPct >= 1) { effLabel = t('effMinMet'); effVal = '0%'; }
+  else if (effPct >= 0.7) { effLabel = t('effTier1'); effVal = '-20%'; }
+  else if (effPct >= 0.4) { effLabel = t('effTier2'); effVal = '-40%'; }
+  else if (effPct >= 0.15) { effLabel = t('effCritical'); effVal = '-60%'; }
+  else { effLabel = t('effFatal'); effVal = '-70%'; }
   html += resRow(effLabel, effVal);
   html += resDivider();
 
   // Conflicts block
   if (conflictCount > 0) {
-    html += `<div class="res-conflicts-header">CONFLICTS [${conflictCount}]</div>`;
+    html += `<div class="res-conflicts-header">${t('conflictsHeader')} [${conflictCount}]</div>`;
     conflictLines.forEach(c => {
       const iconA = RACES[c.raceA] ? RACES[c.raceA].icon : '';
       const iconB = RACES[c.raceB] ? RACES[c.raceB].icon : '';
@@ -2658,27 +2721,27 @@ function launchMission() {
 
   // Synergy
   if (synergy > 0) {
-    html += resRow('Synergy bonus', '+10%');
+    html += resRow(t('synergyBonus'), '+10%');
     html += resDivider();
   }
 
   // Overperformance
   if (overperformance > 0) {
     let bonus = Math.floor(state.mission.reward * (overperformance/100));
-    html += resRow('Overperformance bonus', `+${bonus} CR`);
+    html += resRow(t('overperformBonus'), `+${bonus} CR`);
     html += resDivider();
   }
 
   // Fine
   if (fineDetail) {
-    html += `<div class="res-fine-header">FINE APPLIED</div>`;
+    html += `<div class="res-fine-header">${t('fineApplied')}</div>`;
     html += `<div class="res-fine-detail">${fineDetail}</div>`;
     html += resDivider();
   }
 
-  // Net Financial Change (no divider after)
+  // Net financial change (no divider after)
   const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
-  html += resRow('Net Financial Change', netStr, true);
+  html += resRow(t('netFinancialChange'), netStr, true);
 
   document.getElementById('res-score').innerText = score + "%";
   document.getElementById('res-score').style.color = "";
@@ -3128,12 +3191,12 @@ startDay();
     const s = state.ship;
     const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
     const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
-    const mType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
+    const mType = missionTypeName(m.type);
     const missionLabel = `${mType}: ${missionTitle(rawTitle)}`;
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
         <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">Mission Briefing</span>
+        <span class="rules-briefing-sub">${t('missionBriefing')}</span>
       </div>
       <div class="rules-divider"></div>
       <div class="rules-mission-title">${missionLabel}</div>
@@ -3160,14 +3223,14 @@ startDay();
     }).join('');
     const newSpeciesBlock = newSpecies.length > 0 && state.day > 1 ? `
       <div class="rules-species-section">
-        <div class="rules-new-species-header">New species applying</div>
+        <div class="rules-new-species-header">${t('newSpeciesApplying')}</div>
         <div class="rules-species-list">${speciesRows}</div>
       </div>` : '';
 
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
         <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">Your Ship</span>
+        <span class="rules-briefing-sub">${t('yourShip')}</span>
       </div>
       <div class="rules-divider"></div>
       <div class="rules-ship-section">
@@ -3189,7 +3252,7 @@ startDay();
       // Day 1: 5 pages — cover, rules 1-2 (merged), mission briefing, ship
       document.getElementById('rules-page-1').innerHTML = `
         <div style="margin-top: 60px; text-align: center; font-family: 'VT323', monospace; font-size: 26px; font-weight: bold; line-height: 1.3;">
-          RULES<br>AND<br>BRIEFING
+          ${t('rulesAndBriefing')}
         </div>
         <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
           <img src="images/doc_icon.png" style="width:80px;height:80px;image-rendering:pixelated;display:block;" onerror="this.style.display='none'">
@@ -3197,19 +3260,18 @@ startDay();
       `;
       document.getElementById('rules-page-2').innerHTML = `
         <ul>
-          <li>Read the contract carefully. Meet the required stats and the min success %, or the contract fails.</li>
-          <li>Understaffed ships underperform — keep an eye on the min crew requirement.</li>
-          <li>Every applicant has a HATE value. Higher HATE means more damage if an interspecies conflict breaks out.</li>
-          <li>Some species don't work well together. This will not be announced in advance.</li>
+          <li>${t('rule1')}</li>
+          <li>${t('rule2')}</li>
+          <li>${t('rule3')}</li>
         </ul>
       `;
       document.getElementById('rules-page-3').innerHTML = `
         <ul>
-          <li>Salaries are deducted before launch. Revenue is not guaranteed.</li>
-          <li>Results are calculated from crew power, ship efficiency and conflict penalties. Luck is not involved.</li>
-          <li>Try to stay within budget. We replace recruiters regularly.</li>
+          <li>${t('rule4')}</li>
+          <li>${t('rule5')}</li>
+          <li>${t('rule6')}</li>
         </ul>
-        <div style="margin-top: 28px; font-family: 'VT323', monospace; font-size: 18px; line-height: 1.4; color: #000;">Now you can review your first mission briefing.</div>
+        <div style="position: absolute; bottom: 0px; left: 0; right: 0; font-family: 'VT323', monospace; font-size: 18px; line-height: 1.4; color: #000;">${t('rulesClosing')}</div>
       `;
       document.getElementById('rules-page-4').innerHTML = '';
       buildMissionPage(document.getElementById('rules-page-4'));
