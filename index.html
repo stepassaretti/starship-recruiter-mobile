@@ -27,7 +27,7 @@ html, body {
 }
 
 body {
-  background-color: #000;
+  background-color: #fff;
   color: #000;
   background-image: none;
   font-family: "VT323", monospace;
@@ -3229,11 +3229,12 @@ function fixScrollPadding() {
 }
 
 function setStatusBar(mode) {
-  // mode: 'light' (white bar, dark icons) or 'dark' (black bar, light icons)
   const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
   const appleStyle = mode === 'dark' ? 'black' : 'default';
   document.getElementById('meta-theme-color').setAttribute('content', themeColor);
   document.getElementById('meta-apple-status').setAttribute('content', appleStyle);
+  document.documentElement.style.backgroundColor = themeColor;
+  document.body.style.backgroundColor = themeColor;
 }
 
 function goToGameForReal() {
