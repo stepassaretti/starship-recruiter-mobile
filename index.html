@@ -1774,6 +1774,8 @@ function openDrawer(type) {
   // Update icons
   updateIconButtons();
 
+  playSfx('menu_open', 1, 2);
+
   // Set initial max-height to collapsed size, then expand
   bar.style.maxHeight = collapsedHeight + 'px';
   bar.classList.add('expanded');
@@ -1790,6 +1792,7 @@ function closeDrawer() {
   const bar = document.getElementById('bottom-bar');
   const overlay = document.getElementById('drawer-overlay');
 
+  playSfx('menu_close', 1, 2);
   // If closing during intro, exit intro mode too
   bar.classList.remove('intro-mode');
 
@@ -2508,6 +2511,43 @@ function updateLaunchState() {
   if (btn) btn.classList.toggle('disabled', disabled);
   const warn = document.getElementById('launch-warning');
   if (warn && !activeDrawer) warn.style.display = disabled ? '' : 'none';
+
+  // Threshold sounds: fire target.mp3 when crossing min crew, max crew, or min success %
+  const m = state.mission;
+  const prevCount = state._prevCrewCount || 0;
+  if (m) {
+    const minCrew = state.ship ? state.ship.min : 0;
+    const maxCrew = state.ship ? state.ship.max : 0;
+    // Min crew threshold
+    if (prevCount < minCrew && crewCount >= minCrew) playSfx('target');
+    // Max crew threshold
+    else if (prevCount < maxCrew && crewCount >= maxCrew) playSfx('target');
+    // Min success % — check estimated score crosses minReq
+    else {
+      const prevScore = estimateScore(prevCount);
+      const newScore = estimateScore(crewCount);
+      if (prevScore < m.minReq && newScore >= m.minReq) playSfx('target');
+    }
+  }
+  state._prevCrewCount = crewCount;
+}
+
+function estimateScore(crewCount) {
+  const m = state.mission;
+  const ship = state.ship;
+  if (!m || !ship) return 0;
+  const hired = state.roster.filter(a => a !== null);
+  if (hired.length === 0) return 0;
+  let power = 0;
+  hired.forEach(a => {
+    m.stats.forEach(s => {
+      if (s === 'STR') power += a.str;
+      else if (s === 'INT') power += a.int;
+      else if (s === 'CHA') power += a.cha;
+    });
+  });
+  const maxPower = ship.max * m.stats.length * 50;
+  return Math.round((power / maxPower) * 100);
 }
 
 function syncAllSlots() {
@@ -2542,6 +2582,7 @@ function tapCard(appId) {
   if (rosterIdx !== -1) {
     state.roster[rosterIdx] = null;
     card.classList.remove('selected');
+    playSfx('unselect_card');
     // Compact and sort
     sortRoster();
     renderSlots();
@@ -2566,6 +2607,7 @@ function tapCard(appId) {
 
   // Assign — instant visual feedback first
   card.classList.add('selected');
+  playSfx('select_card');
   state.roster[nextSlot] = app;
   // Track species selection order (first time only)
   if (!state.speciesOrder.includes(app.race)) state.speciesOrder.push(app.race);
@@ -2590,6 +2632,7 @@ function tapSlot(index) {
 
   const card = document.getElementById('card-' + app.id);
   if (card) card.classList.remove('selected');
+  playSfx('unselect_card');
 
   state.roster[index] = null;
   const filled = state.roster.filter(a => a !== null);
@@ -2792,6 +2835,7 @@ function launchMission() {
       requestAnimationFrame(animateScore);
     } else {
       scoreEl.innerText = targetScore + '%';
+      playSfx('target');
       revealMsg();
     }
   }
@@ -2897,6 +2941,10 @@ function launchMission() {
   function typewriteElement(el, text, charIndex, onDone) {
     if (charIndex >= text.length) { onDone(); return; }
     el.textContent = text.slice(0, charIndex + 1);
+    // Play typing sound at ~8-10 evenly spaced characters
+    const typingClicks = Math.min(10, Math.max(8, Math.floor(text.length / 3)));
+    const step = Math.max(1, Math.floor(text.length / typingClicks));
+    if (charIndex % step === 0) playSfx('typing', 0.5);
     const delay = 200 / Math.max(text.length, 1);
     setTimeout(() => typewriteElement(el, text, charIndex + 1, onDone), delay);
   }
@@ -2996,6 +3044,7 @@ if (!DEBUG_ENABLED) {
 
 // Bounce button then run callback after animation
 function bounceThen(btn, callback) {
+  playSfx('button');
   btn.classList.remove('bounce');
   requestAnimationFrame(() => {
     btn.classList.add('bounce');
@@ -3008,6 +3057,66 @@ let audioCtx = null;
 let gainNode = null;
 let audioSourceCreated = false;
 let fadeTimer = null;
+
+// ── SFX SYSTEM ──
+const SFX_FILES = {
+  button:       'sound/button.mp3',
+  page1:        'sound/page1.mp3',
+  page2:        'sound/page2.mp3',
+  page3:        'sound/page3.mp3',
+  page4:        'sound/page4.mp3',
+  opening:      'sound/opening.mp3',
+  select_card:  'sound/select_card.mp3',
+  unselect_card:'sound/unselect_card.mp3',
+  typing:       'sound/typing.mp3',
+  target:       'sound/target.mp3',
+  menu_open:    'sound/menu_open.mp3',
+  menu_close:   'sound/menu_close.mp3',
+};
+const sfxBuffers = {};
+let sfxCtx = null;
+
+function getSfxCtx() {
+  if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return sfxCtx;
+}
+
+function loadSfx(key) {
+  if (sfxBuffers[key]) return;
+  const ctx = getSfxCtx();
+  fetch(SFX_FILES[key])
+    .then(r => r.arrayBuffer())
+    .then(buf => ctx.decodeAudioData(buf, decoded => { sfxBuffers[key] = decoded; }))
+    .catch(() => {});
+}
+
+function preloadSfx() {
+  Object.keys(SFX_FILES).forEach(loadSfx);
+}
+
+function playSfx(key, volume, rate) {
+  const ctx = getSfxCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const buf = sfxBuffers[key];
+  if (!buf) return;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  if (rate) src.playbackRate.value = rate;
+  if (volume !== undefined && volume !== 1) {
+    const g = ctx.createGain();
+    g.gain.value = volume;
+    src.connect(g);
+    g.connect(ctx.destination);
+  } else {
+    src.connect(ctx.destination);
+  }
+  src.start(0);
+}
+
+function playSfxPage() {
+  const pages = ['page1','page2','page3','page4'];
+  playSfx(pages[Math.floor(Math.random() * pages.length)]);
+}
 
 function getAudioCtx() {
   if (!audioCtx) {
@@ -3160,6 +3269,7 @@ function goToSplash() {
   // Re-render cards and UI with selected language
   updateUI();
 
+  preloadSfx();
   playTheme();
 
   const canvas = document.getElementById('pixel-transition');
@@ -3245,6 +3355,7 @@ function goToGameForReal() {
   const barsAlreadyIn = topBar.classList.contains('slid-in');
 
   // Step 1: slide sheet down and out
+  playSfx('opening');
   rulesScreen.classList.add('slide-out');
 
   rulesScreen.addEventListener('transitionend', () => {
@@ -3458,11 +3569,11 @@ startDay();
   }
 
   function nextRulesPage() {
-    if (rulesPage < RULES_TOTAL) { rulesPage++; updateRulesUI(); }
+    if (rulesPage < RULES_TOTAL) { rulesPage++; playSfxPage(); updateRulesUI(); }
   }
 
   function prevRulesPage() {
-    if (rulesPage > 1) { rulesPage--; updateRulesUI(); }
+    if (rulesPage > 1) { rulesPage--; playSfxPage(); updateRulesUI(); }
   }
 
   function handlePointerDown(e, side) {
