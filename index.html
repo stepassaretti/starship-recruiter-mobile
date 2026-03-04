@@ -1280,7 +1280,7 @@ body {
   font-size: 16px;
 }
 
-/* Net income row — no divider, bold */
+/* Net Financial Change row — no divider, bold */
 .res-row.net { font-weight: bold; padding-top: 8px; }
 
 .result-btn-row {
@@ -2676,9 +2676,9 @@ function launchMission() {
     html += resDivider();
   }
 
-  // Net income (no divider after)
+  // Net Financial Change (no divider after)
   const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
-  html += resRow('Net income', netStr, true);
+  html += resRow('Net Financial Change', netStr, true);
 
   document.getElementById('res-score').innerText = score + "%";
   document.getElementById('res-score').style.color = "";
