@@ -2714,7 +2714,7 @@ function launchMission() {
     conflictLines.forEach(c => {
       const iconA = RACES[c.raceA] ? RACES[c.raceA].icon : '';
       const iconB = RACES[c.raceB] ? RACES[c.raceB].icon : '';
-      html += `<div class="res-conflict-line">
+      html += `<div class="res-conflict-line" data-conflict="true">
         <div class="res-conflict-icons">
           <img class="res-conflict-icon" src="${iconA}" onerror="this.style.display='none'">
           <span class="res-conflict-vs">VS</span>
@@ -2751,19 +2751,150 @@ function launchMission() {
   const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
   html += resRow(t('netFinancialChange'), netStr, true);
 
-  document.getElementById('res-score').innerText = score + "%";
-  document.getElementById('res-score').style.color = "";
+  // Reset UI — hide msg and button until animation completes
+  document.getElementById('res-score').innerText = '0%';
+  document.getElementById('res-score').style.color = '';
   document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
-  document.getElementById('res-log').innerHTML = html;
+  document.getElementById('res-msg').style.visibility = 'hidden';
+  document.getElementById('res-log').innerHTML = '';
   document.getElementById('res-title').innerText = t('debriefing');
   document.getElementById('modal-btn').onclick = function() {
     bounceThen(document.getElementById('modal-btn'), nextDay);
   };
-  // Peek ahead: if this leads to bankruptcy, label the button CONTINUE
   const willBankrupt = (state.money < -100) || (state.money <= 0);
   document.getElementById('modal-btn-text').innerText = willBankrupt ? t('continue') : t('nextDay');
+  document.getElementById('modal-btn').style.visibility = 'hidden';
   document.getElementById('result-overlay').classList.add('visible');
   if (state.money < -100) state.gameOver = true;
+
+  // Score duration is proportional: 2500ms for 100%, so score/100 * 2500
+  const scoreEl = document.getElementById('res-score');
+  const targetScore = score;
+  const duration = (targetScore / 100) * 2500;
+  const startTime = performance.now();
+
+  function animateScore(now) {
+    if (duration === 0) {
+      scoreEl.innerText = targetScore + '%';
+      revealMsg();
+      return;
+    }
+    const elapsed = now - startTime;
+    const t0 = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - t0, 3);
+    scoreEl.innerText = Math.floor(eased * targetScore) + '%';
+    if (t0 < 1) {
+      requestAnimationFrame(animateScore);
+    } else {
+      scoreEl.innerText = targetScore + '%';
+      revealMsg();
+    }
+  }
+  requestAnimationFrame(animateScore);
+
+  function revealMsg() {
+    document.getElementById('res-msg').style.visibility = '';
+    // Small pause then start log typewriter
+    setTimeout(() => animateLogRows(html), 200);
+  }
+
+  function animateLogRows(fullHtml) {
+    const logEl = document.getElementById('res-log');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(`<div>${fullHtml}</div>`, 'text/html');
+    const children = Array.from(doc.querySelector('div').childNodes);
+    let i = 0;
+
+    function smoothScroll() { logEl.scrollTop = logEl.scrollHeight; }
+
+    function showNext() {
+      if (i >= children.length) {
+        document.getElementById('modal-btn').style.visibility = '';
+        smoothScroll();
+        return;
+      }
+      const node = children[i];
+      const clone = node.cloneNode(true);
+
+      if (clone.nodeType === Node.TEXT_NODE) {
+        logEl.appendChild(clone); i++;
+        smoothScroll();
+        setTimeout(showNext, 200);
+        return;
+      }
+
+      const fullText = clone.innerText || clone.textContent || '';
+
+      // Divider — instant
+      if (fullText.trim().length === 0) {
+        logEl.appendChild(clone); i++;
+        smoothScroll();
+        setTimeout(showNext, 50);
+        return;
+      }
+
+      // Batch all consecutive conflict lines together within 0.5s total
+      if (clone.dataset && clone.dataset.conflict === 'true') {
+        const conflictNodes = [];
+        while (i < children.length) {
+          const c = children[i];
+          if (c.nodeType === Node.ELEMENT_NODE && c.dataset && c.dataset.conflict === 'true') {
+            conflictNodes.push(c.cloneNode(true)); i++;
+          } else break;
+        }
+        const total = conflictNodes.length;
+        const perItem = Math.min(200, Math.round(500 / total));
+        let ci = 0;
+        function showConflict() {
+          if (ci >= total) { setTimeout(showNext, 200); return; }
+          logEl.appendChild(conflictNodes[ci++]);
+          smoothScroll();
+          setTimeout(showConflict, perItem);
+        }
+        showConflict();
+        return;
+      }
+
+      // res-row with label + right-justified value
+      const labelEl = clone.querySelector('.res-row-label');
+      const valueEl = clone.querySelector('.res-row-value');
+      if (labelEl && valueEl) {
+        const fullLabel = labelEl.textContent;
+        const fullValue = valueEl.textContent;
+        labelEl.textContent = '';
+        valueEl.textContent = '';
+        logEl.appendChild(clone); i++;
+        smoothScroll();
+        const liveClone = logEl.lastElementChild;
+        const liveLabelEl = liveClone.querySelector('.res-row-label');
+        const liveValueEl = liveClone.querySelector('.res-row-value');
+        typewriteElement(liveLabelEl, fullLabel, 0, () => {
+          liveValueEl.textContent = fullValue;
+          smoothScroll();
+          setTimeout(showNext, 200);
+        });
+        return;
+      }
+
+      // Everything else (headers, fine detail) — typewrite full text
+      clone.innerHTML = '';
+      logEl.appendChild(clone); i++;
+      smoothScroll();
+      const liveEl = logEl.lastElementChild;
+      typewriteElement(liveEl, fullText, 0, () => {
+        smoothScroll();
+        setTimeout(showNext, 200);
+      });
+    }
+    showNext();
+  }
+
+  function typewriteElement(el, text, charIndex, onDone) {
+    if (charIndex >= text.length) { onDone(); return; }
+    el.textContent = text.slice(0, charIndex + 1);
+    const delay = 200 / Math.max(text.length, 1);
+    setTimeout(() => typewriteElement(el, text, charIndex + 1, onDone), delay);
+  }
 }
 
 function nextDay() {
