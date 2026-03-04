@@ -2820,6 +2820,7 @@ function launchMission() {
   const targetScore = score;
   const duration = (targetScore / 100) * 2500;
   const startTime = performance.now();
+  let lastDisplayed = -1;
 
   function animateScore(now) {
     if (duration === 0) {
@@ -2830,7 +2831,13 @@ function launchMission() {
     const elapsed = now - startTime;
     const t0 = Math.min(elapsed / duration, 1);
     const eased = 1 - Math.pow(1 - t0, 3);
-    scoreEl.innerText = Math.floor(eased * targetScore) + '%';
+    const current = Math.floor(eased * targetScore);
+    scoreEl.innerText = current + '%';
+    // Play typing tick on each integer change, max ~10 ticks per second
+    if (current !== lastDisplayed && current % Math.max(1, Math.floor(targetScore / 10)) === 0) {
+      playSfx('typing', 0.6);
+    }
+    lastDisplayed = current;
     if (t0 < 1) {
       requestAnimationFrame(animateScore);
     } else {
@@ -2941,9 +2948,9 @@ function launchMission() {
   function typewriteElement(el, text, charIndex, onDone) {
     if (charIndex >= text.length) { onDone(); return; }
     el.textContent = text.slice(0, charIndex + 1);
-    // Play typing sound at ~8-10 evenly spaced characters
-    const typingClicks = Math.min(10, Math.max(8, Math.floor(text.length / 3)));
-    const step = Math.max(1, Math.floor(text.length / typingClicks));
+    // 3-4 ticks for short text (<20 chars), 8-10 for longer — always within 0.2s total
+    const ticks = text.length < 20 ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 8;
+    const step = Math.max(1, Math.floor(text.length / ticks));
     if (charIndex % step === 0) playSfx('typing', 0.5);
     const delay = 200 / Math.max(text.length, 1);
     setTimeout(() => typewriteElement(el, text, charIndex + 1, onDone), delay);
@@ -3300,6 +3307,9 @@ function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
 
+  // Stop theme instantly when rules sheet appears
+  stopTheme();
+
   // Prep game background
   document.body.style.backgroundColor = '#fff';
   document.body.style.backgroundImage = 'radial-gradient(circle, #ccc 1px, transparent 1px)';
@@ -3632,7 +3642,6 @@ startDay();
   };
 
   window.acknowledgeRules = function() {
-    fadeOutTheme(1500);
     goToGameForReal();
   };
 })();
