@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="color-scheme" content="light only">
 <meta name="supported-color-schemes" content="light only">
+<meta name="theme-color" content="#ffffff" id="meta-theme-color">
+<meta name="apple-mobile-web-app-status-bar-style" content="default" id="meta-apple-status">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <title>Starship Recruiter</title>
 <style>
@@ -643,7 +645,7 @@ body {
 /* ── SPLASH SCREEN ── */
 .screen {
   position: fixed;
-  inset: 0;
+  inset: 0 0 4px 0;
   z-index: 300;
   display: flex;
   flex-direction: column;
@@ -870,6 +872,7 @@ body {
   pointer-events: none;
   transition: opacity 0.2s ease;
   width: 100%;
+  margin-top: 20px;
 }
 .rules-ack-btn-row.visible {
   opacity: 1;
@@ -885,7 +888,7 @@ body {
 .rules-touch-zone {
   position: absolute;
   top: -40px;
-  bottom: -40px;
+  bottom: -10px;
   width: 245px;
   cursor: pointer;
   z-index: 100;
@@ -1164,6 +1167,7 @@ body {
   width: 100%;
   max-width: 340px;
   flex: 1;
+  padding-top: 60px;
 }
 
 /* Title */
@@ -2765,6 +2769,7 @@ function launchMission() {
   document.getElementById('modal-btn-text').innerText = willBankrupt ? t('continue') : t('nextDay');
   document.getElementById('modal-btn').style.visibility = 'hidden';
   document.getElementById('result-overlay').classList.add('visible');
+  setStatusBar('dark');
   if (state.money < -100) state.gameOver = true;
 
   // Score duration is proportional: 2500ms for 100%, so score/100 * 2500
@@ -2899,6 +2904,7 @@ function launchMission() {
 
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
+  setStatusBar('light');
 
   // Cannot start a new day with 0 or fewer credits
   if (!state.gameOver && state.money <= 0) state.gameOver = true;
@@ -2925,6 +2931,7 @@ function nextDay() {
       });
     };
     document.getElementById('result-overlay').classList.add('visible');
+    setStatusBar('dark');
   } else {
     state.day++;
     closeDrawer();
@@ -2965,6 +2972,7 @@ function debugJumpToDay(day) {
   state.roster = [];
   state.pool = [];
   document.getElementById('result-overlay').classList.remove('visible');
+  setStatusBar('light');
   startDay();
 }
 
@@ -3218,6 +3226,14 @@ function fixScrollPadding() {
   if (!bb || !sa) return;
   const bbH = bb.getBoundingClientRect().height;
   sa.style.paddingBottom = (bbH + 24) + 'px';
+}
+
+function setStatusBar(mode) {
+  // mode: 'light' (white bar, dark icons) or 'dark' (black bar, light icons)
+  const themeColor = mode === 'dark' ? '#000000' : '#ffffff';
+  const appleStyle = mode === 'dark' ? 'black' : 'default';
+  document.getElementById('meta-theme-color').setAttribute('content', themeColor);
+  document.getElementById('meta-apple-status').setAttribute('content', appleStyle);
 }
 
 function goToGameForReal() {
@@ -3484,6 +3500,7 @@ startDay();
   }
 
   window.initRulesSheet = function() {
+    setStatusBar('light');
     rulesPage = 1;
     RULES_TOTAL = state.day === 1 ? 5 : 2;
     // Reset ack button — starts hidden each day
