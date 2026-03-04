@@ -1798,7 +1798,6 @@ function getManualHTML() {
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${speciesName(rKey)}
         </div>
-        <div class="manual-desc">${rd.desc}</div>
         <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
       </div>`;
   });
@@ -2991,7 +2990,6 @@ function goToWelcome() {
 function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
-  fadeOutTheme(1500);
 
   // Prep game background
   document.body.style.backgroundColor = '#fff';
@@ -3314,6 +3312,7 @@ startDay();
   };
 
   window.acknowledgeRules = function() {
+    fadeOutTheme(1500);
     goToGameForReal();
   };
 })();
