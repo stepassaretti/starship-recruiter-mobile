@@ -2519,14 +2519,14 @@ function updateLaunchState() {
     const minCrew = state.ship ? state.ship.min : 0;
     const maxCrew = state.ship ? state.ship.max : 0;
     // Min crew threshold
-    if (prevCount < minCrew && crewCount >= minCrew) playSfx('target');
+    if (prevCount < minCrew && crewCount >= minCrew) { playSfx('target'); hapticTarget(); }
     // Max crew threshold
-    else if (prevCount < maxCrew && crewCount >= maxCrew) playSfx('target');
+    else if (prevCount < maxCrew && crewCount >= maxCrew) { playSfx('target'); hapticTarget(); }
     // Min success % — check estimated score crosses minReq
     else {
       const prevScore = estimateScore(prevCount);
       const newScore = estimateScore(crewCount);
-      if (prevScore < m.minReq && newScore >= m.minReq) playSfx('target');
+      if (prevScore < m.minReq && newScore >= m.minReq) { playSfx('target'); hapticTarget(); }
     }
   }
   state._prevCrewCount = crewCount;
@@ -2838,6 +2838,7 @@ function launchMission() {
     // Play typing tick on every integer change
     if (current !== lastDisplayed) {
       playSfx('typing', 0.4);
+      hapticTick();
     }
     lastDisplayed = current;
     if (t0 < 1) {
@@ -2845,6 +2846,7 @@ function launchMission() {
     } else {
       scoreEl.innerText = targetScore + '%';
       playSfx('target');
+      hapticTarget();
       revealMsg();
     }
   }
@@ -2953,8 +2955,8 @@ function launchMission() {
     // 3-4 ticks for short text (<20 chars), 8-10 for longer — always within 0.2s total
     const ticks = text.length < 20 ? Math.floor(Math.random() * 2) + 3 : Math.floor(Math.random() * 3) + 8;
     const step = Math.max(1, Math.floor(text.length / ticks));
-    if (charIndex % step === 0) playSfx('typing', 0.5);
-    const delay = 200 / Math.max(text.length, 1);
+    if (charIndex % step === 0) { playSfx('typing', 0.5); hapticTick(); }
+    const delay = 100 / Math.max(text.length, 1);
     setTimeout(() => typewriteElement(el, text, charIndex + 1, onDone), delay);
   }
 }
@@ -3052,6 +3054,12 @@ if (!DEBUG_ENABLED) {
 // ══════════════════════════════════════════════
 
 // Bounce button then run callback after animation
+function haptic(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+function hapticTick()   { haptic(2); }   // very mild — typewriting / counter
+function hapticTarget() { haptic([8, 20, 8]); } // two gentle pulses — threshold reached
+
 function bounceThen(btn, callback) {
   playSfx('button');
   btn.classList.remove('bounce');
@@ -3097,16 +3105,9 @@ function preloadSfx() {
 }
 
 function playSfx(key, volume, rate) {
-  const pool = sfxPool[key];
-  if (!pool) return;
-  // Find a free element or clone a new one
-  let a = pool.find(el => el.paused || el.ended);
-  if (!a) {
-    a = new Audio(SFX_FILES[key]);
-    a.preload = 'auto';
-    pool.push(a);
-  }
-  a.currentTime = 0;
+  if (!SFX_FILES[key]) return;
+  // Always create a fresh Audio element — most reliable on iOS Safari
+  const a = new Audio(SFX_FILES[key]);
   a.volume = (volume !== undefined) ? volume : 1;
   a.playbackRate = (rate !== undefined) ? rate : 1;
   a.play().catch(() => {});
@@ -3121,7 +3122,7 @@ function getAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     gainNode = audioCtx.createGain();
-    gainNode.gain.value = 1;
+    gainNode.gain.value = 0.7;
     gainNode.connect(audioCtx.destination);
   }
   return audioCtx;
@@ -3132,7 +3133,7 @@ function playTheme() {
   if (ctx.state === 'suspended') ctx.resume();
   if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   gainNode.gain.cancelScheduledValues(ctx.currentTime);
-  gainNode.gain.setValueAtTime(1, ctx.currentTime);
+  gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
 
   const audio = document.getElementById('theme-audio');
   // Connect source only once — MediaElementSource can't be recreated
@@ -3153,7 +3154,7 @@ function stopTheme() {
   audio.currentTime = 0;
   if (gainNode && audioCtx) {
     gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.7, audioCtx.currentTime);
   }
 }
 
@@ -3168,7 +3169,7 @@ function fadeOutTheme(duration) {
     audio.pause();
     audio.currentTime = 0;
     gainNode.gain.cancelScheduledValues(ctx.currentTime);
-    gainNode.gain.setValueAtTime(1, ctx.currentTime);
+    gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
     fadeTimer = null;
   }, duration);
 }
@@ -3310,8 +3311,9 @@ function goToGame() {
   document.getElementById('screen-welcome').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
 
-  // Stop theme instantly when rules sheet appears
+  // Stop theme instantly, play menu_close 2x as sheet appears
   stopTheme();
+  playSfx('menu_close', 1, 2);
 
   // Prep game background
   document.body.style.backgroundColor = '#fff';
