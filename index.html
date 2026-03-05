@@ -2714,11 +2714,11 @@ function launchMission() {
         if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
         if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
         if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=a.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-        else if(bW>aW){let p=b.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
-        else{let pA=(a.hate*0.3)/2,pB=(b.hate*0.3)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
-      } else if(aHatesB){let p=a.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-      else if(bHatesA){let p=b.hate*0.3;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        if(aW>bW){let p=5 + (a.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+        else if(bW>aW){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        else{let pA=(5 + (a.hate / 100) * 25)/2,pB=(5 + (b.hate / 100) * 25)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
+      } else if(aHatesB){let p=5 + (a.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+      else if(bHatesA){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
     }
   }
 
