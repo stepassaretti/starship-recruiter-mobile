@@ -206,7 +206,8 @@ body {
 .rules-newsp-icon { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
 .rules-newsp-name { font-family: 'VT323', monospace; font-size: 20px; color: #000; }
 .rules-newsp-desc { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.2; }
-.rules-newsp-hates { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.2; margin-top: 5px; }
+.rules-newsp-hates { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.2; margin-top: 8px; }
+.rules-newsp-hatecontext { font-family: 'VT323', monospace; font-size: 17px; color: #888; line-height: 1.2; margin-top: 8px; }
 
 /* ── CARDS GRID ── */
 .cards-grid {
@@ -1870,6 +1871,8 @@ function openDrawer(type) {
   updateIconButtons();
 
   playSfx('menu_open', 1, 2);
+  playSfx('button');
+  document.getElementById('btn-launch').style.visibility = 'hidden';
 
   // Set initial max-height to collapsed size, then expand
   bar.style.maxHeight = collapsedHeight + 'px';
@@ -1888,6 +1891,7 @@ function closeDrawer() {
   const overlay = document.getElementById('drawer-overlay');
 
   playSfx('menu_close', 1, 2);
+  playSfx('button');
   // If closing during intro, exit intro mode too
   bar.classList.remove('intro-mode');
 
@@ -1904,6 +1908,7 @@ function closeDrawer() {
     bar.classList.remove('expanded');
     bar.style.maxHeight = '';
     bar.style.transition = '';
+    document.getElementById('btn-launch').style.visibility = '';
     renderSlots();
     updateLaunchState();
   }, 210);
@@ -3830,14 +3835,20 @@ startDay();
       const rd = RACES[r];
       const icon = rd ? rd.icon : '';
       const hateNames = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
-      const desc = rd ? rd.desc : '';
+      const shortDesc = rd ? (rd.shortDesc || '') : '';
+      const fullDesc = rd ? (rd.desc || '') : '';
+      // Hate context = full desc minus the shortDesc opening
+      const hateContext = fullDesc.startsWith(shortDesc)
+        ? fullDesc.slice(shortDesc.length).trim()
+        : fullDesc;
       return `<div class="rules-newsp-row">
         <div class="rules-newsp-name-row">
           <img class="rules-newsp-icon" src="${icon}" onerror="this.style.display='none'">
           <span class="rules-newsp-name">${speciesName(r).toUpperCase()}</span>
         </div>
-        <div class="rules-newsp-desc">${desc}</div>
+        <div class="rules-newsp-desc">${shortDesc}</div>
         <div class="rules-newsp-hates">${t('hates')} <strong>${hateNames}</strong></div>
+        ${hateContext ? `<div class="rules-newsp-hatecontext">${hateContext}</div>` : ''}
       </div>`;
     }).join('');
 
