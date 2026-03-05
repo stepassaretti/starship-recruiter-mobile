@@ -3426,6 +3426,7 @@ function preloadSfx() {
 }
 
 function playSfx(key, volume, rate) {
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   if (!SFX_FILES[key]) return;
   const pool = sfxPool[key];
   if (!pool || pool.length === 0) return;
