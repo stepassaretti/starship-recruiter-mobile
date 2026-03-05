@@ -196,7 +196,17 @@ body {
 }
 .manual-icon img { width: 18px; height: 18px; image-rendering: pixelated; }
 .manual-desc { font-size: 17px; line-height: 1.1; margin-top: 2px; }
+.manual-desc-text { font-size: 17px; line-height: 1.2; margin-top: 3px; color: #888; }
 .manual-hates { font-size: 17px; margin-top: 2px; }
+
+/* New species page in briefing sheet */
+.rules-newsp-list { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; }
+.rules-newsp-row { display: flex; flex-direction: column; gap: 2px; }
+.rules-newsp-name-row { display: flex; align-items: center; gap: 8px; }
+.rules-newsp-icon { width: 20px; height: 20px; image-rendering: pixelated; flex-shrink: 0; }
+.rules-newsp-name { font-family: 'VT323', monospace; font-size: 20px; color: #000; }
+.rules-newsp-desc { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.2; }
+.rules-newsp-hates { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.2; margin-top: 5px; }
 
 /* ── CARDS GRID ── */
 .cards-grid {
@@ -318,7 +328,7 @@ body {
 
 .mc-skills { font-size: 15px; display: flex; justify-content: space-between; width: 100%; }
 .mc-skills .hi-stat { font-weight: bold; text-decoration: underline; }
-.mc-exp { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-exp { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #888; }
 
 .mc-div { height: 2px; border: none; background-image: linear-gradient(to right, #000 2px, transparent 2px); background-size: 4px 2px; background-repeat: repeat-x; flex-shrink: 0; margin-top: auto; }
 
@@ -1868,6 +1878,7 @@ function getManualHTML() {
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${speciesName(rKey)}
         </div>
+        <div class="manual-desc-text">${rd.shortDesc || rd.desc}</div>
         <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
       </div>`;
   });
@@ -2030,26 +2041,26 @@ function getNameFor(raceKey, portraitVariant) {
 }
 
 const RACES = {
-  "Human":        { icon: "images/human_icon.png",        images: 52, str: [8,25], int: [10,30], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Adaptable. Stats never all equal." },
-  "Sky-Elf":      { icon: "images/skyelf_icon.png",       images: 36, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "INT always highest skill." },
-  "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 42, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "STR > CHA always." },
-  "Giant":        { icon: "images/giant_icon.png",        images: 50, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "STR > (INT + CHA) always." },
-  "Droid":        { icon: "images/droid_icon.png",        images: 60, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Name ends with a Number." },
-  "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 18, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "HATE ≥ 20% always." },
-  "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "INT must equal CHA." },
-  "Space-Cat":    { icon: "images/spacecat_icon.png",     images: 28, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "CHA always highest skill." },
-  "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 32, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "HATE ≤ 60%. Avian diplomats." },
-  "Drakhen":      { icon: "images/drakhen_icon.png",      images: 25, str: [45,85], int: [45,75], cha: [25,55], hates: ["ALL"], desc: "Pure evil. Best stats. Hates all other races." },
-  "Aquasim":      { icon: "images/aquasim_icon.png",      images: 54, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "CHA is always lowest skill." },
-  "Void-Demon":   { icon: "images/voiddemon_icon.png",    images: 9, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "CHA > STR always. Pacifists." },
-  "Fungi":        { icon: "images/fungi_icon.png",        images: 40, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "HATE ≥ 80%. Always screaming." },
-  "Oak-Person":   { icon: "images/oakperson_icon.png",    images: 49, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "CHA < 5 always. Slow." },
-  "Long-Neck":    { icon: "images/longneck_icon.png",     images: 40, str: [5,10], int: [30,50], cha: [20,40], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "INT > STR always." },
-  "Squid":        { icon: "images/squid_icon.png",        images: 69, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "INT > STR. Highest INT ceiling." },
-  "Sugorian":     { icon: "images/sugorian_icon.png",     images: 40, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Bio-luminescent jelly. HATE ≤ 50%." },
-  "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 73, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "STR always lowest skill." },
-  "Sodio":        { icon: "images/sodio_icon.png",        images: 38, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. STR > INT." },
-  "Blorg":        { icon: "images/blorg_icon.png",        images: 39, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "HATE ≤ 20%." }
+  "Human":        { icon: "images/human_icon.png",        images: 52, str: [8,25], int: [10,30], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Loud, overconfident, somehow everywhere. Surprisingly average at everything. Deeply unsettled by Robomantoids, whose lack of facial expression they find personally offensive. Regard Drakhen as an existential threat, which the Drakhen consider a compliment.", shortDesc: "Loud, overconfident, somehow everywhere. Surprisingly average at everything." },
+  "Sky-Elf":      { icon: "images/skyelf_icon.png",       images: 36, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "Science-obsessed intellectual elites. Massive superiority complex. Despise anything primitive. Giants are too large and too stupid. Droids pretend to think. Beetlegunners smell. Fungi reproduce by sneezing. None of this is acceptable.", shortDesc: "Science-obsessed intellectual elites. Massive superiority complex. Despise anything primitive." },
+  "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 42, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "Hard-shelled insectoids often used as heavy infantry. Sky-Elves keep trying to study them. Droids keep trying to optimise them. Fungi keep trying to grow on them. All three have been told to stop.", shortDesc: "Hard-shelled insectoids often used as heavy infantry." },
+  "Giant":        { icon: "images/giant_icon.png",        images: 50, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "Massive, grotesquely varied humanoids. Strong but clumsy. Cannot stand other Giants. Every one of them is convinced they are the only Giant doing it correctly. Family reunions are catastrophic.", shortDesc: "Massive, grotesquely varied humanoids. Strong but clumsy." },
+  "Droid":        { icon: "images/droid_icon.png",        images: 60, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Modular logic units. Hate organics that leak fluids or behave irrationally. Sugorians leave residue on every surface. Beetlegunners shed exoskeleton fragments into ventilation systems. Aquasim are simply wet for no defensible reason.", shortDesc: "Modular logic units. Hate organics that leak fluids or behave irrationally." },
+  "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 18, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "Highly militant mantis-like warriors. Extremely aggressive. Void-Demons cannot be killed, which they find professionally insulting. Sky-Elves talk too much before dying. Sugorians are impossible to stab cleanly.", shortDesc: "Highly militant mantis-like warriors. Extremely aggressive." },
+  "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "Cold-blooded reptilian politicians. Excel at manipulation. Robomantoids refuse to be manipulated, which Barbitulians consider deeply antisocial. Cheesponges absorb information indiscriminately and cannot be trusted with secrets.", shortDesc: "Cold-blooded reptilian politicians. Excel at manipulation." },
+  "Space-Cat":    { icon: "images/spacecat_icon.png",     images: 28, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "Feline strategists. Smart, sneaky, and always up to something. Long-Necks are too tall to ignore and too smug to tolerate. Sugorians leave traces everywhere, which ruins a clean exit. Void-Demons cannot be read, which is simply unacceptable.", shortDesc: "Feline strategists. Smart, sneaky, and always up to something." },
+  "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 32, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "Avian diplomats. Peaceful by nature, terrifying when angered. Have attempted diplomatic contact with the Drakhen on eleven separate occasions. They are currently on their twelfth ambassador.", shortDesc: "Avian diplomats. Peaceful by nature, terrifying when angered." },
+  "Drakhen":      { icon: "images/drakhen_icon.png",      images: 25, str: [45,85], int: [45,75], cha: [25,55], hates: ["ALL"], desc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. Hate everyone with extraordinary consistency. Historians note this is, statistically, their most impressive achievement.", shortDesc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby." },
+  "Aquasim":      { icon: "images/aquasim_icon.png",      images: 54, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "Grumpy amphibious creatures who, despite their name, hate getting wet. Squid make everything worse by being smugly aquatic about it. Sugorians are inexplicably slippery. Sodio dissolve on contact, which Aquasim find viscerally upsetting.", shortDesc: "Grumpy amphibious creatures who, despite their name, hate getting wet." },
+  "Void-Demon":   { icon: "images/voiddemon_icon.png",    images: 9, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "Entities from an obscure dimension. Cannot die. Take no sides. Have observed every war, famine, and diplomatic incident with the same mild expression. Do not hate anyone. Simply wait.", shortDesc: "Entities from an obscure dimension. Cannot die. Take no sides." },
+  "Fungi":        { icon: "images/fungi_icon.png",        images: 40, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "Small, furious mushroom people who scream constantly. Beetlegunners eat them as a field ration. Drakhen torch entire biomes without filing the relevant environmental impact forms. Aquasim flood spore colonies and call it an accident.", shortDesc: "Small, furious mushroom people who scream constantly." },
+  "Oak-Person":   { icon: "images/oakperson_icon.png",    images: 49, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "Humanoid logs. Slow, smell like pine. Drakhen burn forests recreationally. Beetlegunners strip bark. Droids pave everything. Robomantoids destroy things for the structural exercise. Oak-Persons have objected to all of this. Nobody has listened.", shortDesc: "Humanoid logs. Slow, smell like pine. Despise machines and nature exploiters." },
+  "Long-Neck":    { icon: "images/longneck_icon.png",     images: 40, str: [5,10], int: [30,50], cha: [20,40], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "Cerebral and elegant. Extremely snobbish. Giants are loud and block the view. Aquasim are permanently damp and complain about it. Fungi contaminate archived collections. Robomantoids once destroyed a Long-Neck library. There has been no forgiveness.", shortDesc: "Cerebral and elegant. Extremely snobbish." },
+  "Squid":        { icon: "images/squid_icon.png",        images: 69, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "Highly intelligent cephalopods. Intolerant of primitive species. Aquasim are aquatic and still manage to be embarrassing about it. Drakhen are an affront to the concept of intelligence. Beetlegunners touch equipment without permission. Giants knock things over.", shortDesc: "Highly intelligent cephalopods. Intolerant of primitive species." },
+  "Sugorian":     { icon: "images/sugorian_icon.png",     images: 40, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable. Humans poke them out of curiosity. Sky-Elves attempt to classify them, repeatedly. Drakhen use them as an accelerant. None of these interactions have been welcome.", shortDesc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable." },
+  "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 73, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "Porous, absorbent beings. Soak up damage and emotional tension. Barbitulians exploit their absorptive nature for intelligence gathering. Drakhen desiccate them on contact. Aquasim cause them to swell uncontrollably, which is as undignified as it sounds.", shortDesc: "Porous, absorbent beings. Soak up damage and emotional tension." },
+  "Sodio":        { icon: "images/sodio_icon.png",        images: 38, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve. Aquasim are their geological nemesis. Cheesponges absorb them slowly and without apology. Sugorians are inexplicably moist in every environment. Sodio have lodged complaints. The complaints dissolved.", shortDesc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve." },
+  "Blorg":        { icon: "images/blorg_icon.png",        images: 39, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "Pale bureaucratic masterminds. High logic, permanent disappointment. Sugorians contaminate workstations and ignore filing protocols. Fungi spore directly onto submitted paperwork. Drakhen have destroyed fourteen Blorg administrative centres. The insurance claims are still pending.", shortDesc: "Pale bureaucratic masterminds. High logic, permanent disappointment." }
 };
 
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
@@ -2567,6 +2578,7 @@ function sortRoster() {
 }
 
 function tapCard(appId) {
+  try {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
 
@@ -2625,6 +2637,7 @@ function tapCard(appId) {
   updateSingleSlot(nextSlot);
   updateLaunchState();
   updateCostDisplay();
+  } catch(e) { alert('tapCard error: ' + e.message + '\n' + e.stack); }
 }
 
 function tapSlot(index) {
@@ -3492,21 +3505,6 @@ startDay();
   function buildShipPage(pageEl) {
     const s = state.ship;
     const shipSrc = `images/ships_${(s.base || s.name).toLowerCase().replace(/\s+/g, '_')}.png`;
-    // Species newly unlocked this day vs yesterday
-    const prevUnlocked = state.day > 1 ? new Set(getUnlockedSpeciesForDay(state.day - 1)) : new Set();
-    const newSpecies = getUnlockedSpeciesForDay(state.day).filter(r => !prevUnlocked.has(r));
-    const speciesRows = newSpecies.map(r => {
-      const icon = RACES[r] ? RACES[r].icon : '';
-      return `<div class="rules-species-row">
-        <img class="rules-species-icon" src="${icon}" onerror="this.style.display='none'">
-        <span class="rules-species-name">${speciesName(r)}</span>
-      </div>`;
-    }).join('');
-    const newSpeciesBlock = newSpecies.length > 0 && state.day > 1 ? `
-      <div class="rules-species-section">
-        <div class="rules-new-species-header">${t('newSpeciesApplying')}</div>
-        <div class="rules-species-list">${speciesRows}</div>
-      </div>` : '';
 
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
@@ -3518,7 +3516,35 @@ startDay();
         <img class="rules-ship-img" src="${shipSrc}" onerror="this.style.display='none'">
         <div class="rules-ship-name">${s.name}</div>
       </div>
-      ${newSpeciesBlock}
+    `;
+  }
+
+  function buildNewSpeciesPage(pageEl) {
+    const prevUnlocked = state.day > 1 ? new Set(getUnlockedSpeciesForDay(state.day - 1)) : new Set();
+    const newSpecies = getUnlockedSpeciesForDay(state.day).filter(r => !prevUnlocked.has(r));
+
+    const rows = newSpecies.map(r => {
+      const rd = RACES[r];
+      const icon = rd ? rd.icon : '';
+      const hateNames = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
+      const desc = rd ? rd.desc : '';
+      return `<div class="rules-newsp-row">
+        <div class="rules-newsp-name-row">
+          <img class="rules-newsp-icon" src="${icon}" onerror="this.style.display='none'">
+          <span class="rules-newsp-name">${speciesName(r).toUpperCase()}</span>
+        </div>
+        <div class="rules-newsp-desc">${desc}</div>
+        <div class="rules-newsp-hates">${t('hates')} <strong>${hateNames}</strong></div>
+      </div>`;
+    }).join('');
+
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+        <span class="rules-briefing-sub">${t('newSpeciesApplying').toUpperCase()}</span>
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-newsp-list">${rows}</div>
     `;
   }
 
@@ -3558,9 +3584,15 @@ startDay();
       buildMissionPage(document.getElementById('rules-page-4'));
       buildShipPage(document.getElementById('rules-page-5'));
     } else {
-      // Day 2+: 2 pages — mission briefing, ship + new species
+      // Day 2+: 2 pages (mission + ship) or 3 if new species
+      const prevUnlocked = new Set(getUnlockedSpeciesForDay(state.day - 1));
+      const hasNewSpecies = getUnlockedSpeciesForDay(state.day).some(r => !prevUnlocked.has(r));
+      RULES_TOTAL = hasNewSpecies ? 3 : 2;
       buildMissionPage(document.getElementById('rules-page-1'));
       buildShipPage(document.getElementById('rules-page-2'));
+      if (hasNewSpecies) {
+        buildNewSpeciesPage(document.getElementById('rules-page-3'));
+      }
     }
   }
 
@@ -3628,7 +3660,7 @@ startDay();
   window.initRulesSheet = function() {
     setStatusBar('light');
     rulesPage = 1;
-    RULES_TOTAL = state.day === 1 ? 5 : 2;
+    RULES_TOTAL = state.day === 1 ? 5 : 2; // day 2+ overridden in populateSheetContent
     // Reset ack button — starts hidden each day
     const ackRow = document.getElementById('rules-ack-btn-row');
     if (ackRow) ackRow.classList.remove('visible');
