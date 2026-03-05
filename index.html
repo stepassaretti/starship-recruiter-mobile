@@ -1856,6 +1856,7 @@ function openDrawer(type) {
     content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
     activeDrawer = type;
     updateIconButtons();
+    playSfx('button');
     return;
   }
 
@@ -3914,6 +3915,25 @@ startDay();
     document.getElementById('rules-page-text').innerText = `${rulesPage}/${RULES_TOTAL}`;
     document.querySelectorAll('.rules-page').forEach(p => p.classList.remove('active'));
     document.getElementById('rules-page-' + rulesPage).classList.add('active');
+
+    // If this is the new species page, fit content by reducing spacing if needed
+    if (rulesPage === RULES_TOTAL && RULES_TOTAL > 2) {
+      const pageEl = document.getElementById('rules-page-' + rulesPage);
+      const container = pageEl.closest('.rules-pages-container');
+      const list = pageEl.querySelector('.rules-newsp-list');
+      if (container && list) {
+        let gap = 14, hateGap = 8;
+        list.style.gap = gap + 'px';
+        while (container.scrollHeight > container.clientHeight && (gap > 4 || hateGap > 2)) {
+          if (gap > 4) gap = Math.max(4, gap - 2);
+          if (hateGap > 2) hateGap = Math.max(2, hateGap - 1);
+          list.style.gap = gap + 'px';
+          pageEl.querySelectorAll('.rules-newsp-hates, .rules-newsp-hatecontext').forEach(el => {
+            el.style.marginTop = hateGap + 'px';
+          });
+        }
+      }
+    }
 
     const showPrev = rulesPage > 1;
     document.getElementById('rules-zone-prev').style.display = showPrev ? 'block' : 'none';
