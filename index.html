@@ -2551,13 +2551,13 @@ function estimateScore(crewCount) {
   if (hired.length === 0) return 0;
   let power = 0;
   hired.forEach(a => {
-    m.stats.forEach(s => {
-      if (s === 'STR') power += a.str;
-      else if (s === 'INT') power += a.int;
-      else if (s === 'CHA') power += a.cha;
+    m.reqs.forEach(s => {
+      if (s === 'str') power += a.str;
+      else if (s === 'int') power += a.int;
+      else if (s === 'cha') power += a.cha;
     });
   });
-  const maxPower = ship.max * m.stats.length * 50;
+  const maxPower = ship.max * m.reqs.length * 50;
   return Math.round((power / maxPower) * 100);
 }
 
@@ -2578,7 +2578,6 @@ function sortRoster() {
 }
 
 function tapCard(appId) {
-  try {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
 
@@ -2637,7 +2636,6 @@ function tapCard(appId) {
   updateSingleSlot(nextSlot);
   updateLaunchState();
   updateCostDisplay();
-  } catch(e) { alert('tapCard error: ' + e.message + '\n' + e.stack); }
 }
 
 function tapSlot(index) {
