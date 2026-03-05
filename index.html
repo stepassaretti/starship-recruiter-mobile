@@ -1157,6 +1157,72 @@ body {
   image-rendering: pixelated;
 }
 
+/* ── CHECKPOINT SCREEN ── */
+.checkpoint-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 410;
+  display: none;
+  flex-direction: column;
+}
+.checkpoint-overlay.visible { display: flex; }
+.checkpoint-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.checkpoint-img-panel {
+  height: 33.333%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #000;
+}
+.checkpoint-img-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  image-rendering: pixelated;
+}
+.checkpoint-text {
+  padding: 20px 20px 0 20px;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #fff;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.checkpoint-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.checkpoint-btn-row {
+  padding: 40px 20px 40px 20px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.checkpoint-btn-row.hidden { display: none; }
+.checkpoint-btn {
+  flex-shrink: 0;
+  margin: 0 20px 32px 20px;
+  padding: 14px 0;
+  background: #fff;
+  color: #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  border: none;
+  cursor: pointer;
+  width: calc(100% - 40px);
+  letter-spacing: 0.05em;
+}
+.checkpoint-btn.hidden { display: none; }
+
 .result-overlay {
   position: fixed;
   inset: -50px 0 0 0;
@@ -1485,6 +1551,25 @@ body {
     </button>
   </div>
 </div>
+
+<!-- CHECKPOINT SCREEN -->
+<div class="checkpoint-overlay" id="checkpoint-overlay">
+  <div class="checkpoint-inner">
+    <div class="checkpoint-img-panel">
+      <img id="checkpoint-img" src="images/welcome.png" onerror="this.style.display='none'">
+    </div>
+    <div class="checkpoint-scroll" id="checkpoint-scroll">
+      <div class="checkpoint-text" id="checkpoint-text"></div>
+      <div class="checkpoint-btn-row hidden" id="checkpoint-btn-row">
+        <button class="launch-btn-inverted" id="checkpoint-btn" onclick="closeCheckpoint()">
+          <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+          <span class="launch-btn-text-inv">CONTINUE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 // ══════════════════════════════════════════════
@@ -2066,7 +2151,11 @@ const RACES = {
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
 const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
 
-let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [] };
+let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [],
+  missionLog: [],      // { day, score, success } per mission
+  allTimeHires: {},    // { race: count } all-time
+  totalEarned: 0       // cumulative credits earned (positive payouts only)
+};
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
@@ -2774,6 +2863,11 @@ function launchMission() {
   }
   state.money += earned;
 
+  // Track mission result and hires for checkpoint
+  state.missionLog.push({ day: state.day, score, success: isSuccess });
+  if (earned > 0) state.totalEarned += earned;
+  hired.forEach(a => { state.allTimeHires[a.race] = (state.allTimeHires[a.race] || 0) + 1; });
+
   // Build structured HTML
   function resRow(label, value, isNet) {
     return `<div class="res-row${isNet?' net':''}"><span class="res-row-label">${label}</span><span class="res-row-value">${value}</span></div>`;
@@ -3001,6 +3095,170 @@ function launchMission() {
   }
 }
 
+// ══════════════════════════════════════════════
+// CHECKPOINT SYSTEM
+// ══════════════════════════════════════════════
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function getPerformanceTier(avgScore) {
+  if (avgScore >= 90) return 'excellent';
+  if (avgScore >= 75) return 'good';
+  if (avgScore >= 65) return 'acceptable';
+  if (avgScore >= 55) return 'concerning';
+  return 'catastrophic';
+}
+
+function buildCheckpointDialogue() {
+  const log = state.missionLog;
+  const last5 = log.slice(-5);
+  const avg5 = last5.length ? Math.round(last5.reduce((s, m) => s + m.score, 0) / last5.length) : 0;
+  const allSucc = log.filter(m => m.success).length;
+  const allFail = log.filter(m => !m.success).length;
+  const last5Succ = last5.filter(m => m.success).length;
+  const last5Fail = last5.filter(m => !m.success).length;
+  const allAvg = log.length ? Math.round(log.reduce((s, m) => s + m.score, 0) / log.length) : 0;
+  const tier = getPerformanceTier(avg5);
+
+  // Top 3 species hired all time
+  const hireEntries = Object.entries(state.allTimeHires).sort((a, b) => b[1] - a[1]);
+  const topSpecies = hireEntries.slice(0, 3).map(([r]) => speciesName(r));
+  const speciesStr = topSpecies.length >= 2
+    ? topSpecies.slice(0, -1).join(', ') + ' and ' + topSpecies[topSpecies.length - 1]
+    : topSpecies[0] || 'no one in particular';
+
+  const GREETINGS = [
+    'Sit down, Recruit. This will only take a moment.',
+    'Recruit. Your five-day review is due.',
+    'Welcome back. The Agency has compiled your recent decisions.',
+    'Another five days completed. Let\'s review the damage.',
+    'Time for your operational review.'
+  ];
+
+  const PERFORMANCE = {
+    excellent: [
+      'Your results are unusually competent.\nWe try not to encourage this, but well done.',
+      'A very strong performance.\nPlease avoid becoming complacent.',
+      'The numbers look good.\nThe Agency appreciates predictable competence.',
+      'You are exceeding expectations.\nThis makes accounting considerably easier.'
+    ],
+    good: [
+      'Solid work so far.\nNothing alarming has occurred.',
+      'Your results are above average.\nTry to keep them there.',
+      'The Agency is satisfied with this level of performance.',
+      'A stable record. Continue.'
+    ],
+    acceptable: [
+      'Adequate results.\nThere is room for improvement.',
+      'The outcomes are acceptable, if uninspiring.',
+      'Nothing catastrophic so far. That is encouraging.',
+      'A mixed record. You may want to review your hiring decisions.'
+    ],
+    concerning: [
+      'Your results are… inconsistent.',
+      'Several missions have underperformed.\nWe recommend reading the contracts more carefully.',
+      'Your conflict management could improve.',
+      'The Agency has noticed a pattern of avoidable failures.'
+    ],
+    catastrophic: [
+      'These results are difficult to defend.',
+      'Your decisions are becoming expensive.',
+      'The Agency is reviewing whether continued investment is justified.',
+      'You are approaching levels of inefficiency usually associated with sabotage.\nWe would recommend improvement.'
+    ]
+  };
+
+  const showAllTime = state.day >= 10;
+  const allTimeLine = showAllTime ? `All time success rate: ${allAvg}%\n` : '';
+  const STATS_LINES = [
+    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
+    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
+    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`
+  ];
+
+  const SPECIES_LINES = [
+    `You appear to favour ${speciesStr}.`,
+    `Your hiring patterns suggest a preference for ${speciesStr}.`,
+    `We notice a recurring reliance on ${speciesStr}.`,
+    `Your recruitment habits favour ${speciesStr}.\nDiversification may reduce future incidents.`
+  ];
+
+  const PROFIT_LINES = [
+    `Since your appointment, the Agency has earned ${state.totalEarned} credits.`,
+    `Your activities have generated ${state.totalEarned} credits in revenue.`,
+    `The Agency\'s current profit from your operations stands at ${state.totalEarned} credits.`,
+    `After salaries and fines, your net contribution is ${state.totalEarned} credits.`
+  ];
+
+  const ADVICE = [
+    'Consider reviewing species compatibility before hiring.',
+    'Conflicts are avoidable with minimal research.',
+    'Larger crews tend to perform more reliably.',
+    'High HATE applicants should be used cautiously.',
+    'Meeting mission requirements is generally recommended.',
+    'Contracts should be read before launching ships.'
+  ];
+
+  const CLOSINGS = [
+    'That will be all.',
+    'Try to maintain this level of competence.',
+    'We will review your progress again soon.',
+    'Return to your workstation.',
+    'The Agency is watching your numbers.'
+  ];
+
+  const parts = [
+    pick(GREETINGS),
+    pick(PERFORMANCE[tier]),
+    pick(STATS_LINES),
+    topSpecies.length > 0 ? pick(SPECIES_LINES) : null,
+    pick(PROFIT_LINES),
+    tier !== 'excellent' ? pick(ADVICE) : null,
+    pick(CLOSINGS)
+  ].filter(Boolean);
+
+  return parts.join('\n\n');
+}
+
+let checkpointTypewriterTimer = null;
+
+function showCheckpoint(onDone) {
+  const overlay = document.getElementById('checkpoint-overlay');
+  const textEl = document.getElementById('checkpoint-text');
+  const btnRow = document.getElementById('checkpoint-btn-row');
+  const btn = document.getElementById('checkpoint-btn');
+
+  textEl.textContent = '';
+  btnRow.classList.add('hidden');
+  overlay.classList.add('visible');
+
+  const fullText = buildCheckpointDialogue();
+  let i = 0;
+  const delay = 30;
+
+  if (checkpointTypewriterTimer) clearInterval(checkpointTypewriterTimer);
+  checkpointTypewriterTimer = setInterval(() => {
+    if (i >= fullText.length) {
+      clearInterval(checkpointTypewriterTimer);
+      btnRow.classList.remove('hidden');
+      btn.onclick = function() {
+        bounceThen(btn, function() {
+          overlay.classList.remove('visible');
+          onDone();
+        });
+      };
+      return;
+    }
+    textEl.textContent = fullText.slice(0, i + 1);
+    // Typing sound on printable chars, skip newlines
+    if (fullText[i] !== '\n' && i % 3 === 0) playSfx('typing', 0.4);
+    document.getElementById('checkpoint-scroll').scrollTop = 999999;
+    i++;
+  }, delay);
+}
+
+function closeCheckpoint() {} // handled via btn.onclick above
+
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
   setStatusBar('light');
@@ -3018,6 +3276,7 @@ function nextDay() {
     document.getElementById('modal-btn').onclick = function() {
       bounceThen(document.getElementById('modal-btn'), function() {
         state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
+        state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0;
         document.getElementById('res-score').style.color = "";
         document.getElementById('modal-btn-text').innerText = t('nextDay');
         document.getElementById('modal-btn').onclick = function() {
@@ -3034,7 +3293,12 @@ function nextDay() {
   } else {
     state.day++;
     closeDrawer();
-    startDay();
+    // Checkpoint every 5 days (after day 5, 10, 15...)
+    if (state.day > 1 && (state.day - 1) % 5 === 0) {
+      showCheckpoint(() => startDay());
+    } else {
+      startDay();
+    }
   }
 }
 
