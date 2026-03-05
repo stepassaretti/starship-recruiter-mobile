@@ -3233,6 +3233,14 @@ function showCheckpoint(onDone) {
   overlay.classList.add('visible');
 
   const fullText = buildCheckpointDialogue();
+
+  // Set image based on tier
+  const last5 = state.missionLog.slice(-5);
+  const avg5 = last5.length ? Math.round(last5.reduce((s, m) => s + m.score, 0) / last5.length) : 0;
+  const tier = getPerformanceTier(avg5);
+  const imgMap = { excellent: 'review_very_good', good: 'review_very_good', acceptable: 'review_neutral', concerning: 'review_very_bad', catastrophic: 'review_very_bad' };
+  document.getElementById('checkpoint-img').src = `images/${imgMap[tier]}.png`;
+
   let i = 0;
   const delay = 30;
 
@@ -3247,6 +3255,9 @@ function showCheckpoint(onDone) {
           onDone();
         });
       };
+      // Scroll down smoothly to reveal the button
+      const scrollEl = document.getElementById('checkpoint-scroll');
+      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
       return;
     }
     textEl.textContent = fullText.slice(0, i + 1);
