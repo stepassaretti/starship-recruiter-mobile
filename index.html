@@ -2168,6 +2168,18 @@ const RACES = {
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
 const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
 
+// ══════════════════════════════════════════════
+// SABOTEUR SYSTEM
+// ══════════════════════════════════════════════
+const SABOTEUR_SPECIES = [
+  "Vorrkai","Shreth","Nullian","Phaedrox","Kelthari",
+  "Siphonite","Grethali","Vespuloid","Ondrivax","Skethian",
+  "Lurathi","Xenoveil","Delvanak","Wraithkin","Pallowform",
+  "Echocyte","Sornveth","Vestigant","Calvreth","Umbralite"
+];
+// Track next saboteur day: randomised between 4-5 days after last appearance
+let nextSaboteurDay = 14 + rand(0, 1); // first appearance day 14 or 15
+
 let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [],
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
@@ -2186,6 +2198,43 @@ function generateApplicantForRace(id, raceKey) {
   const app = generateApplicant(id, raceKey);
   state.day = savedDay;
   return app;
+}
+
+function generateSaboteur(id) {
+  // Pick random fake species name
+  const fakeName = SABOTEUR_SPECIES[rand(0, SABOTEUR_SPECIES.length - 1)];
+  // Pick a name from any existing species pool
+  const allRaceKeys = Object.keys(NAME_MAP).filter(k => NAME_MAP[k] && NAME_MAP[k].length > 1);
+  const randomRaceKey = allRaceKeys[rand(0, allRaceKeys.length - 1)];
+  const nameArr = NAME_MAP[randomRaceKey].filter(Boolean);
+  const borrowedName = nameArr[rand(0, nameArr.length - 1)];
+  // Portrait from saboteur folder (1-30)
+  const portraitNum = rand(1, 30);
+  const portrait = `images/saboteur/saboteur_portrait_${portraitNum}.png`;
+  // High stats — always strong in mission-relevant skills
+  const m = state.mission;
+  let str = rand(35, 55), int = rand(35, 55), cha = rand(35, 55);
+  // Boost mission-relevant stats to make it tempting
+  if (m) {
+    m.reqs.forEach(s => {
+      if (s === 'str') str = rand(55, 80);
+      else if (s === 'int') int = rand(55, 80);
+      else if (s === 'cha') cha = rand(55, 80);
+    });
+  }
+  const hate = rand(0, 40); // low hate so it doesn't raise suspicion
+  const exp = ROLES[rand(0, ROLES.length - 1)];
+  const cost = Math.floor((str + int + cha) * 1.2) + rand(5, 15);
+  return {
+    id: id,
+    name: borrowedName,
+    race: fakeName,       // fake species — not in manual
+    isSaboteur: true,
+    str, int, cha, hate, exp,
+    portrait,
+    cost,
+    icon: null            // no real icon — will be resolved at slot-render time
+  };
 }
 
 function generateApplicant(id, forceRace) {
@@ -2479,6 +2528,14 @@ function startDay() {
       }
     }
 
+    // Saboteur injection from day 14+, every 4-5 days
+    if (state.day >= 14 && state.day >= nextSaboteurDay) {
+      const saboteur = generateSaboteur(state.pool.length);
+      const insertAt = rand(0, state.pool.length);
+      state.pool.splice(insertAt, 0, saboteur);
+      nextSaboteurDay = state.day + 4 + rand(0, 1); // next in 4-5 days
+    }
+
     // Re-assign ids to match final positions
     state.pool.forEach((a, idx) => { a.id = idx; });
   }
@@ -2710,7 +2767,24 @@ function slotHTML(i) {
   const app = state.roster[i];
   let h = `<div class="slot${app ? ' filled' : ''}" onclick="tapSlot(${i})">`;
   h += `<svg class="slot-fill-bg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"><polygon fill="#000" points="0,2 2,2 2,0 38,0 38,2 40,2 40,38 38,38 38,40 2,40 2,38 0,38"/></svg>`;
-  if (app) h += `<img class="slot-icon" src="${RACES[app.race].icon}" style="position:absolute;width:32px;height:32px;top:4px;left:4px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
+  if (app) {
+    let slotIconSrc;
+    if (app.isSaboteur) {
+      // Mimic a species already in the roster, or random from pool if none yet
+      const otherHired = state.roster.filter(a => a && !a.isSaboteur && a.id !== app.id);
+      if (otherHired.length > 0) {
+        const mimic = otherHired[rand(0, otherHired.length - 1)];
+        slotIconSrc = RACES[mimic.race] ? RACES[mimic.race].icon : '';
+      } else {
+        const poolSpecies = state.pool.filter(a => !a.isSaboteur && RACES[a.race]);
+        const mimic = poolSpecies.length > 0 ? poolSpecies[rand(0, poolSpecies.length - 1)] : null;
+        slotIconSrc = mimic ? RACES[mimic.race].icon : '';
+      }
+    } else {
+      slotIconSrc = RACES[app.race] ? RACES[app.race].icon : '';
+    }
+    h += `<img class="slot-icon" src="${slotIconSrc}" style="position:absolute;width:32px;height:32px;top:4px;left:4px;z-index:2;image-rendering:pixelated;" onerror="this.style.display='none'">`;
+  }
   h += `</div>`;
   return h;
 }
@@ -2881,6 +2955,7 @@ function launchMission() {
   const cost = hired.reduce((sum, app) => sum + app.cost, 0);
   const preDeductionBalance = state.money;
   state.money -= cost;
+  const isSabotaged = hired.some(a => a.isSaboteur);
   const debitUsed = state.money < 0 ? Math.abs(state.money) : 0;
   let score = 0;
 
@@ -2907,7 +2982,9 @@ function launchMission() {
   let conflictLines = [];
   for(let i=0;i<hired.length;i++) {
     for(let j=i+1;j<hired.length;j++) {
-      let a=hired[i], rA=RACES[a.race], b=hired[j], rB=RACES[b.race];
+      let a=hired[i], b=hired[j];
+      if (!RACES[a.race] || !RACES[b.race]) continue; // skip saboteur in conflict calc
+      let rA=RACES[a.race], rB=RACES[b.race];
       // Cheesponge absorbs Drakhen hate completely — show as 0% conflict
       const isCheespongeVsDrakhen = (a.race==='Cheesponge'&&b.race==='Drakhen')||(a.race==='Drakhen'&&b.race==='Cheesponge');
       if (isCheespongeVsDrakhen) {
@@ -2971,12 +3048,18 @@ function launchMission() {
     earned = -Math.floor(state.mission.reward * diff);
     fineDetail = t('fineDetail').replace('%min%', state.mission.minReq).replace('%score%', score);
   }
+  // Sabotage overrides payout — reward stolen, no fine
+  if (isSabotaged) {
+    earned = 0;
+    isSuccess = false;
+  }
+
   state.money += earned;
 
   // Track mission result and hires for checkpoint
   state.missionLog.push({ day: state.day, score, success: isSuccess });
   if (earned > 0) state.totalEarned += earned;
-  hired.forEach(a => { state.allTimeHires[a.race] = (state.allTimeHires[a.race] || 0) + 1; });
+  hired.forEach(a => { if (!a.isSaboteur) state.allTimeHires[a.race] = (state.allTimeHires[a.race] || 0) + 1; });
 
   // Build structured HTML
   function resRow(label, value, isNet) {
@@ -3067,7 +3150,7 @@ function launchMission() {
   document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
   document.getElementById('res-msg').style.visibility = 'hidden';
   document.getElementById('res-log').innerHTML = '';
-  document.getElementById('res-title').innerText = t('debriefing');
+  document.getElementById('res-title').innerText = isSabotaged ? t('debriefing') : t('debriefing');
   document.getElementById('modal-btn').onclick = function() {
     bounceThen(document.getElementById('modal-btn'), nextDay);
   };
@@ -3080,7 +3163,7 @@ function launchMission() {
 
   // Score duration is proportional: 2500ms for 100%, so score/100 * 2500
   const scoreEl = document.getElementById('res-score');
-  const targetScore = score;
+  const targetScore = isSabotaged ? 85 : score;
   const duration = (targetScore / 100) * 2500;
   const startTime = performance.now();
   let lastDisplayed = -1;
@@ -3088,7 +3171,7 @@ function launchMission() {
   function animateScore(now) {
     if (duration === 0) {
       scoreEl.innerText = targetScore + '%';
-      revealMsg();
+      isSabotaged ? triggerSabotageGlitch() : revealMsg();
       return;
     }
     const elapsed = now - startTime;
@@ -3096,7 +3179,6 @@ function launchMission() {
     const eased = 1 - Math.pow(1 - t0, 3);
     const current = Math.floor(eased * targetScore);
     scoreEl.innerText = current + '%';
-    // Play typing tick on every integer change
     if (current !== lastDisplayed) {
       playSfx('typing', 0.4);
       hapticTick();
@@ -3108,10 +3190,38 @@ function launchMission() {
       scoreEl.innerText = targetScore + '%';
       playSfx('target');
       hapticTarget();
-      revealMsg();
+      if (isSabotaged) triggerSabotageGlitch();
+      else revealMsg();
     }
   }
   requestAnimationFrame(animateScore);
+
+  function triggerSabotageGlitch() {
+    // 1-bit glitch: corrupt the score counter with block chars, then snap to SABOTAGED
+    const glitchFrames = ['█5%', '##%', '█%', '  %', '███'];
+    let f = 0;
+    const glitchTimer = setInterval(() => {
+      scoreEl.innerText = glitchFrames[f % glitchFrames.length];
+      f++;
+      if (f >= 8) {
+        clearInterval(glitchTimer);
+        scoreEl.innerText = '—';
+        scoreEl.style.color = '#ff4444';
+        document.getElementById('res-msg').innerText = 'MISSION SABOTAGED';
+        document.getElementById('res-msg').style.color = '#ff4444';
+        document.getElementById('res-msg').style.visibility = '';
+        // Show sabotage log after short pause
+        setTimeout(() => animateLogRows(sabotageHTML), 400);
+      }
+    }, 120);
+  }
+
+  // Sabotage debriefing HTML
+  const sabotageHTML = `
+    <div class="res-row"><span class="res-row-label">An unidentified crew member has compromised the operation and absconded with all recovered assets.</span></div>
+    <div class="res-divider"></div>
+    <div class="res-row net"><span class="res-row-label">${t('netFinancialChange')}</span><span class="res-row-value">0 CR</span></div>
+  `;
 
   function revealMsg() {
     document.getElementById('res-msg').style.visibility = '';
@@ -3993,6 +4103,21 @@ startDay();
     `;
   }
 
+  function buildSaboteurWarningPage(pageEl) {
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+        <span class="rules-briefing-sub">AGENCY ALERT</span>
+      </div>
+      <div class="rules-divider"></div>
+      <ul>
+        <li>Intelligence has reached the Agency that rival syndicates are attempting to place operatives aboard contracted vessels.</li>
+        <li>We have no reliable method of identifying them.</li>
+        <li>Stay alert.</li>
+      </ul>
+    `;
+  }
+
   function buildExpMandatePage(pageEl) {
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
@@ -4048,10 +4173,25 @@ startDay();
       const hasNewSpecies = getUnlockedSpeciesForDay(state.day).some(r => !prevUnlocked.has(r));
       const isExpMandateDay = state.day === 10;
 
-      if (isExpMandateDay) {
-        // Day 10: new directive page + mission + ship + (new species if any)
+      const isSaboteurDay = state.day === 15;
+
+      if (isExpMandateDay && isSaboteurDay) {
+        // Both on same day (shouldn't happen but handle gracefully)
+        RULES_TOTAL = hasNewSpecies ? 5 : 4;
+        buildExpMandatePage(document.getElementById('rules-page-1'));
+        buildSaboteurWarningPage(document.getElementById('rules-page-2'));
+        buildMissionPage(document.getElementById('rules-page-3'));
+        buildShipPage(document.getElementById('rules-page-4'));
+        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-5'));
+      } else if (isExpMandateDay) {
         RULES_TOTAL = hasNewSpecies ? 4 : 3;
         buildExpMandatePage(document.getElementById('rules-page-1'));
+        buildMissionPage(document.getElementById('rules-page-2'));
+        buildShipPage(document.getElementById('rules-page-3'));
+        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
+      } else if (isSaboteurDay) {
+        RULES_TOTAL = hasNewSpecies ? 4 : 3;
+        buildSaboteurWarningPage(document.getElementById('rules-page-1'));
         buildMissionPage(document.getElementById('rules-page-2'));
         buildShipPage(document.getElementById('rules-page-3'));
         if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
