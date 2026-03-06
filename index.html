@@ -1645,6 +1645,9 @@ const LANG = {
     effFatal: "Fatal understaffing",
     synergyBonus: "Synergy bonus",
     drakhForceBonus: "Drakh Force Bonus",
+    experienceReq: "Experience Req",
+    expMandateFulfilled: "Experience mandate fulfilled",
+    expMandateIgnored: "Experience mandate ignored",
     overperformBonus: "Overperformance bonus",
     fineApplied: "FINE APPLIED",
     fineDetail: "Required %min%%, achieved %score%%",
@@ -1748,6 +1751,9 @@ const LANG = {
     effFatal: "Carenza fatale di equipaggio",
     synergyBonus: "Bonus sinergia",
     drakhForceBonus: "Bonus Forza Drakh",
+    experienceReq: "Req. Esperienza",
+    expMandateFulfilled: "Mandato esperienza soddisfatto",
+    expMandateIgnored: "Mandato esperienza ignorato",
     overperformBonus: "Bonus prestazione extra",
     fineApplied: "MULTA APPLICATA",
     fineDetail: "Richiesto %min%%, ottenuto %score%%",
@@ -1944,6 +1950,7 @@ function getMissionHTML() {
     <div class="section-title" style="margin-bottom:10px;">${t('missionIntel').toUpperCase()}</div>
     <div class="mission-title" style="font-size:20px; font-family:'VT323',monospace; font-weight:700; margin-bottom:10px; line-height:1.1;">${title}</div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('requirements')}</span><span class="mission-flat-value">${reqStr}</span></div>
+    ${m.expReq ? `<div class="mission-flat-row"><span class="mission-flat-label">${t('experienceReq')}</span><span class="mission-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minSuccess')}</span><span class="mission-flat-value">${m.minReq}%</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minCrew')}</span><span class="mission-flat-value">${state.ship.min}</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('maxCrew')}</span><span class="mission-flat-value">${state.ship.max}</span></div>
@@ -2292,11 +2299,17 @@ function generateMission() {
   if (state.day === 1) available = types.filter(mt => mt.id === "ASSAULT");
   // Day 2-3: STR or INT only (no CHA)
   else if (state.day <= 3) available = types.filter(mt => mt.t === 1 && (mt.id === "ASSAULT" || mt.id === "RESEARCH"));
+  // Day 10: force 1-stat mission so expReq is always triggered
+  else if (state.day === 10) available = types.filter(mt => mt.t === 1);
   const m = available[rand(0, available.length - 1)];
   const title = m.titles[rand(0, m.titles.length - 1)];
   const targetBase = 45 + Math.floor(state.day * 7.5);
+  const targetBaseCha = 45 + Math.floor(state.day * 3);
   let targets = {};
-  m.stat.forEach(s => targets[s] = targetBase + rand(-5, 5));
+  m.stat.forEach(s => {
+    const base = s === 'cha' ? targetBaseCha : targetBase;
+    targets[s] = base + rand(-5, 5);
+  });
 
   // Dynamic minReq from day 5 onwards; fixed progressive before
   let minReq;
@@ -2319,8 +2332,22 @@ function generateMission() {
     minReq = rawMinReq;
   }
 
+  // Experience requirement: only on 1-stat missions, from day 10
+  // Day 10 mandatory, day 11+ 50% chance
+  const EXP_REQ_MAP = {
+    'ASSAULT':   'FORCE',
+    'DIPLOMACY': 'COMMAND',
+    'RESEARCH':  'SCIENCE'
+  };
+  let expReq = null;
+  if (m.t === 1 && state.day >= 10) {
+    if (state.day === 10 || Math.random() < 0.5) {
+      expReq = EXP_REQ_MAP[m.id] || null;
+    }
+  }
+
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
-    minReq: minReq,
+    minReq: minReq, expReq: expReq,
     reward: Math.round((500 + (state.day * 90)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)) };
 }
 
@@ -2434,6 +2461,24 @@ function startDay() {
         injected++;
       }
     }
+    // Ensure at least 20% of pool has required experience if expReq exists
+    if (state.mission.expReq) {
+      const minExpCount = Math.ceil(state.pool.length * 0.20);
+      const currentExpCount = state.pool.filter(a => a.exp === state.mission.expReq).length;
+      const toInjectExp = Math.max(0, minExpCount - currentExpCount);
+      let expAttempts = 0;
+      let expInjected = 0;
+      while (expInjected < toInjectExp && expAttempts < 100) {
+        const app = generateApplicant(state.pool.length);
+        expAttempts++;
+        if (state.pool.some(a => a.name === app.name)) continue;
+        app.exp = state.mission.expReq;
+        const insertAt = rand(0, state.pool.length);
+        state.pool.splice(insertAt, 0, app);
+        expInjected++;
+      }
+    }
+
     // Re-assign ids to match final positions
     state.pool.forEach((a, idx) => { a.id = idx; });
   }
@@ -2637,8 +2682,13 @@ function updateMissionProgress() {
   const shipMet = crewCount >= state.ship.min;
   const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${max}</span>`;
 
+  const expMet = state.mission && state.mission.expReq
+    && state.roster.some(a => a && a.exp === state.mission.expReq);
+  const expPart = state.mission && state.mission.expReq
+    ? ` &nbsp;|&nbsp; <span class="stat-val${expMet ? ' met' : ''}">${roleName(state.mission.expReq)}</span>`
+    : '';
   document.getElementById('slot-info-row').innerHTML =
-    `${t('missionLabel')}&nbsp;${reqParts} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
+    `${t('missionLabel')}&nbsp;${reqParts}${expPart} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
 
   // Compress letter-spacing only if content overflows one line
   const row = document.getElementById('slot-info-row');
@@ -2897,7 +2947,14 @@ function launchMission() {
     }
   }
 
-  score = Math.floor(rawScore + effMod - conflictPenalty + synergy + drakhForce);
+  // 6. EXPERIENCE MANDATE
+  let expMandateMod = 0;
+  if (state.mission.expReq) {
+    const hasExp = hired.some(a => a.exp === state.mission.expReq);
+    expMandateMod = hasExp ? 10 : -10;
+  }
+
+  score = Math.floor(rawScore + effMod - conflictPenalty + synergy + drakhForce + expMandateMod);
   let overperformance = 0;
   if (score > 100) { overperformance = Math.min(20, score - 100); score = 100; }
   if (score < 0) score = 0;
@@ -2973,6 +3030,16 @@ function launchMission() {
   // Drakh Force Bonus
   if (drakhForce > 0) {
     html += resRow(t('drakhForceBonus'), `+${drakhForce}%`);
+    html += resDivider();
+  }
+
+  // Experience mandate
+  if (state.mission.expReq) {
+    if (expMandateMod > 0) {
+      html += resRow(t('expMandateFulfilled'), '+10%');
+    } else {
+      html += resRow(t('expMandateIgnored'), '-10%');
+    }
     html += resDivider();
   }
 
@@ -3866,6 +3933,7 @@ startDay();
       <div class="rules-divider"></div>
       <div class="rules-mission-title">${missionLabel}</div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('requirements')}</span><span class="rules-flat-value">${reqStr}</span></div>
+      ${m.expReq ? `<div class="rules-flat-row"><span class="rules-flat-label">${t('experienceReq')}</span><span class="rules-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minSuccess')}</span><span class="rules-flat-value">${m.minReq}%</span></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minCrew')}</span><span class="rules-flat-value">${s.min}</span></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('maxCrew')}</span><span class="rules-flat-value">${s.max}</span></div>
@@ -3925,6 +3993,20 @@ startDay();
     `;
   }
 
+  function buildExpMandatePage(pageEl) {
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+        <span class="rules-briefing-sub">NEW DIRECTIVE</span>
+      </div>
+      <div class="rules-divider"></div>
+      <ul>
+        <li>Effective immediately, certain clients are specifying crew <strong>experience requirements</strong> alongside standard performance metrics.</li>
+        <li>When an <strong>EXPERIENCE REQ</strong> is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty.</li>
+      </ul>
+    `;
+  }
+
   function populateSheetContent() {
     // Clear all pages first
     for (let i = 1; i <= 6; i++) {
@@ -3961,14 +4043,23 @@ startDay();
       buildMissionPage(document.getElementById('rules-page-4'));
       buildShipPage(document.getElementById('rules-page-5'));
     } else {
-      // Day 2+: 2 pages (mission + ship) or 3 if new species
+      // Day 2+: pages depend on new species and exp mandate introduction
       const prevUnlocked = new Set(getUnlockedSpeciesForDay(state.day - 1));
       const hasNewSpecies = getUnlockedSpeciesForDay(state.day).some(r => !prevUnlocked.has(r));
-      RULES_TOTAL = hasNewSpecies ? 3 : 2;
-      buildMissionPage(document.getElementById('rules-page-1'));
-      buildShipPage(document.getElementById('rules-page-2'));
-      if (hasNewSpecies) {
-        buildNewSpeciesPage(document.getElementById('rules-page-3'));
+      const isExpMandateDay = state.day === 10;
+
+      if (isExpMandateDay) {
+        // Day 10: new directive page + mission + ship + (new species if any)
+        RULES_TOTAL = hasNewSpecies ? 4 : 3;
+        buildExpMandatePage(document.getElementById('rules-page-1'));
+        buildMissionPage(document.getElementById('rules-page-2'));
+        buildShipPage(document.getElementById('rules-page-3'));
+        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
+      } else {
+        RULES_TOTAL = hasNewSpecies ? 3 : 2;
+        buildMissionPage(document.getElementById('rules-page-1'));
+        buildShipPage(document.getElementById('rules-page-2'));
+        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-3'));
       }
     }
   }
