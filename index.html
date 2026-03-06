@@ -1640,9 +1640,11 @@ const LANG = {
     effMinMet: "Min crew met",
     effTier1: "Understaffed (tier 1)",
     effTier2: "Understaffed (tier 2)",
+    effTier3: "Understaffed (tier 3)",
     effCritical: "Critical understaffing",
     effFatal: "Fatal understaffing",
     synergyBonus: "Synergy bonus",
+    drakhForceBonus: "Drakh Force Bonus",
     overperformBonus: "Overperformance bonus",
     fineApplied: "FINE APPLIED",
     fineDetail: "Required %min%%, achieved %score%%",
@@ -1741,9 +1743,11 @@ const LANG = {
     effMinMet: "Equipaggio minimo raggiunto",
     effTier1: "Equipaggio ridotto (livello 1)",
     effTier2: "Equipaggio ridotto (livello 2)",
+    effTier3: "Equipaggio ridotto (livello 3)",
     effCritical: "Carenza critica di equipaggio",
     effFatal: "Carenza fatale di equipaggio",
     synergyBonus: "Bonus sinergia",
+    drakhForceBonus: "Bonus Forza Drakh",
     overperformBonus: "Bonus prestazione extra",
     fineApplied: "MULTA APPLICATA",
     fineDetail: "Richiesto %min%%, ottenuto %score%%",
@@ -2141,15 +2145,15 @@ const RACES = {
   "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "Cold-blooded reptilian politicians. Excel at manipulation. Robomantoids refuse to be manipulated, which Barbitulians consider deeply antisocial. Cheesponges absorb information indiscriminately and cannot be trusted with secrets.", shortDesc: "Cold-blooded reptilian politicians. Excel at manipulation." },
   "Space-Cat":    { icon: "images/spacecat_icon.png",     images: 28, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "Feline strategists. Smart, sneaky, and always up to something. Long-Necks are too tall to ignore and too smug to tolerate. Sugorians leave traces everywhere, which ruins a clean exit. Void-Demons cannot be read, which is simply unacceptable.", shortDesc: "Feline strategists. Smart, sneaky, and always up to something." },
   "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 32, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "Avian diplomats. Peaceful by nature, terrifying when angered. Have attempted diplomatic contact with the Drakhen on eleven separate occasions. They are currently on their twelfth ambassador.", shortDesc: "Avian diplomats. Peaceful by nature, terrifying when angered." },
-  "Drakhen":      { icon: "images/drakhen_icon.png",      images: 25, str: [45,85], int: [45,75], cha: [25,55], hates: ["ALL"], desc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. Hate everyone with extraordinary consistency. Historians note this is, statistically, their most impressive achievement.", shortDesc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby." },
+  "Drakhen":      { icon: "images/drakhen_icon.png",      images: 25, str: [45,85], int: [45,75], cha: [25,55], hates: ["ALL"], desc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. Hate everyone with extraordinary consistency. Historians note this is, statistically, their most impressive achievement.\n\nNOTE FOR THE RECRUITER: Hire 3 or more Drakhens to earn a Drakh Force Bonus on your mission score.", shortDesc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. [Drakh Force Bonus if you hire 3 or more]" },
   "Aquasim":      { icon: "images/aquasim_icon.png",      images: 54, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "Grumpy amphibious creatures who, despite their name, hate getting wet. Squid make everything worse by being smugly aquatic about it. Sugorians are inexplicably slippery. Sodio dissolve on contact, which Aquasim find viscerally upsetting.", shortDesc: "Grumpy amphibious creatures who, despite their name, hate getting wet." },
   "Void-Demon":   { icon: "images/voiddemon_icon.png",    images: 9, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "Entities from an obscure dimension. Cannot die. Take no sides. Have observed every war, famine, and diplomatic incident with the same mild expression. Do not hate anyone. Simply wait.", shortDesc: "Entities from an obscure dimension. Cannot die. Take no sides." },
   "Fungi":        { icon: "images/fungi_icon.png",        images: 40, str: [15,28], int: [8,20], cha: [5,15], hates: ["Beetlegunner", "Drakhen", "Aquasim"], desc: "Small, furious mushroom people who scream constantly. Beetlegunners eat them as a field ration. Drakhen torch entire biomes without filing the relevant environmental impact forms. Aquasim flood spore colonies and call it an accident.", shortDesc: "Small, furious mushroom people who scream constantly." },
-  "Oak-Person":   { icon: "images/oakperson_icon.png",    images: 49, str: [20,35], int: [15,28], cha: [1,4], hates: ["Drakhen", "Beetlegunner", "Droid", "Robomantoid"], desc: "Humanoid logs. Slow, smell like pine. Drakhen burn forests recreationally. Beetlegunners strip bark. Droids pave everything. Robomantoids destroy things for the structural exercise. Oak-Persons have objected to all of this. Nobody has listened.", shortDesc: "Humanoid logs. Slow, smell like pine. Despise machines and nature exploiters." },
+  "Oak-Person":   { icon: "images/oakperson_icon.png",    images: 49, str: [20,35], int: [15,28], cha: [1,4], hates: ["Human", "Droid", "Drakhen"], desc: "Humanoid logs. Slow, smell like pine. Despise colonisers, machines, and anything that moves too fast. Humans have been steadily felling their forests for centuries and filing it under 'progress'. Droids pave everything they touch and call it infrastructure. Drakhen don't bother with excuses.", shortDesc: "Humanoid logs. Slow, smell like pine. Despise colonisers, machines, and anything that moves too fast." },
   "Long-Neck":    { icon: "images/longneck_icon.png",     images: 40, str: [5,10], int: [30,50], cha: [20,40], hates: ["Giant", "Aquasim", "Fungi", "Robomantoid"], desc: "Cerebral and elegant. Extremely snobbish. Giants are loud and block the view. Aquasim are permanently damp and complain about it. Fungi contaminate archived collections. Robomantoids once destroyed a Long-Neck library. There has been no forgiveness.", shortDesc: "Cerebral and elegant. Extremely snobbish." },
   "Squid":        { icon: "images/squid_icon.png",        images: 69, str: [8,18], int: [38,58], cha: [10,22], hates: ["Aquasim", "Drakhen", "Beetlegunner", "Giant"], desc: "Highly intelligent cephalopods. Intolerant of primitive species. Aquasim are aquatic and still manage to be embarrassing about it. Drakhen are an affront to the concept of intelligence. Beetlegunners touch equipment without permission. Giants knock things over.", shortDesc: "Highly intelligent cephalopods. Intolerant of primitive species." },
   "Sugorian":     { icon: "images/sugorian_icon.png",     images: 40, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable. Humans poke them out of curiosity. Sky-Elves attempt to classify them, repeatedly. Drakhen use them as an accelerant. None of these interactions have been welcome.", shortDesc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable." },
-  "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 73, str: [3,10], int: [20,32], cha: [18,30], hates: ["Barbitulian", "Drakhen", "Aquasim"], desc: "Porous, absorbent beings. Soak up damage and emotional tension. Barbitulians exploit their absorptive nature for intelligence gathering. Drakhen desiccate them on contact. Aquasim cause them to swell uncontrollably, which is as undignified as it sounds.", shortDesc: "Porous, absorbent beings. Soak up damage and emotional tension." },
+  "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 73, str: [3,10], int: [20,32], cha: [18,30], hates: ["Aquasim", "Sodio"], desc: "Porous, absorbent beings. Soak up damage and emotional tension. Aquasim cause them to swell uncontrollably. Sodio dehydrate them from across the room.\n\nNOTE FOR THE RECRUITER: Cheesponges absorb Drakhen hate entirely. Pair them with Drakhens — no conflict will occur.", shortDesc: "Porous, absorbent beings. Soak up damage and emotional tension. [Absorbs Drakhen's hate]" },
   "Sodio":        { icon: "images/sodio_icon.png",        images: 38, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve. Aquasim are their geological nemesis. Cheesponges absorb them slowly and without apology. Sugorians are inexplicably moist in every environment. Sodio have lodged complaints. The complaints dissolved.", shortDesc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve." },
   "Blorg":        { icon: "images/blorg_icon.png",        images: 39, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "Pale bureaucratic masterminds. High logic, permanent disappointment. Sugorians contaminate workstations and ignore filing protocols. Fungi spore directly onto submitted paperwork. Drakhen have destroyed fourteen Blorg administrative centres. The insurance claims are still pending.", shortDesc: "Pale bureaucratic masterminds. High logic, permanent disappointment." }
 };
@@ -2234,6 +2238,14 @@ function generateApplicant(id, forceRace) {
   if (raceKey === "Long-Neck" || raceKey === "Squid") { int = str + rand(1, 10); }
   if (raceKey === "Sodio") { str = Math.max(str, int + 1); }
 
+  // Day 20+ stat scaling: +1 per stat every 2 days beyond day 20, capped at +15
+  if (state.day >= 20) {
+    const bonus = Math.min(15, Math.floor((state.day - 20) / 2) + 1);
+    str += bonus;
+    int += bonus;
+    cha += bonus;
+  }
+
   const safeRaceName = raceKey.toLowerCase().replace(/-/g, '');
   const maxImgs = rd.images || 12;
   const portraitVariant = rand(1, maxImgs);
@@ -2309,7 +2321,7 @@ function generateMission() {
 
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
     minReq: minReq,
-    reward: 500 + (state.day * 90) };
+    reward: Math.round((500 + (state.day * 90)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)) };
 }
 
 function updateShip() {
@@ -2402,14 +2414,28 @@ function startDay() {
       if (!state.pool.some(a => a.name === newApp.name)) state.pool.push(newApp);
       attempts++;
     }
-    // Day 20+: inject 1-3 extra Drakhen
-    if (state.day >= 20) {
-      const extraDrakhen = rand(1, 3);
-      for (let i = 0; i < extraDrakhen; i++) {
+    // Tiered Drakhen injection from day 16+
+    if (state.day >= 16) {
+      let drakhenMin, drakhenMax;
+      if (state.day >= 25)      { drakhenMin = 5; drakhenMax = 8; }
+      else if (state.day >= 20) { drakhenMin = 4; drakhenMax = 7; }
+      else                      { drakhenMin = 3; drakhenMax = 5; }
+      const target = rand(drakhenMin, drakhenMax);
+      const current = state.pool.filter(a => a.race === 'Drakhen').length;
+      const toInject = Math.max(0, target - current);
+      let injectAttempts = 0;
+      let injected = 0;
+      while (injected < toInject && injectAttempts < 100) {
         const app = generateApplicantForRace(state.pool.length, 'Drakhen');
-        state.pool.push(app);
+        injectAttempts++;
+        if (state.pool.some(a => a.name === app.name)) continue;
+        const insertAt = rand(0, state.pool.length);
+        state.pool.splice(insertAt, 0, app);
+        injected++;
       }
     }
+    // Re-assign ids to match final positions
+    state.pool.forEach((a, idx) => { a.id = idx; });
   }
 
   // Reset scroll
@@ -2820,10 +2846,11 @@ function launchMission() {
   let effPct = hired.length / state.ship.min, effMod = 0;
   if (hired.length === state.ship.max) { effMod = 5; }
   else if (effPct >= 1) { effMod = 0; }
-  else if (effPct >= 0.7) { effMod = -20; }
-  else if (effPct >= 0.4) { effMod = -40; }
-  else if (effPct >= 0.15) { effMod = -60; }
-  else { effMod = -70; }
+  else if (effPct >= 0.8) { effMod = -15; }
+  else if (effPct >= 0.6) { effMod = -25; }
+  else if (effPct >= 0.4) { effMod = -50; }
+  else if (effPct >= 0.15) { effMod = -70; }
+  else { effMod = -80; }
 
   // 3. CONFLICTS — collect all into a list
   let conflictPenalty = 0, conflictCount = 0;
@@ -2831,6 +2858,15 @@ function launchMission() {
   for(let i=0;i<hired.length;i++) {
     for(let j=i+1;j<hired.length;j++) {
       let a=hired[i], rA=RACES[a.race], b=hired[j], rB=RACES[b.race];
+      // Cheesponge absorbs Drakhen hate completely — show as 0% conflict
+      const isCheespongeVsDrakhen = (a.race==='Cheesponge'&&b.race==='Drakhen')||(a.race==='Drakhen'&&b.race==='Cheesponge');
+      if (isCheespongeVsDrakhen) {
+        const cheesp = a.race==='Cheesponge' ? a : b;
+        const drakhen = a.race==='Drakhen' ? a : b;
+        conflictCount++;
+        conflictLines.push({raceA:'Cheesponge',raceB:'Drakhen',text:`${speciesName('Cheesponge')} absorbed ${speciesName('Drakhen')}'s hate (-0%)`,absorbed:true});
+        continue;
+      }
       let aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
       let bHatesA = rB.hates.includes(a.race)||(rB.hates.includes("ALL")&&b.race!==a.race);
       if (aHatesB && bHatesA) {
@@ -2846,11 +2882,22 @@ function launchMission() {
     }
   }
 
-  // 4. SYNERGY
+  // 4. SYNERGY — any conflict (even absorbed) blocks synergy
   let synergy = 0;
-  if (hired.length >= 3 && conflictCount === 0) { synergy = 10; }
+  if (hired.length >= 3 && conflictLines.length === 0) { synergy = 10; }
 
-  score = Math.floor(rawScore + effMod - conflictPenalty + synergy);
+  // 5. DRAKH FORCE BONUS
+  const drakhCount = hired.filter(a => a.race === 'Drakhen').length;
+  let drakhForce = 0;
+  if (drakhCount >= 3) {
+    if (state.day >= 25) {
+      drakhForce = 20 + (drakhCount - 3) * 5;
+    } else {
+      drakhForce = 10;
+    }
+  }
+
+  score = Math.floor(rawScore + effMod - conflictPenalty + synergy + drakhForce);
   let overperformance = 0;
   if (score > 100) { overperformance = Math.min(20, score - 100); score = 100; }
   if (score < 0) score = 0;
@@ -2890,10 +2937,11 @@ function launchMission() {
   let effLabel = '', effVal = '';
   if (hired.length === state.ship.max) { effLabel = t('effMaxCapacity'); effVal = '+5%'; }
   else if (effPct >= 1) { effLabel = t('effMinMet'); effVal = '0%'; }
-  else if (effPct >= 0.7) { effLabel = t('effTier1'); effVal = '-20%'; }
-  else if (effPct >= 0.4) { effLabel = t('effTier2'); effVal = '-40%'; }
-  else if (effPct >= 0.15) { effLabel = t('effCritical'); effVal = '-60%'; }
-  else { effLabel = t('effFatal'); effVal = '-70%'; }
+  else if (effPct >= 0.8) { effLabel = t('effTier1'); effVal = '-15%'; }
+  else if (effPct >= 0.6) { effLabel = t('effTier2'); effVal = '-25%'; }
+  else if (effPct >= 0.4) { effLabel = t('effTier3'); effVal = '-50%'; }
+  else if (effPct >= 0.15) { effLabel = t('effCritical'); effVal = '-70%'; }
+  else { effLabel = t('effFatal'); effVal = '-80%'; }
   html += resRow(effLabel, effVal);
   html += resDivider();
 
@@ -2919,6 +2967,12 @@ function launchMission() {
   // Synergy
   if (synergy > 0) {
     html += resRow(t('synergyBonus'), '+10%');
+    html += resDivider();
+  }
+
+  // Drakh Force Bonus
+  if (drakhForce > 0) {
+    html += resRow(t('drakhForceBonus'), `+${drakhForce}%`);
     html += resDivider();
   }
 
@@ -3124,7 +3178,15 @@ function buildCheckpointDialogue() {
   const last5Succ = last5.filter(m => m.success).length;
   const last5Fail = last5.filter(m => !m.success).length;
   const allAvg = log.length ? Math.round(log.reduce((s, m) => s + m.score, 0) / log.length) : 0;
-  const tier = getPerformanceTier(avg5);
+  // If fails exceed 1/3 of successes, drop tier one level
+  const TIERS = ['excellent','good','acceptable','concerning','catastrophic'];
+  let tier = getPerformanceTier(avg5);
+  if (last5Fail > 0 && last5Succ === 0) {
+    tier = 'catastrophic';
+  } else if (last5Fail * 3 > last5Succ) {
+    const idx = TIERS.indexOf(tier);
+    if (idx < TIERS.length - 1) tier = TIERS[idx + 1];
+  }
 
   // Top 3 species hired all time
   const hireEntries = Object.entries(state.allTimeHires).sort((a, b) => b[1] - a[1]);
@@ -3175,11 +3237,11 @@ function buildCheckpointDialogue() {
   };
 
   const showAllTime = state.day >= 10;
-  const allTimeLine = showAllTime ? `All time success rate: ${allAvg}%\n` : '';
+  const allTimeLine = showAllTime ? `All-time average: ${allAvg}%\n` : '';
   const STATS_LINES = [
-    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
-    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
-    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`
+    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
+    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
+    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`
   ];
 
   const SPECIES_LINES = [
@@ -3836,12 +3898,12 @@ startDay();
       const rd = RACES[r];
       const icon = rd ? rd.icon : '';
       const hateNames = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
-      const shortDesc = rd ? (rd.shortDesc || '') : '';
+      const shortDesc = (rd ? (rd.shortDesc || '') : '').replace(/\s*\[.*?\]/g, '').trim();
       const fullDesc = rd ? (rd.desc || '') : '';
       // Hate context = full desc minus the shortDesc opening
-      const hateContext = fullDesc.startsWith(shortDesc)
+      const hateContext = (fullDesc.startsWith(shortDesc)
         ? fullDesc.slice(shortDesc.length).trim()
-        : fullDesc;
+        : fullDesc).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
       return `<div class="rules-newsp-row">
         <div class="rules-newsp-name-row">
           <img class="rules-newsp-icon" src="${icon}" onerror="this.style.display='none'">
