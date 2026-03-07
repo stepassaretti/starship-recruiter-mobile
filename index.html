@@ -2178,12 +2178,13 @@ const SABOTEUR_SPECIES = [
   "Echocyte","Sornveth","Vestigant","Calvreth","Umbralite"
 ];
 // Track next saboteur day: randomised between 4-5 days after last appearance
-let nextSaboteurDay = 14 + rand(0, 1); // first appearance day 14 or 15
+
 
 let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [],
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
-  totalEarned: 0       // cumulative credits earned (positive payouts only)
+  totalEarned: 0,      // cumulative credits earned (positive payouts only)
+  nextSaboteurDay: 14  // first saboteur appears day 14 or 15 (randomised at startDay)
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -2224,7 +2225,7 @@ function generateSaboteur(id) {
   }
   const hate = rand(0, 40); // low hate so it doesn't raise suspicion
   const exp = ROLES[rand(0, ROLES.length - 1)];
-  const cost = Math.floor((str + int + cha) * 1.2) + rand(5, 15);
+  const cost = rand(90, 115);
   return {
     id: id,
     name: borrowedName,
@@ -2529,11 +2530,13 @@ function startDay() {
     }
 
     // Saboteur injection from day 14+, every 4-5 days
-    if (state.day >= 14 && state.day >= nextSaboteurDay) {
+    // Randomise first saboteur day on day 1 load
+    if (state.day === 1) state.nextSaboteurDay = 14 + rand(0, 1);
+    if (state.day >= 14 && state.day >= state.nextSaboteurDay) {
       const saboteur = generateSaboteur(state.pool.length);
       const insertAt = rand(0, state.pool.length);
       state.pool.splice(insertAt, 0, saboteur);
-      nextSaboteurDay = state.day + 4 + rand(0, 1); // next in 4-5 days
+      state.nextSaboteurDay = state.day + 4 + rand(0, 1); // next in 4-5 days
     }
 
     // Re-assign ids to match final positions
@@ -3147,7 +3150,9 @@ function launchMission() {
   // Reset UI — hide msg and button until animation completes
   document.getElementById('res-score').innerText = '0%';
   document.getElementById('res-score').style.color = '';
+  document.getElementById('res-msg').style.color = '';
   document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
+  if (!isSuccess && !isSabotaged) document.getElementById('res-msg').style.color = '#ff4444';
   document.getElementById('res-msg').style.visibility = 'hidden';
   document.getElementById('res-log').innerHTML = '';
   document.getElementById('res-title').innerText = isSabotaged ? t('debriefing') : t('debriefing');
@@ -3429,10 +3434,7 @@ function buildCheckpointDialogue() {
   ];
 
   const PROFIT_LINES = [
-    `Since your appointment, the Agency has earned ${state.totalEarned} credits.`,
-    `Your activities have generated ${state.totalEarned} credits in revenue.`,
-    `The Agency\'s current profit from your operations stands at ${state.totalEarned} credits.`,
-    `After salaries and fines, your net contribution is ${state.totalEarned} credits.`
+    ``, ``, ``, ``
   ];
 
   const ADVICE = [
@@ -3532,7 +3534,7 @@ function nextDay() {
     document.getElementById('modal-btn').onclick = function() {
       bounceThen(document.getElementById('modal-btn'), function() {
         state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
-        state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0;
+        state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0; state.nextSaboteurDay=14;
         document.getElementById('res-score').style.color = "";
         document.getElementById('modal-btn-text').innerText = t('nextDay');
         document.getElementById('modal-btn').onclick = function() {
@@ -3634,6 +3636,13 @@ let audioCtx = null;
 let gainNode = null;
 let audioSourceCreated = false;
 let fadeTimer = null;
+
+// Resume AudioContext when app returns to foreground (iOS/Android backgrounding fix)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+});
 
 // ── SFX SYSTEM — Audio element pool (reliable on iOS/Android) ──
 const SFX_FILES = {
