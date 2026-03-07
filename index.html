@@ -962,11 +962,19 @@ body {
 
 /* Page 1: Mission briefing */
 .rules-briefing-header {
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   font-size: 13px;
   line-height: 1.5;
   margin-bottom: 10px;
   font-family: 'VT323', monospace;
+}
+.rules-briefing-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 .rules-briefing-day {
   font-size: 22px;
@@ -979,6 +987,12 @@ body {
   opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+.rules-briefing-icon {
+  width: 60px;
+  height: 60px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
 }
 .rules-mission-title {
   font-size: 20px;
@@ -1029,13 +1043,13 @@ body {
 .rules-ship-section {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
 }
 .rules-ship-img {
   width: 100%;
-  height: 90px;
-  object-fit: contain;
+  height: auto;
+  object-fit: unset;
   image-rendering: pixelated;
   display: block;
   margin-bottom: 4px;
@@ -1043,7 +1057,7 @@ body {
 .rules-ship-name {
   font-size: 18px;
   font-weight: bold;
-  text-align: center;
+  text-align: left;
 }
 .rules-new-species-header {
   font-size: 18px;
@@ -1078,10 +1092,9 @@ body {
 }
 .rules-divider {
   width: 100%;
-  height: 1px;
-  background: #000;
+  height: 2px;
+  background-image: repeating-linear-gradient(to right, rgba(255,255,255,0.6) 0px, rgba(255,255,255,0.6) 2px, transparent 2px, transparent 4px);
   margin: 8px 0;
-  opacity: 0.15;
 }
 
 .rules-cover-title {
@@ -1695,7 +1708,15 @@ const LANG = {
     rule5: "<u>Salaries</u> are deducted before launch. Stay within budget.",
     rule6: "Results are calculated from crew power, ship efficiency and conflict penalties. Luck is not involved.",
     rulesClosing: "Now you can review your first mission briefing.",
-    rulesAndBriefing: "RULES<br>AND<br>BRIEFING"
+    rulesAndBriefing: "RULES<br>AND<br>BRIEFING",
+    missionSabotaged: "MISSION SABOTAGED",
+    sabotageMsg: "An unidentified crew member has compromised the operation and absconded with all recovered assets.",
+    agencyAlert: "AGENCY ALERT",
+    saboteurWarning1: "Intelligence has reached the Agency that rival syndicates are attempting to place saboteurs aboard contracted vessels.",
+    saboteurWarning2: "We have no reliable method of identifying them.",
+    saboteurWarning3: "Stay alert.",
+    expDirective1: "Effective immediately, certain clients are specifying crew experience requirements alongside standard performance metrics.",
+    expDirective2: "When an EXPERIENCE REQ is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty."
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -1821,7 +1842,15 @@ const LANG = {
     rule5: "Gli <u>stipendi</u> vengono detratti prima del lancio. Resta nei limiti del budget.",
     rule6: "I risultati dipendono dalla potenza dell'equipaggio, dall'efficienza della nave e dalle penalità per conflitti. La fortuna non c'entra.",
     rulesClosing: "Ora consulta il briefing di missione.",
-    rulesAndBriefing: "REGOLE<br>E<br>BRIEFING"
+    rulesAndBriefing: "REGOLE<br>E<br>BRIEFING",
+    missionSabotaged: "MISSIONE SABOTATA",
+    sabotageMsg: "Un membro dell'equipaggio non identificato ha compromesso l'operazione e si è dato alla fuga con tutti i proventi recuperati.",
+    agencyAlert: "ALLERTA AGENZIA",
+    saboteurWarning1: "L'Agenzia ha ricevuto informazioni che alcuni sindacati rivali stanno tentando di infiltrare propri sabotatori a bordo delle navi contrattate.",
+    saboteurWarning2: "Non disponiamo di un metodo affidabile per identificarli.",
+    saboteurWarning3: "Rimanete vigili.",
+    expDirective1: "Con effetto immediato, alcuni clienti specificano requisiti di esperienza dell'equipaggio oltre alle metriche di performance standard.",
+    expDirective2: "Quando è indicato un REQ. ESPERIENZA, assegnare almeno un membro dell'equipaggio con la classificazione richiesta. Il mancato rispetto comporterà una penalità sulla performance."
   }
 };
 
@@ -1902,7 +1931,6 @@ function closeDrawer() {
   const overlay = document.getElementById('drawer-overlay');
 
   playSfx('menu_close', 1, 2);
-  playSfx('button');
   // If closing during intro, exit intro mode too
   bar.classList.remove('intro-mode');
 
@@ -3212,7 +3240,7 @@ function launchMission() {
         clearInterval(glitchTimer);
         scoreEl.innerText = '—';
         scoreEl.style.color = '#ff4444';
-        document.getElementById('res-msg').innerText = 'MISSION SABOTAGED';
+        document.getElementById('res-msg').innerText = t('missionSabotaged');
         document.getElementById('res-msg').style.color = '#ff4444';
         document.getElementById('res-msg').style.visibility = '';
         // Show sabotage log after short pause
@@ -3223,7 +3251,7 @@ function launchMission() {
 
   // Sabotage debriefing HTML
   const sabotageHTML = `
-    <div class="res-row"><span class="res-row-label">An unidentified crew member has compromised the operation and absconded with all recovered assets.</span></div>
+    <div class="res-row"><span class="res-row-label">${t('sabotageMsg')}</span></div>
     <div class="res-divider"></div>
     <div class="res-row net"><span class="res-row-label">${t('netFinancialChange')}</span><span class="res-row-value">0 CR</span></div>
   `;
@@ -3373,71 +3401,135 @@ function buildCheckpointDialogue() {
   // Top 3 species hired all time
   const hireEntries = Object.entries(state.allTimeHires).sort((a, b) => b[1] - a[1]);
   const topSpecies = hireEntries.slice(0, 3).map(([r]) => speciesName(r));
-  const speciesStr = topSpecies.length >= 2
-    ? topSpecies.slice(0, -1).join(', ') + ' and ' + topSpecies[topSpecies.length - 1]
-    : topSpecies[0] || 'no one in particular';
 
-  const GREETINGS = [
-    'Sit down, Recruit. This will only take a moment.',
-    'Recruit. Your five-day review is due.',
-    'Welcome back. The Agency has compiled your recent decisions.',
-    'Another five days completed. Let\'s review the damage.',
-    'Time for your operational review.'
-  ];
+  const lang = currentLang === 'it' ? 'it' : 'en';
 
-  const PERFORMANCE = {
-    excellent: [
-      'Your results are unusually competent.\nWe try not to encourage this, but well done.',
-      'A very strong performance.\nPlease avoid becoming complacent.',
-      'The numbers look good.\nThe Agency appreciates predictable competence.',
-      'You are exceeding expectations.\nThis makes accounting considerably easier.'
+  const GREETINGS = {
+    en: [
+      'Sit down, Recruit. This will only take a moment.',
+      'Recruit. Your five-day review is due.',
+      'Welcome back. The Agency has compiled your recent decisions.',
+      'Another five days completed. Let\'s review the damage.',
+      'Time for your operational review.'
     ],
-    good: [
-      'Solid work so far.\nNothing alarming has occurred.',
-      'Your results are above average.\nTry to keep them there.',
-      'The Agency is satisfied with this level of performance.',
-      'A stable record. Continue.'
-    ],
-    acceptable: [
-      'Adequate results.\nThere is room for improvement.',
-      'The outcomes are acceptable, if uninspiring.',
-      'Nothing catastrophic so far. That is encouraging.',
-      'A mixed record. You may want to review your hiring decisions.'
-    ],
-    concerning: [
-      'Your results are… inconsistent.',
-      'Several missions have underperformed.\nWe recommend reading the contracts more carefully.',
-      'Your conflict management could improve.',
-      'The Agency has noticed a pattern of avoidable failures.'
-    ],
-    catastrophic: [
-      'These results are difficult to defend.',
-      'Your decisions are becoming expensive.',
-      'The Agency is reviewing whether continued investment is justified.',
-      'You are approaching levels of inefficiency usually associated with sabotage.\nWe would recommend improvement.'
+    it: [
+      'Siediti, Reclutatore. Non ci vorrà molto.',
+      'Reclutatore. È il momento della revisione degli ultimi 5 giorni.',
+      'Bentornato. L\'Agenzia ha analizzato le tue ultime decisioni.',
+      'Altri cinque giorni completati. Vediamo i danni.',
+      'È tempo della tua revisione operativa.'
     ]
   };
 
+  const PERFORMANCE = {
+    en: {
+      excellent: [
+        'Your results are unusually competent.\nWe try not to encourage this, but well done.',
+        'A very strong performance.\nPlease avoid becoming complacent.',
+        'The numbers look good.\nThe Agency appreciates predictable competence.',
+        'You are exceeding expectations.\nThis makes accounting considerably easier.'
+      ],
+      good: [
+        'Solid work so far.\nNothing alarming has occurred.',
+        'Your results are above average.\nTry to keep them there.',
+        'The Agency is satisfied with this level of performance.',
+        'A stable record. Continue.'
+      ],
+      acceptable: [
+        'Adequate results.\nThere is room for improvement.',
+        'The outcomes are acceptable, if uninspiring.',
+        'Nothing catastrophic so far. That is encouraging.',
+        'A mixed record. You may want to review your hiring decisions.'
+      ],
+      concerning: [
+        'Your results are… inconsistent.',
+        'Several missions have underperformed.\nWe recommend reading the contracts more carefully.',
+        'Your conflict management could improve.',
+        'The Agency has noticed a pattern of avoidable failures.'
+      ],
+      catastrophic: [
+        'These results are difficult to defend.',
+        'Your decisions are becoming expensive.',
+        'The Agency is reviewing whether continued investment is justified.',
+        'You are approaching levels of inefficiency usually associated with sabotage.\nWe would recommend improvement.'
+      ]
+    },
+    it: {
+      excellent: [
+        'I tuoi risultati sono insolitamente competenti.\nNon diciamolo troppo ad alta voce, ma ben fatto.',
+        'Una performance molto solida.\nEvita di diventare compiacente.',
+        'I numeri sono buoni.\nL\'Agenzia apprezza la competenza prevedibile.',
+        'Stai superando le aspettative.\nQuesto semplifica notevolmente la contabilità.'
+      ],
+      good: [
+        'Lavoro solido finora.\nNon è accaduto niente di allarmante.',
+        'I tuoi risultati sono sopra la media.\nCerca di mantenerli.',
+        'L\'Agenzia è soddisfatta di questo livello di performance.',
+        'Un curriculum stabile. Continua.'
+      ],
+      acceptable: [
+        'Risultati adeguati.\nC\'è margine per migliorare.',
+        'I risultati sono accettabili, seppur poco ispiranti.',
+        'Niente di catastrofico finora. Incoraggiante.',
+        'Un curriculum misto. Potresti rivedere le tue decisioni di assunzione.'
+      ],
+      concerning: [
+        'I tuoi risultati sono… incoerenti.',
+        'Diverse missioni hanno reso al di sotto delle aspettative.\nRacomandiamo di leggere i contratti con più attenzione.',
+        'La gestione dei conflitti potrebbe migliorare.',
+        'L\'Agenzia ha rilevato un pattern di fallimenti evitabili.'
+      ],
+      catastrophic: [
+        'Questi risultati sono difficili da giustificare.',
+        'Le tue decisioni stanno diventando costose.',
+        'L\'Agenzia sta valutando se l\'investimento su di te sia giustificato.',
+        'Stai raggiungendo livelli di inefficienza solitamente associati al sabotaggio.\nSi raccomanda un miglioramento.'
+      ]
+    }
+  };
+
   const showAllTime = state.day >= 10;
-  const allTimeLine = showAllTime ? `All-time average: ${allAvg}%\n` : '';
-  const STATS_LINES = [
+  const allTimeLine = showAllTime
+    ? (lang === 'it' ? `Media storica: ${allAvg}%\n` : `All-time average: ${allAvg}%\n`)
+    : '';
+  const STATS_LINES = lang === 'it' ? [
+    `La tua percentuale media di successo negli ultimi 5 giorni è ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`,
+    `Negli ultimi cinque giorni, la tua percentuale media di successo è stata del ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`,
+    `La tua performance recente è in media al ${avg5}% negli ultimi cinque giorni.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`
+  ] : [
     `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
     `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
     `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`
   ];
 
-  const SPECIES_LINES = [
+  const noOneStr = lang === 'it' ? 'nessuno in particolare' : 'no one in particular';
+  const andStr = lang === 'it' ? 'e' : 'and';
+  const speciesStr = topSpecies.length >= 2
+    ? topSpecies.slice(0, -1).join(', ') + ` ${andStr} ` + topSpecies[topSpecies.length - 1]
+    : topSpecies[0] || noOneStr;
+
+  const SPECIES_LINES = lang === 'it' ? [
+    `Sembri preferire ${speciesStr}.`,
+    `I tuoi schemi di assunzione suggeriscono una preferenza per ${speciesStr}.`,
+    `Notiamo una dipendenza ricorrente da ${speciesStr}.`,
+    `Le tue abitudini di reclutamento favoriscono ${speciesStr}.\nDiversificare potrebbe ridurre futuri incidenti.`
+  ] : [
     `You appear to favour ${speciesStr}.`,
     `Your hiring patterns suggest a preference for ${speciesStr}.`,
     `We notice a recurring reliance on ${speciesStr}.`,
     `Your recruitment habits favour ${speciesStr}.\nDiversification may reduce future incidents.`
   ];
 
-  const PROFIT_LINES = [
-    ``, ``, ``, ``
-  ];
+  const PROFIT_LINES = [ ``, ``, ``, `` ];
 
-  const ADVICE = [
+  const ADVICE = lang === 'it' ? [
+    'Valuta la compatibilità tra specie prima di assumere.',
+    'I conflitti sono evitabili con una minima ricerca.',
+    'Equipaggi più numerosi tendono a performare in modo più affidabile.',
+    'I candidati con alto valore ODIO vanno utilizzati con cautela.',
+    'Soddisfare i requisiti della missione è generalmente raccomandato.',
+    'I contratti andrebbero letti prima di lanciare le astronavi.'
+  ] : [
     'Consider reviewing species compatibility before hiring.',
     'Conflicts are avoidable with minimal research.',
     'Larger crews tend to perform more reliably.',
@@ -3446,7 +3538,13 @@ function buildCheckpointDialogue() {
     'Contracts should be read before launching ships.'
   ];
 
-  const CLOSINGS = [
+  const CLOSINGS = lang === 'it' ? [
+    'Questo è tutto.',
+    'Cerca di mantenere questo livello di competenza.',
+    'Rivedremo i tuoi progressi a breve.',
+    'Torna alla tua postazione.',
+    'L\'Agenzia sta monitorando i tuoi numeri.'
+  ] : [
     'That will be all.',
     'Try to maintain this level of competence.',
     'We will review your progress again soon.',
@@ -3455,8 +3553,8 @@ function buildCheckpointDialogue() {
   ];
 
   const parts = [
-    pick(GREETINGS),
-    pick(PERFORMANCE[tier]),
+    pick(GREETINGS[lang]),
+    pick(PERFORMANCE[lang][tier]),
     pick(STATS_LINES),
     topSpecies.length > 0 ? pick(SPECIES_LINES) : null,
     pick(PROFIT_LINES),
@@ -3702,7 +3800,7 @@ function getAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0.7;
+    gainNode.gain.value = 0.56;
     gainNode.connect(audioCtx.destination);
   }
   return audioCtx;
@@ -3713,7 +3811,7 @@ function playTheme() {
   if (ctx.state === 'suspended') ctx.resume();
   if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   gainNode.gain.cancelScheduledValues(ctx.currentTime);
-  gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+  gainNode.gain.setValueAtTime(0.56, ctx.currentTime);
 
   const audio = document.getElementById('theme-audio');
   // Connect source only once — MediaElementSource can't be recreated
@@ -3734,7 +3832,7 @@ function stopTheme() {
   audio.currentTime = 0;
   if (gainNode && audioCtx) {
     gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.7, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.56, audioCtx.currentTime);
   }
 }
 
@@ -3749,7 +3847,7 @@ function fadeOutTheme(duration) {
     audio.pause();
     audio.currentTime = 0;
     gainNode.gain.cancelScheduledValues(ctx.currentTime);
-    gainNode.gain.setValueAtTime(0.7, ctx.currentTime);
+    gainNode.gain.setValueAtTime(0.56, ctx.currentTime);
     fadeTimer = null;
   }, duration);
 }
@@ -4046,8 +4144,11 @@ startDay();
     const missionLabel = `${mType}: ${missionTitle(rawTitle)}`;
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
-        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">${t('missionBriefing')}</span>
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('missionBriefing')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
       </div>
       <div class="rules-divider"></div>
       <div class="rules-mission-title">${missionLabel}</div>
@@ -4066,8 +4167,11 @@ startDay();
 
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
-        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">${t('yourShip')}</span>
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('yourShip')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
       </div>
       <div class="rules-divider"></div>
       <div class="rules-ship-section">
@@ -4104,8 +4208,11 @@ startDay();
 
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
-        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">${t('newSpeciesApplying').toUpperCase()}</span>
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('newSpeciesApplying').toUpperCase()}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
       </div>
       <div class="rules-divider"></div>
       <div class="rules-newsp-list">${rows}</div>
@@ -4115,28 +4222,36 @@ startDay();
   function buildSaboteurWarningPage(pageEl) {
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
-        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">AGENCY ALERT</span>
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('agencyAlert')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
       </div>
       <div class="rules-divider"></div>
       <ul>
-        <li>Intelligence has reached the Agency that rival syndicates are attempting to place operatives aboard contracted vessels.</li>
-        <li>We have no reliable method of identifying them.</li>
-        <li>Stay alert.</li>
+        <li>${t('saboteurWarning1')}</li>
+        <li>${t('saboteurWarning2')}</li>
+        <li>${t('saboteurWarning3')}</li>
       </ul>
     `;
   }
 
   function buildExpMandatePage(pageEl) {
+    const newDirective = currentLang === 'it' ? 'NUOVA DIRETTIVA' : 'NEW DIRECTIVE';
+    const liSize = currentLang === 'it' ? '15px' : '18px';
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
-        <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-        <span class="rules-briefing-sub">NEW DIRECTIVE</span>
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${newDirective}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
       </div>
       <div class="rules-divider"></div>
-      <ul>
-        <li>Effective immediately, certain clients are specifying crew <strong>experience requirements</strong> alongside standard performance metrics.</li>
-        <li>When an <strong>EXPERIENCE REQ</strong> is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty.</li>
+      <ul style="margin-top:5px;font-size:${liSize};">
+        <li>${t('expDirective1')}</li>
+        <li>${t('expDirective2')}</li>
       </ul>
     `;
   }
