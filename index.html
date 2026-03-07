@@ -411,12 +411,12 @@ body {
 /* ── BOTTOM BAR (compact — no crew count) ── */
 .bottom-bar {
   background: #fff;
-  padding: 8px 16px 14px;
+  padding: 6px 16px 12px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 6px;
   border-top: 2px solid #000;
   position: fixed;
   bottom: 0;
@@ -494,6 +494,17 @@ body {
 .drawer-overlay.visible { display: block; }
 
 /* ── BOTTOM BAR — expandable ── */
+.bottom-bar {
+  background: #fff;
+  padding: 8px 16px 14px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-top: 2px solid #000;
+  z-index: 250;
+}
 
 /* When expanded: fixed to bottom, animates max-height */
 .bottom-bar.expanded {
@@ -656,7 +667,7 @@ body {
 #screen-pre     { z-index: 303; inset: 0; }
 #screen-splash  { z-index: 302; inset: 0; }
 #screen-welcome { z-index: 301; inset: 0; }
-#screen-slots   { z-index: 302; inset: 0; background: #000; align-items: stretch; justify-content: flex-start; }
+#screen-rules   { z-index: 300; }
 
 /* ── PRE-PAGE ── */
 #screen-pre {
@@ -763,85 +774,9 @@ body {
   right: 0;
   z-index: 1;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-/* Slot select screen */
-.slots-screen-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  padding: 40px 24px 32px;
-  width: 100%;
-  height: 100%;
-  color: #fff;
-  font-family: 'VT323', monospace;
-  box-sizing: border-box;
-  overflow-y: auto;
-}
-.slots-title {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 11px;
-  text-align: center;
-  margin-bottom: 32px;
-  letter-spacing: 1px;
-  color: #fff;
-}
-.slots-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-}
-.slot-card {
-  border: 2px solid #fff;
-  padding: 14px 16px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'VT323', monospace;
-  font-size: 22px;
-  position: relative;
-  background: #000;
-  color: #fff;
-}
-.slot-card.empty {
-  border: 2px dashed #555;
-  color: #555;
-}
-.slot-card.disabled { opacity: 0.2; pointer-events: none; }
-.slot-card-num {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 8px;
-  opacity: 0.4;
-  position: absolute;
-  top: 6px;
-  left: 10px;
-  color: #fff;
-}
-.slot-card-day { font-size: 24px; }
-.slot-card-credits { font-size: 20px; opacity: 0.7; }
-.slots-back-row {
-  display: flex;
   justify-content: center;
-  margin-top: 24px;
-  flex-shrink: 0;
+  width: 100%;
 }
-.slots-overwrite {
-  margin-top: 20px;
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  text-align: center;
-  color: #fff;
-}
-.slots-overwrite.hidden { display: none; }
-.slots-overwrite-msg { margin-bottom: 16px; }
-.slots-overwrite-btns { display: flex; gap: 12px; justify-content: center; }
 
 /* Inverted launch button (white bg, black text → black bg, white text inverted) */
 .launch-btn-inverted {
@@ -885,47 +820,8 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
-.slot-card.bounce { animation: btnBounce 0.2s ease; }
-@keyframes slotFlash {
-  0%, 100% { border-color: #fff; }
-  50% { border-color: transparent; }
-}
-.slot-card.flashing { animation: slotFlash 0.4s step-start infinite; }
 #btn-pre-continue { outline: 2px solid #fff; outline-offset: 0px; }
 #btn-splash-cta .launch-btn-bg-inv polygon { stroke: #000; stroke-width: 4; }
-
-/* Splash screen buttons */
-#btn-splash-continue, #btn-splash-new {
-  width: auto;
-}
-#btn-splash-continue .launch-btn-text-inv { padding-left: 16px; padding-right: 16px; }
-/* Continue Career: standard white box with black stroke (same as original single button) */
-#btn-splash-continue .launch-btn-bg-inv polygon { fill: #fff; stroke: #000; stroke-width: 4; }
-#btn-splash-continue .launch-btn-text-inv { color: #000; }
-/* Start New Career: black background, white text, wraps content */
-#btn-splash-new { width: auto; height: auto; clip-path: none; }
-#btn-splash-new .launch-btn-bg-inv { display: none; }
-#btn-splash-new .launch-btn-text-inv { color: #fff; font-size: 18px; background: #000; padding: 4px; height: auto; }
-
-/* Bankruptcy buttons: inline, 40px gap, both same white-box style */
-.result-btn-row {
-  width: 100%;
-  max-width: 440px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  padding-bottom: 8px;
-  flex-wrap: nowrap;
-}
-.result-btn-row .launch-btn-inverted { width: 160px; flex-shrink: 0; }
-#modal-btn .launch-btn-bg-inv polygon { fill: #fff; stroke: #000; stroke-width: 4; }
-#modal-btn .launch-btn-text-inv { color: #000; }
-#modal-btn-rollback .launch-btn-bg-inv polygon { fill: #fff; stroke: #000; stroke-width: 4; }
-#modal-btn-rollback .launch-btn-text-inv { color: #000; }
-#modal-btn-rollback { display: none; }
-
 #screen-welcome {
   background: #000;
   flex-direction: column;
@@ -1485,6 +1381,16 @@ body {
 /* Net income row — no divider, bold */
 .res-row.net { font-weight: bold; padding-top: 8px; }
 
+.result-btn-row {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+.result-btn-row .launch-btn-inverted {
+  width: 200px;
+}
 </style>
 </head>
 <body>
@@ -1521,43 +1427,10 @@ body {
     <img class="splash-img" src="images/splash.png" alt="Starship Recruiter" onerror="this.style.opacity='0'">
   </div>
   <div class="splash-cta">
-    <button class="launch-btn-inverted" id="btn-splash-continue" onclick="bounceThen(this, () => openSlotSelect('continue'))" style="display:none;">
+    <button class="launch-btn-inverted" id="btn-splash-cta" onclick="bounceThen(this, goToWelcome)">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text-inv" id="btn-splash-continue-text">CONTINUE CAREER</span>
+      <span class="launch-btn-text-inv" id="btn-splash-text">Start new career</span>
     </button>
-    <button class="launch-btn-inverted" id="btn-splash-new" onclick="bounceThen(this, () => openSlotSelect('new'))">
-      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text-inv" id="btn-splash-new-text">NEW CAREER</span>
-    </button>
-  </div>
-</div>
-
-<!-- SLOT SELECT SCREEN -->
-<div class="screen hidden" id="screen-slots">
-  <div class="slots-screen-inner">
-    <div class="slots-title" id="slots-title">SELECT SLOT</div>
-    <div class="slots-list" id="slots-list"></div>
-    <!-- Overwrite confirm -->
-    <div class="slots-overwrite hidden" id="slots-overwrite">
-      <div class="slots-overwrite-msg" id="slots-overwrite-msg"></div>
-      <div class="slots-overwrite-btns">
-        <button class="launch-btn-inverted" id="btn-overwrite-confirm">
-          <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-          <span class="launch-btn-text-inv" id="btn-overwrite-confirm-text">OVERWRITE</span>
-        </button>
-        <button class="launch-btn-inverted" id="btn-overwrite-cancel">
-          <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-          <span class="launch-btn-text-inv" id="btn-overwrite-cancel-text">CANCEL</span>
-        </button>
-      </div>
-    </div>
-    <!-- Back button -->
-    <div class="slots-back-row" id="slots-back-row">
-      <button class="launch-btn-inverted" id="btn-slots-back" onclick="bounceThen(this, goToSplashFromSlots)">
-        <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-        <span class="launch-btn-text-inv" id="btn-slots-back-text">BACK</span>
-      </button>
-    </div>
   </div>
 </div>
 
@@ -1689,14 +1562,10 @@ body {
     <div class="result-msg" id="res-msg">SUCCESS</div>
     <div class="result-log" id="res-log"></div>
   </div>
-  <div class="result-btn-row" id="result-btn-row">
+  <div class="result-btn-row">
     <button class="launch-btn-inverted" id="modal-btn">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="modal-btn-text">NEXT DAY</span>
-    </button>
-    <button class="launch-btn-inverted" id="modal-btn-rollback">
-      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-      <span class="launch-btn-text-inv" id="modal-btn-rollback-text">BACK TO DAY 5</span>
     </button>
   </div>
 </div>
@@ -1712,7 +1581,7 @@ body {
       <div class="checkpoint-btn-row hidden" id="checkpoint-btn-row">
         <button class="launch-btn-inverted" id="checkpoint-btn" onclick="closeCheckpoint()">
           <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-          <span class="launch-btn-text-inv" id="checkpoint-btn-text">SAVE & CONTINUE</span>
+          <span class="launch-btn-text-inv">CONTINUE</span>
         </button>
       </div>
     </div>
@@ -1851,24 +1720,7 @@ const LANG = {
     saboteurWarning2: "We have no reliable method of identifying them.",
     saboteurWarning3: "Stay alert.",
     expDirective1: "Effective immediately, certain clients are specifying crew experience requirements alongside standard performance metrics.",
-    expDirective2: "When an EXPERIENCE REQ is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty.",
-    continueCareer: "CONTINUE CAREER",
-    startNewCareer: "NEW CAREER",
-    slotEmpty: "EMPTY SLOT",
-    saveAndContinue: "SAVE & CONTINUE",
-    backToDay: "BACK TO DAY %d",
-    overwriteSlot: "Overwrite this save?",
-    overwriteConfirm: "OVERWRITE",
-    overwriteCancel: "CANCEL",
-    slotDay: "DAY %d",
-    slotCredits: "%d CR",
-    secondChance: [
-      "You've been given another chance, Recruit. Don't make us regret it.",
-      "The Agency has decided to overlook this particular disaster. Once.",
-      "Consider this a courtesy. The Agency does not extend courtesies twice.",
-      "You are being reinstated. Perform accordingly.",
-      "This is not a reward. This is a last resort."
-    ]
+    expDirective2: "When an EXPERIENCE REQ is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty."
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -2002,24 +1854,7 @@ const LANG = {
     saboteurWarning2: "Non disponiamo di un metodo affidabile per identificarli.",
     saboteurWarning3: "Rimanete vigili.",
     expDirective1: "Con effetto immediato, alcuni clienti specificano requisiti di esperienza dell'equipaggio oltre alle metriche di performance standard.",
-    expDirective2: "Quando è indicato un REQ. ESPERIENZA, assegnare almeno un membro dell'equipaggio con la classificazione richiesta. Il mancato rispetto comporterà una penalità sulla performance.",
-    continueCareer: "CONTINUA CARRIERA",
-    startNewCareer: "NUOVA CARRIERA",
-    slotEmpty: "SLOT VUOTO",
-    saveAndContinue: "SALVA E CONTINUA",
-    backToDay: "TORNA AL GIORNO %d",
-    overwriteSlot: "Sovrascrivere questo salvataggio?",
-    overwriteConfirm: "SOVRASCRIVI",
-    overwriteCancel: "ANNULLA",
-    slotDay: "GIORNO %d",
-    slotCredits: "%d CR",
-    secondChance: [
-      "Ti è stata concessa un'altra possibilità, Reclutatore. Non farcela rimpiangere.",
-      "L'Agenzia ha deciso di ignorare questo particolare disastro. Una volta sola.",
-      "Consideralo una cortesia. L'Agenzia non ne concede due.",
-      "Sei stato reintegrato. Comportati di conseguenza.",
-      "Questo non è un premio. È l'ultima risorsa."
-    ]
+    expDirective2: "Quando è indicato un REQ. ESPERIENZA, assegnare almeno un membro dell'equipaggio con la classificazione richiesta. Il mancato rispetto comporterà una penalità sulla performance."
   }
 };
 
@@ -2376,32 +2211,6 @@ const SABOTEUR_SPECIES = [
 ];
 // Track next saboteur day: randomised between 4-5 days after last appearance
 
-
-// ══════════════════════════════════════════════
-// SAVE SYSTEM
-// ══════════════════════════════════════════════
-const CHECKPOINT_CREDITS = { 5: 650, 10: 800, 15: 1000, 20: 1200, 25: 1500, 30: 1800 };
-function checkpointCredits(day) {
-  const keys = Object.keys(CHECKPOINT_CREDITS).map(Number).sort((a,b) => b-a);
-  for (const k of keys) { if (day >= k) return CHECKPOINT_CREDITS[k]; }
-  return 800;
-}
-
-let activeSaveSlot = null; // 1, 2 or 3 — which slot we're playing in
-let slotSelectMode = null; // 'new' or 'continue'
-
-function getSave(slot) {
-  try { return JSON.parse(localStorage.getItem(`sr_slot_${slot}`)) || null; } catch(e) { return null; }
-}
-function writeSave(slot, data) {
-  try { localStorage.setItem(`sr_slot_${slot}`, JSON.stringify(data)); } catch(e) {}
-}
-function deleteSave(slot) {
-  try { localStorage.removeItem(`sr_slot_${slot}`); } catch(e) {}
-}
-function anySlotOccupied() {
-  return [1,2,3,4,5].some(s => getSave(s) !== null);
-}
 
 let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [],
   missionLog: [],      // { day, score, success } per mission
@@ -3772,9 +3581,6 @@ function showCheckpoint(onDone) {
   btnRow.classList.add('hidden');
   overlay.classList.add('visible');
 
-  // Set button text
-  document.getElementById('checkpoint-btn-text').innerText = t('saveAndContinue');
-
   const fullText = buildCheckpointDialogue();
 
   // Set image based on tier
@@ -3794,7 +3600,6 @@ function showCheckpoint(onDone) {
       btnRow.classList.remove('hidden');
       btn.onclick = function() {
         bounceThen(btn, function() {
-          saveCheckpoint(); // autosave at end of checkpoint
           overlay.classList.remove('visible');
           onDone();
         });
@@ -3827,51 +3632,19 @@ function nextDay() {
     document.getElementById('res-score').style.color = "#ff4444";
     document.getElementById('res-msg').innerText = t('careerOver');
     document.getElementById('res-log').innerHTML = `${t('liquidating')}<br>${t('reclaiming')}`;
-
-    // Check if there's a checkpoint to roll back to
-    const savedGame = loadCheckpointRollback();
-    const rollbackBtn = document.getElementById('modal-btn-rollback');
-
-    if (savedGame) {
-      const backLabel = t('backToDay').replace('%d', savedGame.day);
-      document.getElementById('modal-btn-rollback-text').innerText = backLabel;
-      rollbackBtn.style.display = 'flex';
-      rollbackBtn.onclick = function() {
-        bounceThen(rollbackBtn, function() {
-          // Restore state from checkpoint
-          state.day = savedGame.day;
-          state.money = savedGame.money;
-          state.missionLog = savedGame.missionLog || [];
-          state.allTimeHires = savedGame.allTimeHires || {};
-          state.totalEarned = savedGame.totalEarned || 0;
-          state.nextSaboteurDay = savedGame.nextSaboteurDay || (savedGame.day + 4);
-          state.gameOver = false;
-          state.roster = [];
-          state.pool = [];
-          document.getElementById('res-score').style.color = '';
-          document.getElementById('modal-btn-text').innerText = t('nextDay');
-          document.getElementById('modal-btn-rollback').style.display = 'none';
-          document.getElementById('result-overlay').classList.remove('visible');
-          closeDrawer();
-          showSecondChanceCheckpoint(savedGame.day, () => startDay());
-        });
-      };
-    } else {
-      rollbackBtn.style.display = 'none';
-    }
-
-    // Start Over button
     document.getElementById('modal-btn-text').innerText = t('startOver');
     document.getElementById('modal-btn').onclick = function() {
       bounceThen(document.getElementById('modal-btn'), function() {
-        document.getElementById('modal-btn-rollback').style.display = 'none';
-        document.getElementById('res-score').style.color = '';
+        state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
+        state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0; state.nextSaboteurDay=14;
+        document.getElementById('res-score').style.color = "";
         document.getElementById('modal-btn-text').innerText = t('nextDay');
         document.getElementById('modal-btn').onclick = function() {
           bounceThen(document.getElementById('modal-btn'), nextDay);
         };
         document.getElementById('result-overlay').classList.remove('visible');
         closeDrawer();
+        startDay();
         goToSplashFromGame();
       });
     };
@@ -4165,201 +3938,15 @@ function pixelFadeIn(onComplete) {
   requestAnimationFrame(step);
 }
 
-// ══════════════════════════════════════════════
-// SLOT SELECT
-// ══════════════════════════════════════════════
-function openSlotSelect(mode) {
-  slotSelectMode = mode;
-  document.getElementById('screen-splash').classList.add('hidden');
-  document.getElementById('screen-slots').classList.remove('hidden');
-  document.getElementById('slots-overwrite').classList.add('hidden');
-  document.getElementById('slots-back-row').style.display = '';
-  renderSaveSlots();
-}
-
-function renderSaveSlots() {
-  const L = LANG[currentLang];
-  document.getElementById('slots-title').innerText = slotSelectMode === 'continue' ? L.continueCareer : L.startNewCareer;
-  document.getElementById('btn-overwrite-confirm-text').innerText = L.overwriteConfirm;
-  document.getElementById('btn-overwrite-cancel-text').innerText = L.overwriteCancel;
-
-  const list = document.getElementById('slots-list');
-  list.innerHTML = '';
-  for (let s = 1; s <= 5; s++) {
-    const save = getSave(s);
-    const isEmpty = save === null;
-    const isDisabled = slotSelectMode === 'continue' && isEmpty;
-    const card = document.createElement('div');
-    card.className = 'slot-card' + (isEmpty ? ' empty' : '') + (isDisabled ? ' disabled' : '');
-    const dayStr = isEmpty ? L.slotEmpty : L.slotDay.replace('%d', save.day);
-    const crStr = isEmpty ? '' : `<span class="slot-card-credits">${L.slotCredits.replace('%d', save.money)}</span>`;
-    card.innerHTML = `<span class="slot-card-day">${dayStr}</span>${crStr}`;
-    if (!isDisabled) {
-      card.onclick = () => tapSlotCard(s, save, card);
-    }
-    list.appendChild(card);
-  }
-}
-
-function tapSlotCard(slot, existingSave, cardEl) {
-  // Clear any existing flashing card
-  document.querySelectorAll('.slot-card.flashing').forEach(el => el.classList.remove('flashing'));
-
-  // Bounce the card
-  cardEl.classList.remove('bounce');
-  void cardEl.offsetWidth;
-  cardEl.classList.add('bounce');
-  cardEl.addEventListener('animationend', () => cardEl.classList.remove('bounce'), { once: true });
-  playSfx('button');
-  if (slotSelectMode === 'new' && existingSave !== null) {
-    const L = LANG[currentLang];
-    cardEl.classList.add('flashing');
-    document.getElementById('slots-overwrite').classList.remove('hidden');
-    document.getElementById('slots-back-row').style.display = 'none';
-    document.getElementById('slots-overwrite-msg').innerText = L.overwriteSlot;
-    document.getElementById('btn-overwrite-confirm').onclick = () => {
-      playSfx('button');
-      cardEl.classList.remove('flashing');
-      document.getElementById('slots-overwrite').classList.add('hidden');
-      document.getElementById('slots-back-row').style.display = '';
-      startNewCareerInSlot(slot);
-    };
-    document.getElementById('btn-overwrite-cancel').onclick = () => {
-      playSfx('button');
-      cardEl.classList.remove('flashing');
-      document.getElementById('slots-overwrite').classList.add('hidden');
-      document.getElementById('slots-back-row').style.display = '';
-    };
-  } else if (slotSelectMode === 'new') {
-    startNewCareerInSlot(slot);
-  } else {
-    continueCareerFromSlot(slot, existingSave);
-  }
-}
-
-function startNewCareerInSlot(slot) {
-  activeSaveSlot = slot;
-  deleteSave(slot);
-  // Reset state
-  state.day = 1; state.money = 800; state.gameOver = false;
-  state.roster = []; state.pool = [];
-  state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0;
-  state.nextSaboteurDay = 14;
-  document.getElementById('screen-slots').classList.add('hidden');
-  goToWelcome();
-}
-
-function continueCareerFromSlot(slot, save) {
-  activeSaveSlot = slot;
-  state.day = save.day;
-  state.money = save.money;
-  state.missionLog = save.missionLog || [];
-  state.allTimeHires = save.allTimeHires || {};
-  state.totalEarned = save.totalEarned || 0;
-  state.nextSaboteurDay = save.nextSaboteurDay || (save.day + 4);
-  state.gameOver = false;
-  state.roster = [];
-  state.pool = [];
-
-  document.getElementById('screen-slots').classList.add('hidden');
-  document.getElementById('intro-cover').classList.add('gone');
-  stopTheme();
-
-  // Set up game background and UI (same as goToGame)
-  document.body.style.backgroundColor = '#fff';
-  document.body.style.backgroundImage = 'radial-gradient(circle, #ccc 1px, transparent 1px)';
-  document.body.style.backgroundSize = '16px 16px';
-  document.getElementById('top-bar').style.visibility = '';
-  document.getElementById('bottom-bar').style.visibility = '';
-  document.getElementById('top-bar').classList.add('slid-in');
-  document.getElementById('bottom-bar').classList.add('slid-in');
-
-  startDay();
-  updateUI();
-
-  // Reveal scroll area after a short delay (bars already in place)
-  setTimeout(() => {
-    fixScrollPadding();
-    document.getElementById('scroll-area').style.visibility = '';
-  }, 50);
-}
-
-function saveCheckpoint() {
-  if (!activeSaveSlot) return;
-  writeSave(activeSaveSlot, {
-    day: state.day,
-    money: state.money,
-    missionLog: state.missionLog,
-    allTimeHires: state.allTimeHires,
-    totalEarned: state.totalEarned,
-    nextSaboteurDay: state.nextSaboteurDay
-  });
-}
-
-function loadCheckpointRollback() {
-  if (!activeSaveSlot) return null;
-  return getSave(activeSaveSlot);
-}
-
-// ══════════════════════════════════════════════
-// SECOND CHANCE CHECKPOINT
-// ══════════════════════════════════════════════
-function showSecondChanceCheckpoint(checkpointDay, onDone) {
-  const overlay = document.getElementById('checkpoint-overlay');
-  const textEl = document.getElementById('checkpoint-text');
-  const btnRow = document.getElementById('checkpoint-btn-row');
-  const btn = document.getElementById('checkpoint-btn');
-
-  textEl.textContent = '';
-  btnRow.classList.add('hidden');
-  overlay.classList.add('visible');
-
-  document.getElementById('checkpoint-img').src = 'images/review_very_bad.png';
-
-  const L = LANG[currentLang];
-  const lines = L.secondChance;
-  const fullText = lines[Math.floor(Math.random() * lines.length)];
-
-  let i = 0;
-  if (checkpointTypewriterTimer) clearInterval(checkpointTypewriterTimer);
-  checkpointTypewriterTimer = setInterval(() => {
-    if (i >= fullText.length) {
-      clearInterval(checkpointTypewriterTimer);
-      btnRow.classList.remove('hidden');
-      btn.onclick = function() {
-        bounceThen(btn, function() {
-          overlay.classList.remove('visible');
-          onDone();
-        });
-      };
-      document.getElementById('checkpoint-scroll').scrollTo({ top: 999999, behavior: 'smooth' });
-      return;
-    }
-    textEl.textContent = fullText.slice(0, i + 1);
-    if (fullText[i] !== '\n' && i % 3 === 0) playSfx('typing', 0.4);
-    document.getElementById('checkpoint-scroll').scrollTop = 999999;
-    i++;
-  }, 30);
-}
-
-function goToSplashFromSlots() {
-  document.getElementById('screen-slots').classList.add('hidden');
-  document.getElementById('screen-splash').classList.remove('hidden');
-}
-
 function goToSplash() {
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
 
   // Apply language to all screens
   const L = LANG[currentLang];
-  document.getElementById('btn-splash-continue-text').innerText = L.continueCareer;
-  document.getElementById('btn-splash-new-text').innerText = L.startNewCareer;
+  document.getElementById('btn-splash-text').innerText = L.newCareer;
   document.getElementById('btn-welcome-text').innerText = L.continue;
   document.getElementById('modal-btn-text').innerText = L.nextDay;
   document.querySelector('#btn-launch .launch-btn-text').innerText = L.launch;
-
-  // Show continue career button only if a save exists
-  document.getElementById('btn-splash-continue').style.display = anySlotOccupied() ? '' : 'none';
 
   // Re-render cards and UI with selected language
   updateUI();
@@ -4374,6 +3961,7 @@ function goToSplash() {
   const cols = Math.ceil(W / TILE);
   const rows = Math.ceil(H / TILE);
 
+  // Prime canvas as solid black cover BEFORE any DOM changes
   canvas.width = cols;
   canvas.height = rows;
   canvas.style.width = W + 'px';
@@ -4383,12 +3971,14 @@ function goToSplash() {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, cols, rows);
 
+  // Now safe to swap screens — canvas covers the transition
   requestAnimationFrame(() => {
     document.getElementById('screen-pre').classList.add('hidden');
     document.getElementById('screen-welcome').classList.add('hidden');
-    document.getElementById('screen-slots').classList.add('hidden');
     document.getElementById('screen-splash').classList.remove('hidden');
     document.getElementById('intro-cover').classList.add('gone');
+
+    // Now animate the dissolve
     pixelFadeIn(null);
   });
 }
@@ -4483,13 +4073,9 @@ function acknowledgeIntro() {
 
 // When returning from game over, restore intro-cover then pixel fade
 function goToSplashFromGame() {
-  // Reset state fully on start over
-  state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
-  state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0; state.nextSaboteurDay=14;
-  activeSaveSlot = null;
-
   document.body.style.backgroundColor = '#000';
   document.body.style.backgroundImage = 'none';
+  // Reset bars back off-screen (no transition during reset)
   const topBar = document.getElementById('top-bar');
   const bottomBar = document.getElementById('bottom-bar');
   topBar.style.transition = 'none';
@@ -4500,16 +4086,10 @@ function goToSplashFromGame() {
   document.getElementById('intro-cover').classList.remove('gone');
   document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.add('hidden');
-  document.getElementById('screen-slots').classList.add('hidden');
   if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
-
-  // Refresh splash buttons
-  document.getElementById('btn-splash-continue-text').innerText = t('continueCareer');
-  document.getElementById('btn-splash-new-text').innerText = t('startNewCareer');
-  document.getElementById('btn-splash-continue').style.display = anySlotOccupied() ? '' : 'none';
-
   playTheme();
   requestAnimationFrame(() => {
+    // Re-enable transitions after a frame
     requestAnimationFrame(() => {
       topBar.style.transition = '';
       bottomBar.style.transition = '';
