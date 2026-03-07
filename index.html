@@ -902,7 +902,7 @@ body {
 /* New Career default (saves exist): plain black text below continue */
 #btn-splash-new { height: auto; clip-path: none; }
 #btn-splash-new .launch-btn-bg-inv { display: none; }
-#btn-splash-new .launch-btn-text-inv { color: #fff; font-size: 20px; background: #000; padding: 4px 16px; height: auto; }
+#btn-splash-new .launch-btn-text-inv { color: #fff; font-size: 20px; background: #000; padding: 1px 1px; height: auto; }
 /* New Career solo (no saves): white box style, same as continue */
 #screen-splash.solo #btn-splash-new { height: 40px; clip-path: none; }
 #screen-splash.solo #btn-splash-new .launch-btn-bg-inv { display: block; }
@@ -1897,7 +1897,13 @@ const LANG = {
       "Sky-Elf": "Vulcaniano", "Beetlegunner": "Piattola", "Barbitulian": "Barbituliano",
       "Velkhorian": "Aviano", "Squid": "Tentacolato", "Sugorian": "Sugoriano",
       "Void-Demon": "Demone", "Cheesponge": "Spugnoso", "Aquasim": "Acquariano",
-      "Space-Cat": "Gattaco", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio"
+      "Space-Cat": "Gattaco", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio",
+      "Humane": "Umanio", "Skye-Elf": "Volcanieno", "Giaant": "Giganto",
+      "Droyd": "Drodio", "Barbitulean": "Barbitullione", "Space-Kat": "Gattaccio",
+      "Velkharion": "Avianno", "Aquazim": "Acquarello", "Void-Daemon": "Demonio",
+      "Fungis": "Fungoidus", "Ok-Person": "Quercilo", "Long-Nick": "Collalungo",
+      "Squib": "Tentacoatto", "Sugarion": "Sugariano", "Cheetspongy": "Spungioso",
+      "Sodium": "Sodium", "Blorgg": "Blorgg"
     },
     missionIntel: "Informazioni missione",
     requirements: "Requisiti",
@@ -2371,10 +2377,23 @@ const ROLES = ["COMMAND", "OPERATIONS", "SCIENCE", "FORCE", "LOGISTICS"];
 // SABOTEUR SYSTEM
 // ══════════════════════════════════════════════
 const SABOTEUR_SPECIES = [
-  "Vorrkai","Shreth","Nullian","Phaedrox","Kelthari",
-  "Siphonite","Grethali","Vespuloid","Ondrivax","Skethian",
-  "Lurathi","Xenoveil","Delvanak","Wraithkin","Pallowform",
-  "Echocyte","Sornveth","Vestigant","Calvreth","Umbralite"
+  { name: "Humane",      icon: "images/human_icon.png" },
+  { name: "Skye-Elf",   icon: "images/skyelf_icon.png" },
+  { name: "Giaant",     icon: "images/giant_icon.png" },
+  { name: "Droyd",      icon: "images/droid_icon.png" },
+  { name: "Barbitulean",icon: "images/barbitulian_icon.png" },
+  { name: "Space-Kat",  icon: "images/spacecat_icon.png" },
+  { name: "Velkharion", icon: "images/velkhorian_icon.png" },
+  { name: "Aquazim",    icon: "images/aquasim_icon.png" },
+  { name: "Void-Daemon",icon: "images/voiddemon_icon.png" },
+  { name: "Fungis",     icon: "images/fungi_icon.png" },
+  { name: "Ok-Person",  icon: "images/oakperson_icon.png" },
+  { name: "Long-Nick",  icon: "images/longneck_icon.png" },
+  { name: "Squib",      icon: "images/squid_icon.png" },
+  { name: "Sugarion",   icon: "images/sugorian_icon.png" },
+  { name: "Cheetspongy",icon: "images/cheesponge_icon.png" },
+  { name: "Sodium",     icon: "images/sodio_icon.png" },
+  { name: "Blorgg",     icon: "images/blorg_icon.png" },
 ];
 // Track next saboteur day: randomised between 4-5 days after last appearance
 
@@ -2427,8 +2446,10 @@ function generateApplicantForRace(id, raceKey) {
 }
 
 function generateSaboteur(id) {
-  // Pick random fake species name
-  const fakeName = SABOTEUR_SPECIES[rand(0, SABOTEUR_SPECIES.length - 1)];
+  // Pick random fake species entry
+  const entry = SABOTEUR_SPECIES[rand(0, SABOTEUR_SPECIES.length - 1)];
+  const fakeName = entry.name;
+  const fakeIcon = entry.icon;
   // Pick a name from any existing species pool
   const allRaceKeys = Object.keys(NAME_MAP).filter(k => NAME_MAP[k] && NAME_MAP[k].length > 1);
   const randomRaceKey = allRaceKeys[rand(0, allRaceKeys.length - 1)];
@@ -2454,12 +2475,12 @@ function generateSaboteur(id) {
   return {
     id: id,
     name: borrowedName,
-    race: fakeName,       // fake species — not in manual
+    race: fakeName,
     isSaboteur: true,
     str, int, cha, hate, exp,
     portrait,
     cost,
-    icon: null            // no real icon — will be resolved at slot-render time
+    icon: fakeIcon
   };
 }
 
@@ -2718,11 +2739,19 @@ function startDay() {
     }
     // Tiered Drakhen injection from day 16+
     if (state.day >= 16) {
-      let drakhenMin, drakhenMax;
-      if (state.day >= 25)      { drakhenMin = 5; drakhenMax = 8; }
-      else if (state.day >= 20) { drakhenMin = 4; drakhenMax = 7; }
-      else                      { drakhenMin = 3; drakhenMax = 5; }
-      const target = rand(drakhenMin, drakhenMax);
+      // Weighted probability tables for Drakhen count in pool
+      function pickDrakhenCount(weights) {
+        const r = Math.random() * 100;
+        let cum = 0;
+        for (const [count, pct] of weights) { cum += pct; if (r < cum) return count; }
+        return weights[weights.length - 1][0];
+      }
+      let weights;
+      if (state.day >= 35)      weights = [[3,10],[4,10],[5,20],[6,20],[7,20],[8,10],[9,5],[10,5]];
+      else if (state.day >= 25) weights = [[3,20],[4,20],[5,20],[6,20],[7,10],[8,10]];
+      else if (state.day >= 20) weights = [[2,10],[3,50],[4,30],[5,10]];
+      else                      weights = [[1,10],[2,30],[3,50],[4,15],[5,5]];
+      const target = pickDrakhenCount(weights);
       const current = state.pool.filter(a => a.race === 'Drakhen').length;
       const toInject = Math.max(0, target - current);
       let injectAttempts = 0;
@@ -2758,10 +2787,15 @@ function startDay() {
     // Randomise first saboteur day on day 1 load
     if (state.day === 1) state.nextSaboteurDay = 14 + rand(0, 1);
     if (state.day >= 14 && state.day >= state.nextSaboteurDay) {
-      const saboteur = generateSaboteur(state.pool.length);
-      const insertAt = rand(0, state.pool.length);
-      state.pool.splice(insertAt, 0, saboteur);
-      state.nextSaboteurDay = state.day + 4 + rand(0, 1); // next in 4-5 days
+      if (Math.random() < 0.30) {
+        const s1 = generateSaboteur(state.pool.length);
+        state.pool.splice(rand(0, state.pool.length), 0, s1);
+      }
+      if (Math.random() < 0.30) {
+        const s2 = generateSaboteur(state.pool.length);
+        state.pool.splice(rand(0, state.pool.length), 0, s2);
+      }
+      state.nextSaboteurDay = state.day + 4 + rand(0, 1); // next window in 4-5 days
     }
 
     // Re-assign ids to match final positions
@@ -3690,13 +3724,13 @@ function buildCheckpointDialogue() {
     ? (lang === 'it' ? `Media storica: ${allAvg}%\n` : `All-time average: ${allAvg}%\n`)
     : '';
   const STATS_LINES = lang === 'it' ? [
-    `La tua percentuale media di successo negli ultimi 5 giorni è ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`,
-    `Negli ultimi cinque giorni, la tua percentuale media di successo è stata del ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`,
-    `La tua performance recente è in media al ${avg5}% negli ultimi cinque giorni.\n\n${allTimeLine}Missioni riuscite: ${last5Succ}\nMissioni fallite: ${last5Fail}.`
+    `La tua percentuale media di successo negli ultimi 5 giorni è ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`,
+    `Negli ultimi cinque giorni, la tua percentuale media di successo è stata del ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`,
+    `La tua performance recente è in media al ${avg5}% negli ultimi cinque giorni.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`
   ] : [
-    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
-    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`,
-    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${last5Succ}\nMissions failed: ${last5Fail}.`
+    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
+    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
+    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`
   ];
 
   const noOneStr = lang === 'it' ? 'nessuno in particolare' : 'no one in particular';
