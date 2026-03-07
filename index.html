@@ -855,7 +855,7 @@ body {
   font-size: 18px;
   line-height: 1.5;
   flex: 1;
-  text-align: center;
+  text-align: left;
 }
 .welcome-btn-row {
   padding: 0 0 32px 0;
@@ -1046,13 +1046,17 @@ body {
   align-items: flex-start;
   margin-bottom: 8px;
 }
+.rules-ship-box {
+  width: 100%;
+  background: #000;
+  padding: 25px 0;
+  margin-bottom: 14px;
+}
 .rules-ship-img {
   width: 100%;
   height: auto;
-  object-fit: unset;
   image-rendering: pixelated;
   display: block;
-  margin-bottom: 4px;
 }
 .rules-ship-name {
   font-size: 18px;
@@ -4175,7 +4179,9 @@ startDay();
       </div>
       <div class="rules-divider"></div>
       <div class="rules-ship-section">
-        <img class="rules-ship-img" src="${shipSrc}" onerror="this.style.display='none'">
+        <div class="rules-ship-box">
+          <img class="rules-ship-img" src="${shipSrc}" onerror="this.style.display='none'">
+        </div>
         <div class="rules-ship-name">${s.name}</div>
       </div>
     `;
