@@ -119,7 +119,7 @@ body {
 .section-title-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   margin-bottom: 10px;
 }
 .section-title {
@@ -642,280 +642,7 @@ body {
   font-weight: bold;
 }
 
-/* ── RE-RUN ADS BUTTON ── */
-.ads-btn {
-  display: none;
-  height: 40px;
-  flex-shrink: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  background: #000;
-  border: none;
-  padding: 2px;
-  align-items: stretch;
-  justify-content: stretch;
-  position: relative;
-  font-family: 'VT323', monospace;
-  font-size: 20px;
-  color: #000;
-  white-space: nowrap;
-  line-height: 1;
-  clip-path: polygon(
-    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
-    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
-    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
-  );
-}
-.ads-btn.visible { display: flex; }
-.ads-btn-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: #fff;
-  width: 100%;
-  height: 100%;
-  padding: 0 6px;
-  clip-path: polygon(
-    0 2px, 2px 2px, 2px 0,
-    calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px,
-    100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px),
-    calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)
-  );
-}
-.ads-btn-bg { display: none; }
-.ads-btn img {
-  width: 36px;
-  height: 36px;
-  image-rendering: pixelated;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-.ads-btn span {
-  line-height: 1;
-}
-.ads-btn.active .ads-btn-inner { background: #000; color: #fff; }
-.ads-btn.active img { filter: invert(1); }
-.ads-btn.bounce { animation: btnBounce 0.2s ease; }
-
-/* ── ADS OVERLAY ── */
-#ads-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, #999 1px, transparent 1px);
-  background-size: 4px 4px;
-  background-color: rgba(255,255,255,0.7);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 80px;
-}
-#ads-overlay.visible { display: flex; }
-#ads-panel {
-  width: 300px;
-  max-height: 85vh;
-  background: #fff;
-  border: 2px solid #000;
-  clip-path: polygon(
-    0 2px, 2px 2px, 2px 0,
-    calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px,
-    100% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px),
-    calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px)
-  );
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transform: scale(0.92);
-  opacity: 0;
-  transition: transform 0.2s cubic-bezier(0.2,0,0.3,1), opacity 0.2s ease;
-}
-#ads-panel.slide-in { transform: scale(1); opacity: 1; }
-.ads-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px 6px 14px;
-  border-bottom: 2px solid #000;
-}
-.ads-title-text {
-  font-family: 'VT323', monospace;
-  font-size: 22px;
-  color: #000;
-  line-height: 1;
-}
-.ads-title-remaining {
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  color: #888;
-  line-height: 1;
-}
-.ads-preview-box {
-  margin: 14px 16px 0 16px;
-  border: 2px dashed #000;
-  height: 220px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-}
-.ads-preview-placeholder {
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  color: #aaa;
-  text-align: center;
-}
-.ads-preview-content {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-}
-.ads-preview-content.visible { display: flex; }
-.ads-preview-icon {
-  width: 60px;
-  height: 60px;
-  image-rendering: pixelated;
-  flex-shrink: 0;
-}
-.ads-preview-text {
-  font-family: 'VT323', monospace;
-  font-size: 16px;
-  color: #000;
-  text-align: center;
-  line-height: 1.25;
-  width: 100%;
-  overflow: visible;
-}
-.ads-loading-bar {
-  display: none;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: #000;
-  width: 0%;
-  transition: none;
-}
-.ads-loading-bar.loading { display: block; }
-.ads-params {
-  padding: 20px 16px 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.ads-param-label {
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  color: #000;
-  margin-bottom: 6px;
-}
-.ads-radio-row {
-  display: flex;
-  gap: 8px;
-}
-.ads-radio-btn {
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  border: 2px solid #000;
-  background: #fff;
-  color: #000;
-  padding: 2px 10px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  clip-path: polygon(0 2px,2px 2px,2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px));
-}
-.ads-radio-btn.active { background: #000; color: #fff; }
-/* Salary scrubber */
-.ads-scrubber-wrap { display: flex; flex-direction: column; gap: 6px; }
-.ads-scrubber-label-row { display: flex; justify-content: space-between; align-items: center; }
-.ads-scrubber-value {
-  font-family: 'VT323', monospace;
-  font-size: 18px;
-  color: #000;
-}
-.ads-scrubber {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: #000;
-  outline: none;
-  cursor: pointer;
-}
-.ads-scrubber::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  background: #000;
-  cursor: pointer;
-  clip-path: polygon(0 2px,2px 2px,2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px));
-}
-.ads-scrubber::-moz-range-thumb {
-  width: 14px; height: 14px; background: #000; border: none; cursor: pointer;
-}
-.ads-scrubber-ticks {
-  display: flex;
-  justify-content: space-between;
-  font-family: 'VT323', monospace;
-  font-size: 14px;
-  color: #888;
-}
-.ads-bottom {
-  padding: 20px 16px 20px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.ads-cancel-btn {
-  font-family: 'VT323', monospace;
-  font-size: 20px;
-  color: #000;
-  background: none;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  text-decoration: none;
-  padding: 2px 8px;
-}
-
-/* ── NEW APPLICANTS SECTION ── */
-.new-applicants-section {
-  display: none;
-  flex-direction: column;
-  margin-bottom: 0;
-}
-.new-applicants-section.visible { display: flex; }
-.new-applicants-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.new-applicants-divider {
-  border: none;
-  border-top: 2px dashed #000;
-  margin: 12px 0;
-}
-
-/* ── ADS BRIEFING PAGE ── */
-.ads-intro-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; overflow-y: auto; flex: 1; }
-.ads-intro-item { font-family: 'VT323', monospace; font-size: 17px; color: #000; line-height: 1.3; }
-
 /* ── SPLASH SCREEN ── */
-
 .screen {
   position: fixed;
   inset: 0 0 4px 0;
@@ -1923,76 +1650,10 @@ body {
 
 <!-- SCROLLABLE AREA (always applicants) -->
 <div class="scroll-area" id="scroll-area" style="visibility:hidden;">
-  <!-- NEW APPLICANTS (ads) section -->
-  <div class="new-applicants-section" id="new-applicants-section">
-    <div class="new-applicants-title-row">
-      <div class="section-title" id="new-applicants-title">NEW APPLICANTS [0]</div>
-      <button class="ads-btn" id="btn-ads-new" onclick="openAdsOverlay()">
-        <div class="ads-btn-inner">
-        <img src="images/ads_default.png" id="icon-ads-new">
-        <span id="ads-btn-label-new">RE-RUN ADS</span>
-      </div>
-      </button>
-    </div>
-    <div class="cards-grid" id="new-applicants-grid"></div>
-    <hr class="new-applicants-divider">
-  </div>
   <div class="section-title-row">
     <div class="section-title" id="pool-title">APPLICANTS [0]</div>
-    <button class="ads-btn" id="btn-ads" onclick="openAdsOverlay()">
-      <div class="ads-btn-inner">
-        <img src="images/ads_default.png" id="icon-ads">
-        <span id="ads-btn-label">RE-RUN ADS</span>
-      </div>
-    </button>
   </div>
   <div class="cards-grid" id="cards-grid"></div>
-</div>
-
-<!-- ADS OVERLAY -->
-<div id="ads-overlay" onclick="adsOverlayBgTap(event)">
-  <div id="ads-panel">
-    <div class="ads-title-row">
-      <span class="ads-title-text" id="ads-title-text">RE-RUN ADS</span>
-      <span class="ads-title-remaining" id="ads-title-remaining">5 LEFT</span>
-    </div>
-    <div class="ads-preview-box">
-      <div class="ads-preview-placeholder" id="ads-placeholder">ADS PREVIEW</div>
-      <div class="ads-preview-content" id="ads-preview-content">
-        <img class="ads-preview-icon" src="images/doc_icon.png">
-        <div class="ads-preview-text" id="ads-preview-text"></div>
-      </div>
-      <div class="ads-loading-bar" id="ads-loading-bar"></div>
-    </div>
-    <div class="ads-params">
-      <div>
-        <div class="ads-param-label" id="ads-exp-label">EXPERIENCE</div>
-        <div class="ads-radio-row" id="ads-radio-row">
-          <button class="ads-radio-btn active" id="ads-exp-random" onclick="setAdExp('random')">RANDOM</button>
-          <button class="ads-radio-btn" id="ads-exp-force" onclick="setAdExp('force')">FORCE</button>
-        </div>
-      </div>
-      <div>
-        <div class="ads-scrubber-wrap">
-          <div class="ads-scrubber-label-row">
-            <div class="ads-param-label" id="ads-salary-label">SALARY</div>
-            <div class="ads-scrubber-value" id="ads-salary-value">RANDOM</div>
-          </div>
-          <input type="range" class="ads-scrubber" id="ads-scrubber" min="0" max="4" step="1" value="0" oninput="setAdSalary(this.value)">
-          <div class="ads-scrubber-ticks">
-            <span>RND</span><span>LOW</span><span>MID</span><span>HIGH</span><span>GOLD</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="ads-bottom">
-      <button class="launch-btn" id="ads-buy-btn" onclick="buyAd()" style="width:100%;">
-        <svg class="launch-btn-bg" viewBox="0 0 260 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 256,0 256,2 258,2 258,4 260,4 260,36 258,36 258,38 256,38 256,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-        <span class="launch-btn-text" id="ads-buy-text" style="padding:4px 20px; width:100%; text-align:center;">BUY AD FOR 10 CR</span>
-      </button>
-      <button class="ads-cancel-btn" onclick="closeAdsOverlay()">CANCEL</button>
-    </div>
-  </div>
 </div>
 
 <!-- DRAWER OVERLAY -->
@@ -2211,28 +1872,7 @@ const LANG = {
       "Consider this a courtesy. The Agency does not extend courtesies twice.",
       "You are being reinstated. Perform accordingly.",
       "This is not a reward. This is a last resort."
-    ],
-    rerunAds: "RE-RUN ADS",
-    adsOverlayTitle: "ADS PREVIEW",
-    adsExperience: "EXPERIENCE",
-    adsExpRandom: "RANDOM",
-    adsSalary: "SALARY",
-    adsSalaryRandom: "RANDOM",
-    adsSalaryLow: "LOW [<50 CR]",
-    adsSalaryMid: "MID [80–110 CR]",
-    adsSalaryHigh: "HIGH [120–190 CR]",
-    adsSalaryGold: "GOLD [>200 CR]",
-    adsBuyBtn: "BUY AD [%d CR]",
-    adsCancel: "CANCEL",
-    adsRemaining: "%d/3 ADS REMAINING",
-    adsExhausted: "NO ADS REMAINING TODAY",
-    newApplicants: "NEW APPLICANTS",
-    adsIntroTitle: "RE-RUN ADS",
-    adsIntro1: "As of today, you have access to the Agency's recruitment ad terminal.",
-    adsIntro2: "Post targeted ads to attract additional applicants. Set experience and salary parameters, preview the ad, and pay the posting fee.",
-    adsIntro3: "You may run up to 3 ads per day. Ads appear immediately in your pool.",
-    adsIntro4: "Use it wisely — it costs credits.",
-    adsCheckpointLine: "We've enabled ad posting on your terminal. Use it wisely — it costs credits."
+    ]
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -2390,28 +2030,7 @@ const LANG = {
       "Consideralo una cortesia. L'Agenzia non ne concede due.",
       "Sei stato reintegrato. Comportati di conseguenza.",
       "Questo non è un premio. È l'ultima risorsa."
-    ],
-    rerunAds: "RILANCIA ANNUNCIO",
-    adsOverlayTitle: "ANTEPRIMA ANNUNCIO",
-    adsExperience: "ESPERIENZA",
-    adsExpRandom: "CASUALE",
-    adsSalary: "STIPENDIO",
-    adsSalaryRandom: "CASUALE",
-    adsSalaryLow: "BASSO [<50 CR]",
-    adsSalaryMid: "MEDIO [80–110 CR]",
-    adsSalaryHigh: "ALTO [120–190 CR]",
-    adsSalaryGold: "GOLD [>200 CR]",
-    adsBuyBtn: "ACQUISTA ANNUNCIO [%d CR]",
-    adsCancel: "ANNULLA",
-    adsRemaining: "%d/5 ANNUNCI RIMANENTI",
-    adsExhausted: "NESSUN ANNUNCIO DISPONIBILE OGGI",
-    newApplicants: "NUOVI CANDIDATI",
-    adsIntroTitle: "RILANCIA ANNUNCIO",
-    adsIntro1: "Da oggi hai accesso al terminale annunci di reclutamento dell'Agenzia.",
-    adsIntro2: "Pubblica annunci mirati per attrarre candidati aggiuntivi. Imposta i parametri di esperienza e stipendio, visualizza l'anteprima e paga la tariffa di pubblicazione.",
-    adsIntro3: "Puoi pubblicare fino a 3 annunci al giorno. I candidati appaiono immediatamente nel tuo pool.",
-    adsIntro4: "Usalo con saggezza — costa crediti.",
-    adsCheckpointLine: "Abbiamo abilitato il terminale annunci sul tuo dispositivo. Usalo con saggezza — costa crediti."
+    ]
   }
 };
 
@@ -2525,416 +2144,6 @@ function updateIconButtons() {
 
   if (mBtn) { mBtn.classList.toggle('active', mActive); mImg.src = mActive ? 'images/mission_selected.png' : 'images/mission_default.png'; }
   if (aBtn) { aBtn.classList.toggle('active', aActive); aImg.src = aActive ? 'images/manual_selected.png' : 'images/manual_default.png'; }
-}
-
-
-// ── RE-RUN ADS SYSTEM ──
-
-const AD_SALARY_TIERS = ['random','low','mid','high','gold'];
-
-const AD_SALARY_LABELS = {
-  en: { random:'RANDOM', low:'LOW [<50 CR]', mid:'MID [80–110 CR]', high:'HIGH [120–190 CR]', gold:'GOLD [>200 CR]' },
-  it: { random:'CASUALE', low:'BASSO [<50 CR]', mid:'MEDIO [80–110 CR]', high:'ALTO [120–190 CR]', gold:'GOLD [>200 CR]' }
-};
-
-// Price table: [exp][salary]
-const AD_PRICES = {
-  random: { random:10, low:20, mid:50, high:100, gold:200 },
-  force:  { random:20, low:40, mid:80, high:150, gold:250 }
-};
-
-// Stat ranges per salary tier
-const AD_STAT_RANGES = {
-  random: null,
-  low:    { min:8,  max:20 },
-  mid:    { min:18, max:35 },
-  high:   { min:30, max:50 },
-  gold:   { min:45, max:65 }
-};
-
-// Ad copy: 3 per [exp][salary] combination
-// [ROLE] is replaced with the mission exp req label at runtime
-const AD_COPY = {
-  en: {
-    random: {
-      random: [
-        "CREW WANTED. No requirements. No preferences. Salary: whatever sticks. Departure imminent.",
-        "OPEN RECRUITMENT. Species, skills and personal history: irrelevant. Show up. That's the bar.",
-        "HIRING NOW. All applicants considered. Standards: minimal. Enthusiasm: optional. Pulse: preferred."
-      ],
-      low: [
-        "CREW POSITION AVAILABLE. Modest compensation. No experience required. We ask only that you try.",
-        "BUDGET POSTING. Entry-level. The pay reflects the ask. The ask is: be present and functional.",
-        "AFFORDABLE HIRE SOUGHT. Salary: low. Expectations: lower. You'll fit right in."
-      ],
-      mid: [
-        "CREW MEMBER WANTED. Standard compensation package. No specific background required. Reliability appreciated.",
-        "OPEN ROLE. Mid-tier salary. We're not fussy about species. We are fussy about showing up on time.",
-        "GENERAL HIRE. Decent pay. Decent expectations. A decent candidate will do nicely."
-      ],
-      high: [
-        "PREMIUM CREW POSITION. Competitive salary. Species open. We're paying for quality — we expect to receive it.",
-        "HIGH-COMPENSATION ROLE. No species restriction. Strong candidates only. The pay is good. So is the standard.",
-        "WELL-PAID VACANCY. Open to all. The remuneration is generous. The tolerance for underperformance is not."
-      ],
-      gold: [
-        "EXCEPTIONAL INDIVIDUAL SOUGHT. Species: irrelevant. Compensation: exceptional. We expect results. You expect payment. Agreement reached.",
-        "TOP-TIER HIRE. No background filter. Gold-class salary. If you need to ask whether you qualify, you don't.",
-        "ELITE VACANCY. Open recruitment. Maximum remuneration. This posting has been reviewed by Agency legal. Twice."
-      ]
-    },
-    force: {
-      random: [
-        "[ROLE] OFFICER WANTED. Salary negotiable upon arrival. Experience in [ROLE] operations preferred. Ships depart on schedule.",
-        "SEEKING [ROLE] SPECIALIST. Compensation: to be discussed. The role is real. The ship is real. The rest is details.",
-        "[ROLE] CREW POSITION. Pay: open. We're looking for the right fit. If that's you, we'll work something out."
-      ],
-      low: [
-        "[ROLE] POSTING. Entry-level. The pay is modest. The mission is not. We appreciate your sacrifice in advance.",
-        "[ROLE] OFFICER NEEDED. Budget salary. We cannot offer much beyond the role itself and a bunk of adequate width.",
-        "[ROLE] HIRE. Low compensation bracket. Experience in [ROLE] required. Enthusiasm will not substitute for capability."
-      ],
-      mid: [
-        "[ROLE] CREW WANTED. Standard pay. Solid [ROLE] background expected. No extraordinary demands. Just competence.",
-        "EXPERIENCED [ROLE] OFFICER SOUGHT. Mid-range salary. We want someone who knows what they're doing without being told twice.",
-        "[ROLE] SPECIALIST. Competitive mid-tier compensation. We value [ROLE] experience and punctuality, roughly equally."
-      ],
-      high: [
-        "SENIOR [ROLE] OFFICER. High compensation. Proven track record in [ROLE] operations required. References will be reviewed.",
-        "[ROLE] EXPERT WANTED. Premium salary. This is not an entry-level posting. The pay reflects that. So does the expectation.",
-        "HIGH-TIER [ROLE] HIRE. Strong remuneration package. We are selective. The credits on offer justify the selectivity."
-      ],
-      gold: [
-        "ELITE [ROLE] SPECIALIST SOUGHT. Gold-class compensation. Exceptional [ROLE] credentials mandatory. The Agency does not post at this level lightly.",
-        "SENIOR [ROLE] OFFICER. Maximum remuneration. Candidates must demonstrate [ROLE] mastery, composure under pressure, and the ability to pretend the rest of the crew isn't a problem.",
-        "TOP-TIER [ROLE] RECRUIT. Gold salary. We have reviewed forty-seven candidates this cycle. We are still looking. Perhaps you are the reason."
-      ]
-    }
-  },
-  it: {
-    random: {
-      random: [
-        "CERCASI EQUIPAGGIO. Nessun requisito. Nessuna preferenza. Stipendio: da concordare. Partenza imminente.",
-        "SELEZIONE APERTA. Specie, competenze e storia personale: irrilevanti. Presentati. Questo è il requisito.",
-        "ASSUNZIONI IN CORSO. Tutti i candidati valutati. Standard: minimi. Entusiasmo: facoltativo. Polso: preferibile."
-      ],
-      low: [
-        "POSIZIONE DISPONIBILE. Compenso modesto. Nessuna esperienza richiesta. Chiediamo solo che ci provi.",
-        "ANNUNCIO LOW BUDGET. Livello base. La paga rispecchia la richiesta. La richiesta è: sii presente e funzionante.",
-        "CANDIDATO ECONOMICO CERCASI. Stipendio: basso. Aspettative: ancora più basse. Ti troverai a tuo agio."
-      ],
-      mid: [
-        "MEMBRO EQUIPAGGIO CERCASI. Pacchetto retributivo standard. Nessun background specifico richiesto. L'affidabilità è apprezzata.",
-        "POSIZIONE APERTA. Stipendio medio. Non siamo esigenti sulla specie. Lo siamo sulla puntualità.",
-        "ASSUNZIONE GENERALE. Paga decente. Aspettative decenti. Un candidato decente andrà benissimo."
-      ],
-      high: [
-        "POSIZIONE PREMIUM. Stipendio competitivo. Specie aperta. Paghiamo per la qualità — ci aspettiamo di riceverla.",
-        "RUOLO AD ALTO COMPENSO. Nessuna restrizione di specie. Solo candidati di valore. La paga è buona. Lo standard anche.",
-        "POSTO BEN RETRIBUITO. Aperto a tutti. Il compenso è generoso. La tolleranza per la scarsa resa non lo è."
-      ],
-      gold: [
-        "CERCASI INDIVIDUO ECCEZIONALE. Specie: irrilevante. Compenso: eccezionale. Vogliamo risultati. Tu vuoi il pagamento. Accordo raggiunto.",
-        "ASSUNZIONE TOP TIER. Nessun filtro di background. Stipendio gold. Se hai bisogno di chiederti se sei qualificato, non lo sei.",
-        "POSIZIONE D'ÉLITE. Selezione aperta. Retribuzione massima. Questo annuncio è stato esaminato dall'ufficio legale dell'Agenzia. Due volte."
-      ]
-    },
-    force: {
-      random: [
-        "CERCASI UFFICIALE [ROLE]. Stipendio da concordare all'arrivo. Esperienza in operazioni [ROLE] preferita. Le navi partono nei tempi previsti.",
-        "RICERCA SPECIALISTA [ROLE]. Compenso: da discutere. Il ruolo è reale. La nave è reale. Il resto sono dettagli.",
-        "POSIZIONE [ROLE]. Paga: aperta. Cerchiamo la persona giusta. Se sei tu, troveremo un accordo."
-      ],
-      low: [
-        "ANNUNCIO [ROLE]. Livello base. La paga è modesta. La missione non lo è. Apprezziamo il tuo sacrificio in anticipo.",
-        "UFFICIALE [ROLE] RICHIESTO. Stipendio ridotto. Non possiamo offrire molto oltre al ruolo stesso e una cuccetta di larghezza adeguata.",
-        "ASSUNZIONE [ROLE]. Fascia retributiva bassa. Esperienza [ROLE] richiesta. L'entusiasmo non sostituisce la competenza."
-      ],
-      mid: [
-        "CERCASI EQUIPAGGIO [ROLE]. Paga standard. Background solido in [ROLE] richiesto. Nessuna richiesta straordinaria. Solo competenza.",
-        "UFFICIALE [ROLE] ESPERTO CERCASI. Stipendio medio. Vogliamo qualcuno che sappia cosa sta facendo senza doverlo ripetere due volte.",
-        "SPECIALISTA [ROLE]. Compenso medio competitivo. Valutiamo l'esperienza in [ROLE] e la puntualità, all'incirca allo stesso modo."
-      ],
-      high: [
-        "UFFICIALE [ROLE] SENIOR. Alto compenso. Esperienza comprovata in operazioni [ROLE] richiesta. I riferimenti saranno verificati.",
-        "ESPERTO [ROLE] CERCASI. Stipendio premium. Non è una posizione entry-level. La paga lo rispecchia. Le aspettative anche.",
-        "ASSUNZIONE [ROLE] TOP TIER. Pacchetto retributivo elevato. Siamo selettivi. I crediti offerti giustificano la selettività."
-      ],
-      gold: [
-        "CERCASI SPECIALISTA [ROLE] D'ÉLITE. Compenso gold. Credenziali [ROLE] eccezionali obbligatorie. L'Agenzia non pubblica a questo livello alla leggera.",
-        "UFFICIALE [ROLE] SENIOR. Retribuzione massima. I candidati devono dimostrare padronanza [ROLE], compostezza sotto pressione e la capacità di far finta che il resto dell'equipaggio non sia un problema.",
-        "RECLUTA [ROLE] TOP TIER. Stipendio gold. Abbiamo valutato quarantasette candidati in questo ciclo. Stiamo ancora cercando. Forse sei tu il motivo."
-      ]
-    }
-  }
-};
-
-let adsPreviewTimer = null;
-
-function getAdPrice() {
-  const exp = state.lastAdParams.exp;
-  const sal = state.lastAdParams.salary;
-  return AD_PRICES[exp] ? (AD_PRICES[exp][sal] || 10) : 10;
-}
-
-function getAdCopy() {
-  const lang = currentLang === 'it' ? 'it' : 'en';
-  const exp = state.lastAdParams.exp;
-  const sal = state.lastAdParams.salary;
-  const pool = AD_COPY[lang][exp]?.[sal] || AD_COPY[lang]['random']['random'];
-  const text = pool[Math.floor(Math.random() * pool.length)];
-  // Replace [ROLE] with the current mission exp req (or mission type if none)
-  const expReq = state.mission?.expReq ? roleName(state.mission.expReq) : (state.mission ? missionTypeName(state.mission.type) : 'FORCE');
-  return text.replace(/\[ROLE\]/g, expReq);
-}
-
-function updateAdsUI() {
-  const remaining = 3 - state.adsRunToday;
-  const price = getAdPrice();
-  const lang = currentLang;
-  // buy button
-  const buyText = `BUY AD [${price} CR]`;
-  document.getElementById('ads-buy-text').textContent = buyText;
-  // resize buy btn svg viewBox to fit text
-  const buyBtn = document.getElementById('ads-buy-btn');
-  if (buyBtn) buyBtn.querySelector('svg').setAttribute('viewBox', '0 0 260 40');
-  // remaining — shown in title row
-  const remEl = document.getElementById('ads-title-remaining');
-  if (remEl) {
-    if (remaining <= 0) {
-      remEl.textContent = t('adsExhausted');
-      document.getElementById('ads-buy-btn').classList.add('disabled');
-    } else {
-      const leftLabel = currentLang === 'it' ? `${remaining} rimasti` : `${remaining} left`;
-      remEl.textContent = leftLabel;
-      document.getElementById('ads-buy-btn').classList.remove('disabled');
-    }
-  }
-  // salary scrubber label
-  const salIdx = AD_SALARY_TIERS.indexOf(state.lastAdParams.salary);
-  document.getElementById('ads-scrubber').value = salIdx >= 0 ? salIdx : 0;
-  const salLabels = AD_SALARY_LABELS[lang] || AD_SALARY_LABELS.en;
-  document.getElementById('ads-salary-value').textContent = salLabels[state.lastAdParams.salary] || 'RANDOM';
-  // exp radio
-  const titleEl = document.getElementById('ads-title-text');
-  if (titleEl) titleEl.textContent = t('rerunAds');
-  document.getElementById('ads-exp-label').textContent = t('adsExperience');
-  document.getElementById('ads-salary-label').textContent = t('adsSalary');
-  const lbl = document.getElementById('ads-btn-label'); if(lbl) lbl.textContent = t('rerunAds');
-  const lbl2 = document.getElementById('ads-btn-label-new'); if(lbl2) lbl2.textContent = t('rerunAds');
-  // exp radio buttons
-  const expReqLabel = state.mission?.expReq ? roleName(state.mission.expReq).toUpperCase() : missionTypeName(state.mission?.type || '').toUpperCase();
-  document.getElementById('ads-exp-random').textContent = t('adsExpRandom');
-  document.getElementById('ads-exp-force').textContent = expReqLabel || 'FORCE';
-  document.getElementById('ads-exp-random').classList.toggle('active', state.lastAdParams.exp === 'random');
-  document.getElementById('ads-exp-force').classList.toggle('active', state.lastAdParams.exp === 'force');
-  // cancel
-  document.querySelector('.ads-cancel-btn').textContent = t('adsCancel');
-}
-
-function scheduleAdPreview() {
-  // Hide content, show placeholder, start loading bar
-  const placeholder = document.getElementById('ads-placeholder');
-  const previewContent = document.getElementById('ads-preview-content');
-  const loadingBar = document.getElementById('ads-loading-bar');
-
-  placeholder.style.display = '';
-  previewContent.classList.remove('visible');
-  placeholder.textContent = t('adsOverlayTitle');
-
-  loadingBar.style.width = '0%';
-  loadingBar.classList.add('loading');
-  loadingBar.style.transition = 'none';
-
-  clearTimeout(adsPreviewTimer);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      loadingBar.style.transition = 'width 0.5s linear';
-      loadingBar.style.width = '100%';
-    });
-  });
-
-  adsPreviewTimer = setTimeout(() => {
-    const text = getAdCopy();
-    document.getElementById('ads-preview-text').textContent = text;
-    loadingBar.classList.remove('loading');
-    loadingBar.style.width = '0%';
-    placeholder.style.display = 'none';
-    previewContent.classList.add('visible');
-  }, 550);
-}
-
-function setAdExp(val) {
-  state.lastAdParams.exp = val;
-  updateAdsUI();
-  scheduleAdPreview();
-  playSfx('button');
-}
-
-function setAdSalary(idx) {
-  state.lastAdParams.salary = AD_SALARY_TIERS[parseInt(idx)] || 'random';
-  updateAdsUI();
-  scheduleAdPreview();
-}
-
-function openAdsOverlay() {
-  if (state.day < 21) return;
-  playSfx('page' + (Math.ceil(Math.random() * 4)));
-  playSfx('button');
-  const btn = document.getElementById('btn-ads');
-  btn.classList.remove('bounce'); requestAnimationFrame(() => btn.classList.add('bounce'));
-  btn.classList.add('active');
-  const btn2 = document.getElementById('btn-ads-new'); if(btn2) btn2.classList.add('active');
-
-  const overlay = document.getElementById('ads-overlay');
-  const panel = document.getElementById('ads-panel');
-  overlay.classList.add('visible');
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => panel.classList.add('slide-in'));
-  });
-
-  updateAdsUI();
-  scheduleAdPreview();
-}
-
-function closeAdsOverlay() {
-  playSfx('button');
-  playSfx('page' + (Math.ceil(Math.random() * 4)));
-  const overlay = document.getElementById('ads-overlay');
-  const panel = document.getElementById('ads-panel');
-  panel.classList.remove('slide-in');
-  document.getElementById('btn-ads').classList.remove('active');
-  const bna = document.getElementById('btn-ads-new'); if(bna) bna.classList.remove('active');
-  setTimeout(() => overlay.classList.remove('visible'), 260);
-}
-
-function adsOverlayBgTap(e) {
-  if (e.target === document.getElementById('ads-overlay')) closeAdsOverlay();
-}
-
-function generateAdApplicant() {
-  const sal = state.lastAdParams.salary;
-  const expKey = state.lastAdParams.exp;
-  const range = AD_STAT_RANGES[sal];
-
-  // Pick species — Gold gets 35% Drakhen, Random gets 10% Drakhen, others 0%
-  const unlocked = getUnlockedSpeciesForDay(state.day);
-  const nonDrakhen = unlocked.filter(r => r !== 'Drakhen');
-  let race;
-  const drakhenChance = sal === 'gold' ? 0.35 : (sal === 'random' ? 0.10 : 0);
-  if (Math.random() < drakhenChance && state.day >= 16) {
-    race = 'Drakhen';
-  } else {
-    race = nonDrakhen[Math.floor(Math.random() * nonDrakhen.length)];
-  }
-
-  // Maybe saboteur
-  const saboteurRoll = Math.random() < 0.30;
-  if (saboteurRoll && SABOTEUR_SPECIES && SABOTEUR_SPECIES.length) {
-    const sab = SABOTEUR_SPECIES[Math.floor(Math.random() * SABOTEUR_SPECIES.length)];
-    const baseApp = generateApplicant(state.pool.length + state.adApplicants.length);
-    baseApp.isSaboteur = true;
-    baseApp.race = sab.name;
-    baseApp.icon = sab.icon;
-    if (range) {
-      baseApp.str = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-      baseApp.int = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-      baseApp.cha = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-    }
-    return baseApp;
-  }
-
-  const app = generateApplicantForRace(state.pool.length + state.adApplicants.length, race);
-
-  if (range) {
-    app.str = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-    app.int = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-    app.cha = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
-  }
-
-  // Force exp req if selected
-  if (expKey === 'force' && state.mission?.expReq) {
-    app.exp = state.mission.expReq;
-  }
-
-  return app;
-}
-
-function buyAd() {
-  if (state.adsRunToday >= 3) return;
-  const price = getAdPrice();
-  if (state.money < price) { playSfx('wrong'); return; }
-
-  playSfx('cash_sound');
-  state.money -= price;
-  state.adsRunToday++;
-
-  // Generate 2 applicants
-  let a1 = generateAdApplicant();
-  let a2 = generateAdApplicant();
-  // Ensure unique names
-  let attempts = 0;
-  while ((a2.name === a1.name || state.pool.some(a => a.name === a2.name) || state.adApplicants.some(a => a.name === a2.name)) && attempts < 20) {
-    a2 = generateAdApplicant(); attempts++;
-  }
-
-  // Assign IDs well above pool range to avoid collision
-  const adIdBase = 10000 + (state.adsRunToday - 1) * 2; // max 3 ads/day
-  a1.id = adIdBase;
-  a2.id = adIdBase + 1;
-  state.adApplicants.unshift(a2);
-  state.adApplicants.unshift(a1);
-
-  closeAdsOverlay();
-  setTimeout(() => {
-    renderAdApplicants();
-    updateUI();
-  }, 300);
-}
-
-function renderAdApplicants() {
-  const section = document.getElementById('new-applicants-section');
-  const grid = document.getElementById('new-applicants-grid');
-  const title = document.getElementById('new-applicants-title');
-
-  if (!state.adApplicants || state.adApplicants.length === 0) {
-    section.classList.remove('visible');
-    return;
-  }
-
-  section.classList.add('visible');
-  title.textContent = `${t('newApplicants')} [${state.adApplicants.length}]`;
-
-  const m = state.mission;
-  grid.innerHTML = '';
-  state.adApplicants.forEach(app => {
-    const isSelected = state.roster.some(a => a && a.id === app.id);
-    const hl = (s) => m.reqs.includes(s) ? 'hi-stat' : '';
-    grid.insertAdjacentHTML('beforeend', `
-    <div class="mc-wrap${isSelected ? ' selected' : ''}" id="adcard-${app.id}" data-id="${app.id}" data-race="${app.race}" onclick="tapAdCard(${app.id})">
-      ${cardBorderSVG()}
-      <div class="mc-dither"></div>
-      <div class="mc-hired"><span>HIRED</span></div>
-      <div class="mc-inner">
-        <div class="mc-head">
-          <div class="mc-name">${app.name}</div>
-          <div class="mc-tag">${tagBgSVG(tagWidth(app.race))}<span class="mc-tag-text" style="position:relative;z-index:1;">${speciesName(app.race)}</span></div>
-        </div>
-        <div class="mc-portrait"><img src="${app.portrait}" draggable="false" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=\"font-size:32px;color:#ccc;display:flex;align-items:center;justify-content:center;height:100%\">?</span>';"></div>
-        <div class="mc-skills"><span class="${hl('str')}">${t('str')} ${app.str}</span><span class="${hl('int')}">${t('int')} ${app.int}</span><span class="${hl('cha')}">${t('cha')} ${app.cha}</span></div>
-        <div class="mc-exp">${t('exp')}: ${roleName(app.exp)}</div>
-        <hr class="mc-div">
-        <div class="mc-foot">
-          <div class="mc-hate-row">
-            <div class="mc-hate-label">${t('hate')}</div>
-            <div class="mc-hate-bar-track"><div class="mc-hate-bar-fill" style="width:${app.hate}%"></div></div>
-            <div class="mc-hate-pct${app.hate >= 70 ? ' high' : ''}">${app.hate}%</div>
-          </div>
-          <div class="mc-salary">${app.cost} cr</div>
-        </div>
-      </div>
-    </div>`);
-  });
 }
 
 function getMissionHTML() {
@@ -3222,10 +2431,7 @@ let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: nul
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
-  nextSaboteurDay: 14, // first saboteur appears day 14 or 15 (randomised at startDay)
-  adsRunToday: 0,      // re-run ads used today (max 5)
-  lastAdParams: { exp: 'random', salary: 'random' }, // persist params across opens
-  adApplicants: []     // applicants added via ads this day
+  nextSaboteurDay: 14  // first saboteur appears day 14 or 15 (randomised at startDay)
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -3517,8 +2723,6 @@ function startDay() {
   state.speciesOrder = [];
   state.mission = generateMission();
   state.pool = [];
-  state.adsRunToday = 0;
-  state.adApplicants = [];
 
   if (state.day === 1) {
     // Fixed Day 1 pool: 2 Humans, 1 Sky-Elf, 2 Droids, 1 Beetlegunner
@@ -3651,26 +2855,6 @@ function updateUI() {
 
   // Pool title — count ALL applicants (cards stay in pool)
   document.getElementById('pool-title').innerText = `${t('applicants')} [${state.pool.length}]`;
-
-  // Ads button visibility (day 21+)
-  // Show on new-applicants row when section visible, else on pool row
-  const hasAdApps = state.adApplicants && state.adApplicants.length > 0;
-  const adsBtn = document.getElementById('btn-ads');
-  const adsBtnNew = document.getElementById('btn-ads-new');
-  if (state.day >= 21) {
-    if (hasAdApps) {
-      if (adsBtn) adsBtn.classList.remove('visible');
-      if (adsBtnNew) adsBtnNew.classList.add('visible');
-    } else {
-      if (adsBtn) adsBtn.classList.add('visible');
-      if (adsBtnNew) adsBtnNew.classList.remove('visible');
-    }
-  } else {
-    if (adsBtn) adsBtn.classList.remove('visible');
-    if (adsBtnNew) adsBtnNew.classList.remove('visible');
-  }
-  // Re-render ad applicants
-  renderAdApplicants();
 
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
@@ -3940,7 +3124,7 @@ function tapCard(appId) {
   card.classList.remove('bounce');
   requestAnimationFrame(() => card.classList.add('bounce'));
 
-  const app = state.pool.find(a => a.id === appId) || (state.adApplicants || []).find(a => a.id === appId);
+  const app = state.pool.find(a => a.id === appId);
   if (!app) return;
 
   // Already assigned — unassign
@@ -3992,37 +3176,6 @@ function tapCard(appId) {
   updateLaunchState();
   updateCostDisplay();
 }
-
-function tapAdCard(appId) {
-  const card = document.getElementById('adcard-' + appId);
-  if (!card) return;
-  card.classList.remove('bounce');
-  requestAnimationFrame(() => card.classList.add('bounce'));
-  const app = (state.adApplicants || []).find(a => a.id === appId);
-  if (!app) return;
-  const rosterIdx = state.roster.findIndex(a => a && a.id === appId);
-  if (rosterIdx !== -1) {
-    state.roster[rosterIdx] = null;
-    card.classList.remove('selected');
-    playSfx('unselect_card');
-    compactRoster();
-    renderSlots(); updateLaunchState(); updateUI();
-    return;
-  }
-  const emptySlot = state.roster.indexOf(null);
-  if (emptySlot === -1 || state.roster.filter(Boolean).length >= state.ship.max) {
-    playSfx('wrong');
-    return;
-  }
-  const cost = state.roster.filter(Boolean).reduce((s,a)=>s+a.cost,0) + app.cost;
-  if (cost > state.money) { playSfx('wrong'); return; }
-  state.roster[emptySlot] = app;
-  card.classList.add('selected');
-  playSfx('select_card');
-  hapticTick();
-  renderSlots(); updateLaunchState(); updateUI();
-}
-
 
 function tapSlot(index) {
   const app = state.roster[index];
@@ -4633,9 +3786,6 @@ function buildCheckpointDialogue() {
     'The Agency is watching your numbers.'
   ];
 
-  // Day 20 checkpoint: introduce ads feature
-  const adsLine = (state.day === 20) ? t('adsCheckpointLine') : null;
-
   const parts = [
     pick(GREETINGS[lang]),
     pick(PERFORMANCE[lang][tier]),
@@ -4643,7 +3793,6 @@ function buildCheckpointDialogue() {
     topSpecies.length > 0 ? pick(SPECIES_LINES) : null,
     pick(PROFIT_LINES),
     tier !== 'excellent' ? pick(ADVICE) : null,
-    adsLine,
     pick(CLOSINGS)
   ].filter(Boolean);
 
@@ -4735,8 +3884,6 @@ function nextDay() {
           state.allTimeHires = savedGame.allTimeHires || {};
           state.totalEarned = savedGame.totalEarned || 0;
           state.nextSaboteurDay = savedGame.nextSaboteurDay || (savedGame.day + 4);
-          if (savedGame.lastAdParams) state.lastAdParams = savedGame.lastAdParams;
-          state.adsRunToday = 0; state.adApplicants = [];
           state.gameOver = false;
           state.roster = [];
           state.pool = [];
@@ -4880,7 +4027,6 @@ const SFX_FILES = {
   menu_open:    'sound/menu_open.m4a',
   menu_close:   'sound/menu_close.m4a',
   wrong:        'sound/wrong.m4a',
-  cash_sound:   'sound/cash_sound.m4a',
 };
 
 // Pool of Audio elements per key — allows overlapping playback
@@ -5136,7 +4282,7 @@ function startNewCareerInSlot(slot) {
   // Reset state
   state.day = 1; state.money = 800; state.gameOver = false;
   state.roster = []; state.pool = [];
-  state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0; state.adsRunToday = 0; state.adApplicants = []; state.lastAdParams = { exp: 'random', salary: 'random' };
+  state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0;
   state.nextSaboteurDay = 14;
   startDay(); // initialise ship, roster, mission and pool for day 1
   document.getElementById('screen-slots').classList.add('hidden');
@@ -5151,8 +4297,6 @@ function continueCareerFromSlot(slot, save) {
   state.allTimeHires = save.allTimeHires || {};
   state.totalEarned = save.totalEarned || 0;
   state.nextSaboteurDay = save.nextSaboteurDay || (save.day + 4);
-  if (save.lastAdParams) state.lastAdParams = save.lastAdParams;
-  state.adsRunToday = 0; state.adApplicants = [];
   state.gameOver = false;
   state.roster = [];
   state.pool = [];
@@ -5188,8 +4332,7 @@ function saveCheckpoint() {
     missionLog: state.missionLog,
     allTimeHires: state.allTimeHires,
     totalEarned: state.totalEarned,
-    nextSaboteurDay: state.nextSaboteurDay,
-    lastAdParams: state.lastAdParams
+    nextSaboteurDay: state.nextSaboteurDay
   });
 }
 
@@ -5563,25 +4706,6 @@ startDay();
     `;
   }
 
-  function buildAdsIntroPage(pageEl) {
-    pageEl.innerHTML = `
-      <div class="rules-briefing-header">
-        <div class="rules-briefing-header-text">
-          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
-          <span class="rules-briefing-sub">${t('adsIntroTitle').toUpperCase()}</span>
-        </div>
-        <img src="images/ads_default.png" class="rules-briefing-icon" onerror="this.style.display='none'">
-      </div>
-      <div class="rules-divider"></div>
-      <div class="ads-intro-list">
-        <div class="ads-intro-item">${t('adsIntro1')}</div>
-        <div class="ads-intro-item">${t('adsIntro2')}</div>
-        <div class="ads-intro-item">${t('adsIntro3')}</div>
-        <div class="ads-intro-item">${t('adsIntro4')}</div>
-      </div>
-    `;
-  }
-
   function buildExpMandatePage(pageEl) {
     const newDirective = currentLang === 'it' ? 'NUOVA DIRETTIVA' : 'NEW DIRECTIVE';
     const liSize = currentLang === 'it' ? '15px' : '18px';
@@ -5643,7 +4767,6 @@ startDay();
       const isExpMandateDay = state.day === 10;
 
       const isSaboteurDay = state.day === 15;
-      const isAdsDay = state.day === 21;
 
       if (isExpMandateDay && isSaboteurDay) {
         // Both on same day (shouldn't happen but handle gracefully)
@@ -5662,12 +4785,6 @@ startDay();
       } else if (isSaboteurDay) {
         RULES_TOTAL = hasNewSpecies ? 4 : 3;
         buildSaboteurWarningPage(document.getElementById('rules-page-1'));
-        buildMissionPage(document.getElementById('rules-page-2'));
-        buildShipPage(document.getElementById('rules-page-3'));
-        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
-      } else if (isAdsDay) {
-        RULES_TOTAL = hasNewSpecies ? 4 : 3;
-        buildAdsIntroPage(document.getElementById('rules-page-1'));
         buildMissionPage(document.getElementById('rules-page-2'));
         buildShipPage(document.getElementById('rules-page-3'));
         if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
