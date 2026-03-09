@@ -1497,7 +1497,7 @@ body {
 </head>
 <body>
 
-<audio id="theme-audio" src="sound/theme.mp3" loop preload="auto"></audio>
+<audio id="theme-audio" src="sound/theme.mp3" loop preload="auto" volume="0.4"></audio>
 
 <!-- PRE-PAGE (Page 0) — Language selector -->
 <div class="screen" id="screen-pre">
@@ -4077,7 +4077,9 @@ function getAudioCtx() {
     gainNode = audioCtx.createGain();
     gainNode.gain.value = 1.0;
     gainNode.connect(audioCtx.destination);
-    // Dedicated theme gain node — keeps theme volume independent of SFX
+  }
+  // Theme gain node — created separately, may be needed after audioCtx already exists
+  if (!themeGainNode) {
     themeGainNode = audioCtx.createGain();
     themeGainNode.gain.value = 0.4;
     themeGainNode.connect(audioCtx.destination);
@@ -4101,6 +4103,7 @@ function playTheme() {
     audioSourceCreated = true;
   }
   audio.currentTime = 0;
+  audio.volume = 0.4;
   audio.loop = true;
   audio.play().catch(() => {});
   themeIsPlaying = true;
