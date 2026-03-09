@@ -4456,6 +4456,7 @@ function goToSplash() {
 }
 
 function goToWelcome() {
+  stopTheme();
   document.getElementById('screen-splash').classList.add('hidden');
   document.getElementById('screen-welcome').classList.remove('hidden');
   startTypewriter();
