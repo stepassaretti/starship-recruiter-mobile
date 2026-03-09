@@ -1516,7 +1516,7 @@ body {
     </label>
   </div>
   <div class="pre-continue-row">
-    <button class="launch-btn-inverted" id="btn-pre-continue" onclick="bounceThen(this, goToSplash)">
+    <button class="launch-btn-inverted" id="btn-pre-continue" onclick="playSfx('button'); bounceThen(this, goToSplash)">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="btn-pre-continue-text">Continue</span>
     </button>
@@ -1529,11 +1529,11 @@ body {
     <img class="splash-img" src="images/splash.png" alt="Starship Recruiter" onerror="this.style.opacity='0'">
   </div>
   <div class="splash-cta">
-    <button class="launch-btn-inverted" id="btn-splash-continue" onclick="bounceThen(this, () => openSlotSelect('continue'))" style="display:none;">
+    <button class="launch-btn-inverted" id="btn-splash-continue" onclick="playSfx('button'); bounceThen(this, () => openSlotSelect('continue'))" style="display:none;">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="btn-splash-continue-text">CONTINUE CAREER</span>
     </button>
-    <button class="launch-btn-inverted" id="btn-splash-new" onclick="bounceThen(this, () => anySlotOccupied() ? openSlotSelect('new') : startNewCareerInSlot(1))">
+    <button class="launch-btn-inverted" id="btn-splash-new" onclick="playSfx('button'); bounceThen(this, () => anySlotOccupied() ? openSlotSelect('new') : startNewCareerInSlot(1))">
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="btn-splash-new-text">NEW CAREER</span>
     </button>
@@ -1577,7 +1577,7 @@ body {
   <div class="welcome-text-panel">
     <div class="welcome-lore" id="welcome-lore-text"></div>
     <div class="welcome-btn-row">
-      <button class="launch-btn-inverted" id="btn-welcome-cta" onclick="bounceThen(this, goToGame)">
+      <button class="launch-btn-inverted" id="btn-welcome-cta" onclick="playSfx('button'); bounceThen(this, goToGame)">
         <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
         <span class="launch-btn-text-inv" id="btn-welcome-text">Continue</span>
       </button>
@@ -4003,9 +4003,11 @@ function bounceThen(btn, callback) {
 
 // ── AUDIO (Web Audio API — works on iOS) ──
 let audioCtx = null;
-let gainNode = null;
+let gainNode = null;       // SFX gain node
+let themeGainNode = null;  // dedicated theme gain node
 let audioSourceCreated = false;
 let fadeTimer = null;
+let themeIsPlaying = false;
 
 // Resume AudioContext when app returns to foreground (iOS/Android backgrounding fix)
 document.addEventListener('visibilitychange', () => {
@@ -4071,55 +4073,66 @@ function playSfxPage() {
 function getAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // SFX gain node
     gainNode = audioCtx.createGain();
-    gainNode.gain.value = 0.56;
+    gainNode.gain.value = 1.0;
     gainNode.connect(audioCtx.destination);
+    // Dedicated theme gain node — keeps theme volume independent of SFX
+    themeGainNode = audioCtx.createGain();
+    themeGainNode.gain.value = 0.4;
+    themeGainNode.connect(audioCtx.destination);
   }
   return audioCtx;
 }
 
 function playTheme() {
+  if (themeIsPlaying) return; // guard against double-play
   const ctx = getAudioCtx();
   if (ctx.state === 'suspended') ctx.resume();
-  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
-  gainNode.gain.cancelScheduledValues(ctx.currentTime);
-  gainNode.gain.setValueAtTime(0.56, ctx.currentTime);
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+  themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
 
   const audio = document.getElementById('theme-audio');
   // Connect source only once — MediaElementSource can't be recreated
   if (!audioSourceCreated) {
     const src = ctx.createMediaElementSource(audio);
-    src.connect(gainNode);
+    src.connect(themeGainNode);
     audioSourceCreated = true;
   }
   audio.currentTime = 0;
   audio.loop = true;
   audio.play().catch(() => {});
+  themeIsPlaying = true;
 }
 
 function stopTheme() {
-  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
   const audio = document.getElementById('theme-audio');
+  audio.loop = false;
   audio.pause();
   audio.currentTime = 0;
-  if (gainNode && audioCtx) {
-    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.56, audioCtx.currentTime);
+  themeIsPlaying = false;
+  if (themeGainNode && audioCtx) {
+    themeGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    themeGainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
   }
 }
 
 function fadeOutTheme(duration) {
-  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
   const ctx = getAudioCtx();
   const audio = document.getElementById('theme-audio');
-  gainNode.gain.cancelScheduledValues(ctx.currentTime);
-  gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
-  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+  themeGainNode.gain.setValueAtTime(themeGainNode.gain.value, ctx.currentTime);
+  themeGainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
   fadeTimer = setTimeout(() => {
+    audio.loop = false;
     audio.pause();
     audio.currentTime = 0;
-    gainNode.gain.cancelScheduledValues(ctx.currentTime);
-    gainNode.gain.setValueAtTime(0.56, ctx.currentTime);
+    themeIsPlaying = false;
+    themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+    themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
     fadeTimer = null;
   }, duration);
 }
@@ -4149,6 +4162,7 @@ function startTypewriter() {
       el.innerHTML += '<br>';
     } else {
       el.appendChild(document.createTextNode(ch));
+      if (i % 3 === 0) playSfx('typing', 0.4);
     }
     i++;
   }, 30);
@@ -4553,6 +4567,7 @@ function goToSplashFromGame() {
   document.getElementById('btn-splash-new-text').innerText = t('startNewCareer');
   document.getElementById('btn-splash-continue').style.display = anySlotOccupied() ? '' : 'none';
 
+  themeIsPlaying = false;
   playTheme();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
