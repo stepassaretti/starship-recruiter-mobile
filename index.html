@@ -1497,7 +1497,7 @@ body {
 </head>
 <body>
 
-<audio id="theme-audio" src="sound/theme.mp3?v=2" loop preload="auto" volume="0.4"></audio>
+<audio id="theme-audio" src="sound/theme.mp3" loop preload="auto"></audio>
 
 <!-- PRE-PAGE (Page 0) — Language selector -->
 <div class="screen" id="screen-pre">
@@ -4003,11 +4003,9 @@ function bounceThen(btn, callback) {
 
 // ── AUDIO (Web Audio API — works on iOS) ──
 let audioCtx = null;
-let gainNode = null;       // SFX gain node
-let themeGainNode = null;  // dedicated theme gain node
+let gainNode = null;
 let audioSourceCreated = false;
 let fadeTimer = null;
-let themeIsPlaying = false;
 
 // Resume AudioContext when app returns to foreground (iOS/Android backgrounding fix)
 document.addEventListener('visibilitychange', () => {
@@ -4073,69 +4071,55 @@ function playSfxPage() {
 function getAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // SFX gain node
     gainNode = audioCtx.createGain();
-    gainNode.gain.value = 1.0;
+    gainNode.gain.value = 0.4;
     gainNode.connect(audioCtx.destination);
-  }
-  // Theme gain node — created separately, may be needed after audioCtx already exists
-  if (!themeGainNode) {
-    themeGainNode = audioCtx.createGain();
-    themeGainNode.gain.value = 0.4;
-    themeGainNode.connect(audioCtx.destination);
   }
   return audioCtx;
 }
 
 function playTheme() {
-  if (themeIsPlaying) return; // guard against double-play
   const ctx = getAudioCtx();
   if (ctx.state === 'suspended') ctx.resume();
-  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
-  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
-  themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
 
   const audio = document.getElementById('theme-audio');
   // Connect source only once — MediaElementSource can't be recreated
   if (!audioSourceCreated) {
     const src = ctx.createMediaElementSource(audio);
-    src.connect(themeGainNode);
+    src.connect(gainNode);
     audioSourceCreated = true;
   }
   audio.currentTime = 0;
-  audio.volume = 0.4;
   audio.loop = true;
   audio.play().catch(() => {});
-  themeIsPlaying = true;
 }
 
 function stopTheme() {
-  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   const audio = document.getElementById('theme-audio');
-  audio.loop = false;
   audio.pause();
   audio.currentTime = 0;
-  themeIsPlaying = false;
-  if (themeGainNode && audioCtx) {
-    themeGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
-    themeGainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  if (gainNode && audioCtx) {
+    gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
   }
 }
 
 function fadeOutTheme(duration) {
-  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
   const ctx = getAudioCtx();
   const audio = document.getElementById('theme-audio');
-  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
-  themeGainNode.gain.setValueAtTime(themeGainNode.gain.value, ctx.currentTime);
-  themeGainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+  gainNode.gain.cancelScheduledValues(ctx.currentTime);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, ctx.currentTime);
+  gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
   fadeTimer = setTimeout(() => {
-    audio.loop = false;
     audio.pause();
     audio.currentTime = 0;
-    themeIsPlaying = false;
-    themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
-    themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+    gainNode.gain.cancelScheduledValues(ctx.currentTime);
+    gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
     fadeTimer = null;
   }, duration);
 }
@@ -4571,7 +4555,6 @@ function goToSplashFromGame() {
   document.getElementById('btn-splash-new-text').innerText = t('startNewCareer');
   document.getElementById('btn-splash-continue').style.display = anySlotOccupied() ? '' : 'none';
 
-  themeIsPlaying = false;
   playTheme();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
