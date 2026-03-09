@@ -1063,6 +1063,10 @@ body {
 }
 
 .rules-page { display: none; height: 100%; overflow: hidden; position: relative; }
+.rules-page.active { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #000 #ddd; }
+.rules-page.active::-webkit-scrollbar { width: 5px; }
+.rules-page.active::-webkit-scrollbar-track { background: #ddd; }
+.rules-page.active::-webkit-scrollbar-thumb { background: #000; }
 .rules-page.active { display: flex; flex-direction: column; }
 .rules-page ul { margin: 16px 0 0 0; padding-left: 18px; list-style-type: square; }
 .rules-page li { margin-bottom: 14px; font-size: 18px; line-height: 1.35; }
@@ -1945,7 +1949,7 @@ const LANG = {
     conflictsHeader: "CONFLITTI",
     missionBriefing: "Briefing di missione",
     yourShip: "La tua astronave",
-    newSpeciesApplying: "Nuove specie tra i candidati",
+    newSpeciesApplying: "Nuova specie",
     missionTypes: {
       "ASSAULT": "ASSALTO", "DIPLOMACY": "DIPLOMAZIA", "RESEARCH": "RICERCA",
       "RESCUE OP": "OPERAZIONE SALVATAGGIO", "SALVAGE": "RECUPERO", "TERRAFORMING": "TERRAFORMAZIONE",
@@ -2511,7 +2515,7 @@ function generateApplicant(id, forceRace) {
   if (raceKey === "Fungi") { hate = rand(80, 100); }
   if (raceKey === "Drakhen") {
     // 30% chance of a surprisingly low-hate Drakhen
-    if (Math.random() < 0.30) hate = rand(10, 20);
+    if (Math.random() < 0.10) hate = rand(10, 20);
     // Trait: always highest stats in pool — enforce minimums
     str = Math.max(str, 60);
     int = Math.max(int, 55);
@@ -2750,10 +2754,8 @@ function startDay() {
         return weights[weights.length - 1][0];
       }
       let weights;
-      if (state.day >= 35)      weights = [[3,10],[4,10],[5,20],[6,20],[7,20],[8,10],[9,5],[10,5]];
-      else if (state.day >= 25) weights = [[3,20],[4,20],[5,20],[6,20],[7,10],[8,10]];
-      else if (state.day >= 20) weights = [[2,10],[3,50],[4,30],[5,10]];
-      else                      weights = [[1,10],[2,30],[3,50],[4,15],[5,5]];
+      if (state.day >= 20) weights = [[1,10],[2,30],[3,30],[4,15],[5,8],[6,5],[7,1],[8,1]];
+      else                 weights = [[1,10],[2,30],[3,50],[4,15],[5,5]];
       const target = pickDrakhenCount(weights);
       const current = state.pool.filter(a => a.race === 'Drakhen').length;
       const toInject = Math.max(0, target - current);
@@ -3282,7 +3284,7 @@ function launchMission() {
   const drakhCount = hired.filter(a => a.race === 'Drakhen').length;
   let drakhForce = 0;
   if (drakhCount >= 3) {
-    if (state.day >= 25) {
+    if (state.day >= 8) {
       drakhForce = 20 + (drakhCount - 3) * 5;
     } else {
       drakhForce = 10;
