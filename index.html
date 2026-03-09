@@ -1497,7 +1497,7 @@ body {
 </head>
 <body>
 
-<!-- <audio id="theme-audio" src="sound/theme.mp3?v=2" loop preload="auto" volume="0.4"></audio> --></audio>
+<audio id="theme-audio" src="sound/theme.mp3?v=2" loop preload="auto" volume="0.4"></audio>
 
 <!-- PRE-PAGE (Page 0) — Language selector -->
 <div class="screen" id="screen-pre">
@@ -3992,11 +3992,7 @@ function haptic(pattern) {
 function hapticTick()   { haptic(2); }   // very mild — typewriting / counter
 function hapticTarget() { haptic([8, 20, 8]); } // two gentle pulses — threshold reached
 
-let _bouncing = false;
 function bounceThen(btn, callback) {
-  if (_bouncing) return;
-  _bouncing = true;
-  setTimeout(() => { _bouncing = false; }, 400);
   playSfx('button');
   btn.classList.remove('bounce');
   requestAnimationFrame(() => {
@@ -4092,48 +4088,56 @@ function getAudioCtx() {
 }
 
 function playTheme() {
+  if (themeIsPlaying) return; // guard against double-play
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+  themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+
   const audio = document.getElementById('theme-audio');
-  if (!audio) return;
-  if (themeIsPlaying) return;
-  getAudioCtx(); // ensure context exists for SFX
-  audio.volume = 0.4;
+  // Connect source only once — MediaElementSource can't be recreated
+  if (!audioSourceCreated) {
+    const src = ctx.createMediaElementSource(audio);
+    src.connect(themeGainNode);
+    audioSourceCreated = true;
+  }
   audio.currentTime = 0;
+  audio.volume = 0.4;
   audio.loop = true;
   audio.play().catch(() => {});
   themeIsPlaying = true;
 }
 
 function stopTheme() {
-  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
   const audio = document.getElementById('theme-audio');
-  if (!audio) { themeIsPlaying = false; return; }
   audio.loop = false;
   audio.pause();
   audio.currentTime = 0;
   themeIsPlaying = false;
+  if (themeGainNode && audioCtx) {
+    themeGainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+    themeGainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+  }
 }
 
 function fadeOutTheme(duration) {
-  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  const ctx = getAudioCtx();
   const audio = document.getElementById('theme-audio');
-  if (!audio) return;
-  const steps = 20;
-  const interval = duration / steps;
-  const startVol = audio.volume;
-  let step = 0;
-  fadeTimer = setInterval(() => {
-    step++;
-    audio.volume = Math.max(0, startVol * (1 - step / steps));
-    if (step >= steps) {
-      clearInterval(fadeTimer);
-      fadeTimer = null;
-      audio.loop = false;
-      audio.pause();
-      audio.currentTime = 0;
-      audio.volume = 0.4;
-      themeIsPlaying = false;
-    }
-  }, interval);
+  themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+  themeGainNode.gain.setValueAtTime(themeGainNode.gain.value, ctx.currentTime);
+  themeGainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+  fadeTimer = setTimeout(() => {
+    audio.loop = false;
+    audio.pause();
+    audio.currentTime = 0;
+    themeIsPlaying = false;
+    themeGainNode.gain.cancelScheduledValues(ctx.currentTime);
+    themeGainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+    fadeTimer = null;
+  }, duration);
 }
 
 const LORE_TEXT = [
