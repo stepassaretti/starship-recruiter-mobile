@@ -794,7 +794,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  flex: 1;
 }
 .slot-card {
   border: 2px solid #fff;
@@ -812,7 +811,7 @@ body {
 }
 .slot-card.empty {
   border: 2px dashed #555;
-  color: #555;
+  color: #fff;
 }
 .slot-card.disabled { opacity: 0.2; pointer-events: none; }
 .slot-card-num {
@@ -885,6 +884,10 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
+.slot-card.pressed {
+  background: #fff;
+  color: #000;
+}
 .slot-card.bounce { animation: btnBounce 0.2s ease; }
 @keyframes slotFlash {
   0%, 100% { border-color: #fff; }
@@ -1332,15 +1335,13 @@ body {
   flex-direction: column;
 }
 .checkpoint-btn-row {
-  padding: 0 20px 32px 20px;
+  padding: 24px 20px 40px 20px;
   display: flex;
   justify-content: center;
-  flex-shrink: 0;
 }
 .checkpoint-btn-row.hidden { display: none; }
 .checkpoint-btn {
   flex-shrink: 0;
-  margin: 0 20px 32px 20px;
   padding: 14px 0;
   background: #fff;
   color: #000;
@@ -1348,7 +1349,7 @@ body {
   font-size: 10px;
   border: none;
   cursor: pointer;
-  width: calc(100% - 40px);
+  width: calc(100% - 0px);
   letter-spacing: 0.05em;
 }
 .checkpoint-btn.hidden { display: none; }
@@ -1720,12 +1721,12 @@ body {
     </div>
     <div class="checkpoint-scroll" id="checkpoint-scroll">
       <div class="checkpoint-text" id="checkpoint-text"></div>
-    </div>
-    <div class="checkpoint-btn-row hidden" id="checkpoint-btn-row">
-      <button class="launch-btn-inverted" id="checkpoint-btn" onclick="closeCheckpoint()">
-        <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
-        <span class="launch-btn-text-inv" id="checkpoint-btn-text">SAVE & CONTINUE</span>
-      </button>
+      <div class="checkpoint-btn-row hidden" id="checkpoint-btn-row">
+        <button class="launch-btn-inverted" id="checkpoint-btn" onclick="closeCheckpoint()">
+          <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+          <span class="launch-btn-text-inv" id="checkpoint-btn-text">SAVE & CONTINUE</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -2180,7 +2181,7 @@ function getMissionHTML() {
 
 function getUnlockedSpeciesForDay(day) {
   const allSpecies = Object.keys(RACES);
-  const count = Math.min(6 + Math.floor(day / 2), allSpecies.length);
+  const count = Math.min(4 + Math.floor(day / 2), allSpecies.length);
   return allSpecies.slice(0, count);
 }
 
@@ -2363,8 +2364,8 @@ const RACES = {
   "Human":        { icon: "images/human_icon.png",        images: 52, str: [8,25], int: [10,30], cha: [8,20], hates: ["Robomantoid", "Drakhen"], desc: "Loud, overconfident, somehow everywhere. Surprisingly average at everything. Deeply unsettled by Robomantoids, whose lack of facial expression they find personally offensive. Regard Drakhen as an existential threat, which the Drakhen consider a compliment.", shortDesc: "Loud, overconfident, somehow everywhere. Surprisingly average at everything.", shortDesc_it: "Rumorosi, presuntuosi, onnipresenti. Nella media in tutto.", desc_it: "Rumorosi, presuntuosi, onnipresenti. Nella media in tutto. I Robomantoidi li turbano profondamente — l'assenza di espressione facciale la trovano personalmente offensiva. Considerano i Drakhen una minaccia esistenziale, cosa che i Drakhen trovano lusinghiera." },
   "Sky-Elf":      { icon: "images/skyelf_icon.png",       images: 36, str: [6,16], int: [28,45], cha: [8,18], hates: ["Giant", "Droid", "Beetlegunner", "Fungi"], desc: "Science-obsessed intellectual elites. Massive superiority complex. Despise anything primitive. Giants are too large and too stupid. Droids pretend to think. Beetlegunners smell. Fungi reproduce by sneezing. None of this is acceptable.", shortDesc: "Science-obsessed intellectual elites. Massive superiority complex. Despise anything primitive.", shortDesc_it: "Intellettuali ossessionati dalla scienza con un acuto complesso di superiorità.", desc_it: "Intellettuali ossessionati dalla scienza con un acuto complesso di superiorità. Disprezzano tutto ciò che è primitivo. I Giganti sono troppo grandi e troppo stupidi. I Droidi fingono di pensare. I Piattola puzzano. I Fungoidi si riproducono starnutendo. Nulla di tutto questo è accettabile." },
   "Beetlegunner": { icon: "images/beetlegunner_icon.png", images: 42, str: [22,38], int: [4,12], cha: [4,10], hates: ["Sky-Elf", "Droid", "Fungi"], desc: "Hard-shelled insectoids often used as heavy infantry. Sky-Elves keep trying to study them. Droids keep trying to optimise them. Fungi keep trying to grow on them. All three have been told to stop.", shortDesc: "Hard-shelled insectoids often used as heavy infantry.", shortDesc_it: "Insetti corazzati spesso impiegati come fanteria pesante.", desc_it: "Insetti corazzati spesso impiegati come fanteria pesante. I Vulcaniani continuano a studiarli. I Droidi continuano a ottimizzarli. I Fungoidi continuano a crescerci sopra. A tutti e tre è stato detto di smettere." },
-  "Giant":        { icon: "images/giant_icon.png",        images: 50, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "Massive, grotesquely varied humanoids. Strong but clumsy. Cannot stand other Giants. Every one of them is convinced they are the only Giant doing it correctly. Family reunions are catastrophic.", shortDesc: "Massive, grotesquely varied humanoids. Strong but clumsy.", shortDesc_it: "Umanoidi massicci e grottescamente variegati. Forti ma goffi.", desc_it: "Umanoidi massicci e grottescamente variegati. Forti ma goffi. Non sopportano altri Giganti. Ognuno di loro è convinto di essere l'unico Gigante a fare le cose per bene. Le riunioni di famiglia sono catastrofiche." },
   "Droid":        { icon: "images/droid_icon.png",        images: 60, str: [15,28], int: [15,28], cha: [2,8], hates: ["Sugorian", "Beetlegunner", "Aquasim"], desc: "Modular logic units. Hate organics that leak fluids or behave irrationally. Sugorians leave residue on every surface. Beetlegunners shed exoskeleton fragments into ventilation systems. Aquasim are simply wet for no defensible reason.", shortDesc: "Modular logic units. Hate organics that leak fluids or behave irrationally.", shortDesc_it: "Unità logiche modulari. Odiano gli organici che perdono liquidi o si comportano irrazionalmente.", desc_it: "Unità logiche modulari. Odiano gli organici che perdono liquidi o si comportano irrazionalmente. I Sugoriani lasciano residui su ogni superficie. I Piattola disperdono frammenti di esoscheletro nei sistemi di ventilazione. Gli Acquariani sono semplicemente bagnati senza una ragione difendibile." },
+  "Giant":        { icon: "images/giant_icon.png",        images: 50, str: [30,50], int: [3,10], cha: [3,10], hates: ["Giant"], desc: "Massive, grotesquely varied humanoids. Strong but clumsy. Cannot stand other Giants. Every one of them is convinced they are the only Giant doing it correctly. Family reunions are catastrophic.", shortDesc: "Massive, grotesquely varied humanoids. Strong but clumsy.", shortDesc_it: "Umanoidi massicci e grottescamente variegati. Forti ma goffi.", desc_it: "Umanoidi massicci e grottescamente variegati. Forti ma goffi. Non sopportano altri Giganti. Ognuno di loro è convinto di essere l'unico Gigante a fare le cose per bene. Le riunioni di famiglia sono catastrofiche." },
   "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 18, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "Highly militant mantis-like warriors. Extremely aggressive. Void-Demons cannot be killed, which they find professionally insulting. Sky-Elves talk too much before dying. Sugorians are impossible to stab cleanly.", shortDesc: "Highly militant mantis-like warriors. Extremely aggressive.", shortDesc_it: "Guerrieri marziali simili a mantidi. Estremamente aggressivi.", desc_it: "Guerrieri marziali simili a mantidi. Estremamente aggressivi. I Demoni del Vuoto non possono essere uccisi, il che li offende professionalmente. I Vulcaniani parlano troppo prima di morire. I Sugoriani sono impossibili da trafiggere in modo pulito." },
   "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "Cold-blooded reptilian politicians. Excel at manipulation. Robomantoids refuse to be manipulated, which Barbitulians consider deeply antisocial. Cheesponges absorb information indiscriminately and cannot be trusted with secrets.", shortDesc: "Cold-blooded reptilian politicians. Excel at manipulation.", shortDesc_it: "Politici rettiliani a sangue freddo. Eccellono nella manipolazione.", desc_it: "Politici rettiliani a sangue freddo. Eccellono nella manipolazione. I Robomantoidi rifiutano di essere manipolati, cosa che i Barbituliani trovano profondamente antisociale. Gli Spugnosi assorbono informazioni indiscriminatamente e non possono essere considerati affidabili con i segreti." },
   "Space-Cat":    { icon: "images/spacecat_icon.png",     images: 28, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "Feline strategists. Smart, sneaky, and always up to something. Long-Necks are too tall to ignore and too smug to tolerate. Sugorians leave traces everywhere, which ruins a clean exit. Void-Demons cannot be read, which is simply unacceptable.", shortDesc: "Feline strategists. Smart, sneaky, and always up to something.", shortDesc_it: "Strateghi felini. Intelligenti, furtivi, sempre tramano qualcosa.", desc_it: "Strateghi felini. Intelligenti, furtivi, sempre tramano qualcosa. I Collalunghi sono troppo alti per essere ignorati e troppo arroganti da tollerare. I Sugoriani lasciano tracce ovunque, il che rovina ogni piano di fuga. I Demoni del Vuoto non possono essere letti, il che è semplicemente inaccettabile." },
@@ -2498,7 +2499,7 @@ function generateSaboteur(id) {
 
 function generateApplicant(id, forceRace) {
   const races = Object.keys(RACES);
-  let available = races.slice(0, Math.min(6 + Math.floor(state.day/2), races.length));
+  let available = races.slice(0, Math.min(4 + Math.floor(state.day/2), races.length));
   const raceKey = forceRace || available[rand(0, available.length - 1)];
   const rd = RACES[raceKey];
   let str = rand(rd.str[0], rd.str[1]);
@@ -2749,8 +2750,8 @@ function startDay() {
       if (!state.pool.some(a => a.name === newApp.name)) state.pool.push(newApp);
       attempts++;
     }
-    // Tiered Drakhen injection from day 16+
-    if (state.day >= 16) {
+    // Tiered Drakhen injection from day 12+
+    if (state.day >= 12) {
       // Weighted probability tables for Drakhen count in pool
       function pickDrakhenCount(weights) {
         const r = Math.random() * 100;
@@ -2759,7 +2760,7 @@ function startDay() {
         return weights[weights.length - 1][0];
       }
       let weights;
-      if (state.day >= 20) weights = [[1,10],[2,30],[3,30],[4,15],[5,8],[6,5],[7,1],[8,1]];
+      if (state.day >= 16) weights = [[1,10],[2,30],[3,30],[4,15],[5,8],[6,5],[7,1],[8,1]];
       else                 weights = [[1,10],[2,30],[3,50],[4,15],[5,5]];
       const target = pickDrakhenCount(weights);
       const current = state.pool.filter(a => a.race === 'Drakhen').length;
@@ -2797,15 +2798,35 @@ function startDay() {
     // Randomise first saboteur day on day 1 load
     if (state.day === 1) state.nextSaboteurDay = 14 + rand(0, 1);
     if (state.day >= 14 && state.day >= state.nextSaboteurDay) {
-      if (Math.random() < 0.30) {
+      const d = state.day;
+      // Probabilities scale with day: [p1, p2, p3]
+      let p1, p2, p3;
+      if (d >= 45) { p1 = 1.00; p2 = 0.40; p3 = 0.10; }
+      else if (d >= 30) { p1 = 0.70; p2 = 0.30; p3 = 0.05; }
+      else if (d >= 20) { p1 = 0.50; p2 = 0.20; p3 = 0.00; }
+      else              { p1 = 0.30; p2 = 0.10; p3 = 0.00; }
+      if (Math.random() < p1) {
         const s1 = generateSaboteur(state.pool.length);
         state.pool.splice(rand(0, state.pool.length), 0, s1);
       }
-      if (Math.random() < 0.30) {
+      if (Math.random() < p2) {
         const s2 = generateSaboteur(state.pool.length);
         state.pool.splice(rand(0, state.pool.length), 0, s2);
       }
+      if (Math.random() < p3) {
+        const s3 = generateSaboteur(state.pool.length);
+        state.pool.splice(rand(0, state.pool.length), 0, s3);
+      }
       state.nextSaboteurDay = state.day + 4 + rand(0, 1); // next window in 4-5 days
+    }
+
+    // Guarantee at least 1 Cheesponge from day 28+ (when they unlock)
+    if (state.day >= 28) {
+      const hasCheesponge = state.pool.some(a => a.race === 'Cheesponge');
+      if (!hasCheesponge) {
+        const cs = generateApplicantForRace(state.pool.length, 'Cheesponge');
+        state.pool.splice(rand(0, state.pool.length), 0, cs);
+      }
     }
 
     // Re-assign ids to match final positions
@@ -3804,16 +3825,19 @@ function buildCheckpointDialogue() {
 }
 
 let checkpointTypewriterTimer = null;
+let checkpointTypewriterDone = false;
 
 function showCheckpoint(onDone) {
   const overlay = document.getElementById('checkpoint-overlay');
   const textEl = document.getElementById('checkpoint-text');
   const btnRow = document.getElementById('checkpoint-btn-row');
   const btn = document.getElementById('checkpoint-btn');
+  const scrollEl = document.getElementById('checkpoint-scroll');
 
   textEl.textContent = '';
   btnRow.classList.add('hidden');
   overlay.classList.add('visible');
+  checkpointTypewriterDone = false;
 
   // Set button text
   document.getElementById('checkpoint-btn-text').innerText = t('saveAndContinue');
@@ -3827,6 +3851,27 @@ function showCheckpoint(onDone) {
   const imgMap = { excellent: 'review_very_good', good: 'review_very_good', acceptable: 'review_neutral', concerning: 'review_very_bad', catastrophic: 'review_very_bad' };
   document.getElementById('checkpoint-img').src = `images/${imgMap[tier]}.png`;
 
+  function revealAll() {
+    if (checkpointTypewriterDone) return;
+    checkpointTypewriterDone = true;
+    if (checkpointTypewriterTimer) clearInterval(checkpointTypewriterTimer);
+    textEl.textContent = fullText;
+    btnRow.classList.remove('hidden');
+    btn.onclick = function() {
+      bounceThen(btn, function() {
+        saveCheckpoint();
+        overlay.classList.remove('visible');
+        scrollEl.removeEventListener('touchstart', onTapSkip);
+        onDone();
+      });
+    };
+    setTimeout(() => scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' }), 50);
+  }
+
+  // Tap anywhere on scroll area to skip typewriter
+  function onTapSkip() { revealAll(); }
+  scrollEl.addEventListener('touchstart', onTapSkip, { passive: true });
+
   let i = 0;
   const delay = 30;
 
@@ -3834,23 +3879,12 @@ function showCheckpoint(onDone) {
   checkpointTypewriterTimer = setInterval(() => {
     if (i >= fullText.length) {
       clearInterval(checkpointTypewriterTimer);
-      btnRow.classList.remove('hidden');
-      btn.onclick = function() {
-        bounceThen(btn, function() {
-          saveCheckpoint(); // autosave at end of checkpoint
-          overlay.classList.remove('visible');
-          onDone();
-        });
-      };
-      // Scroll down smoothly to reveal the button
-      const scrollEl = document.getElementById('checkpoint-scroll');
-      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
+      revealAll();
       return;
     }
     textEl.textContent = fullText.slice(0, i + 1);
-    // Typing sound on printable chars, skip newlines
     if (fullText[i] !== '\n' && i % 3 === 0) playSfx('typing', 0.4);
-    document.getElementById('checkpoint-scroll').scrollTop = 999999;
+    scrollEl.scrollTop = 999999;
     i++;
   }, delay);
 }
@@ -4238,18 +4272,22 @@ function renderSaveSlots() {
 
   const list = document.getElementById('slots-list');
   list.innerHTML = '';
+  const isContinue = slotSelectMode === 'continue';
+  list.style.justifyContent = isContinue ? 'center' : 'flex-start';
+  list.style.flex = isContinue ? '1' : '';
   for (let s = 1; s <= 5; s++) {
     const save = getSave(s);
     const isEmpty = save === null;
-    const isDisabled = slotSelectMode === 'continue' && isEmpty;
+    if (isContinue && isEmpty) continue; // hide empty slots in continue mode
     const card = document.createElement('div');
-    card.className = 'slot-card' + (isEmpty ? ' empty' : '') + (isDisabled ? ' disabled' : '');
+    card.className = 'slot-card' + (isEmpty ? ' empty' : '');
     const dayStr = isEmpty ? L.slotEmpty : L.slotDay.replace('%d', save.day);
     const crStr = isEmpty ? '' : `<span class="slot-card-credits">${L.slotCredits.replace('%d', save.money)}</span>`;
     card.innerHTML = `<span class="slot-card-day">${dayStr}</span>${crStr}`;
-    if (!isDisabled) {
-      card.onclick = () => tapSlotCard(s, save, card);
-    }
+    card.onclick = () => tapSlotCard(s, save, card);
+    card.addEventListener('touchstart', () => card.classList.add('pressed'), { passive: true });
+    card.addEventListener('touchend', () => card.classList.remove('pressed'), { passive: true });
+    card.addEventListener('touchcancel', () => card.classList.remove('pressed'), { passive: true });
     list.appendChild(card);
   }
 }
