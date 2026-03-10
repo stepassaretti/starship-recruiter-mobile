@@ -1642,10 +1642,13 @@ body {
   <div class="debug-panel">
     <div style="font-size:20px;font-weight:bold;margin-bottom:12px;">DEBUG</div>
     <div style="font-size:16px;margin-bottom:8px;">JUMP TO DAY</div>
-    <div class="debug-days" id="debug-days"></div>
-    <div style="font-size:16px;margin-top:16px;margin-bottom:8px;">SET CREDITS</div>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:16px;">
+      <input id="debug-day-input" type="number" min="1" max="200" placeholder="1–200" style="width:100px;height:36px;border:2px solid #000;font-family:'VT323',monospace;font-size:18px;text-align:center;background:#fff;color:#000;">
+      <button class="debug-day-btn" style="width:auto;padding:0 10px;" onclick="debugJumpToInput()">GO</button>
+    </div>
+    <div style="font-size:16px;margin-bottom:8px;">SET CREDITS</div>
     <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
-      <input id="debug-credits" type="number" min="0" max="10000" style="width:100px;height:36px;border:2px solid #000;font-family:'VT323',monospace;font-size:18px;text-align:center;background:#fff;color:#000;">
+      <input id="debug-credits" type="number" min="0" max="20000" style="width:100px;height:36px;border:2px solid #000;font-family:'VT323',monospace;font-size:18px;text-align:center;background:#fff;color:#000;">
       <button class="debug-day-btn" style="width:auto;padding:0 10px;" onclick="debugSetCredits()">SET</button>
     </div>
     <div style="margin-top:16px;"><span class="debug-btn" onclick="closeDebug()">[CLOSE]</span></div>
@@ -2165,11 +2168,13 @@ function getMissionHTML() {
     ${m.expReq ? `<div class="mission-flat-row"><span class="mission-flat-label">${t('experienceReq')}</span><span class="mission-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minSuccess')}</span><span class="mission-flat-value">${m.minReq}%</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minCrew')}</span><span class="mission-flat-value">${state.ship.min}</span></div>
-    <div class="mission-flat-row"><span class="mission-flat-label">${t('maxCrew')}</span><span class="mission-flat-value">${state.ship.max}</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('reward')}</span><span class="mission-flat-value">${m.reward} cr</span></div>
     <div class="section-title" style="margin-top:16px; margin-bottom:10px;">${t('yourShip').toUpperCase()}</div>
     <div class="ship-preview"><img src="${shipSrc}" alt="Ship" style="max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;" onerror="this.style.display='none'"></div>
-    <div style="font-size:20px; margin-top:8px;">${state.ship.name}</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;font-family:'VT323',monospace;font-size:20px;margin-top:8px;">
+      <span>${state.ship.name}</span>
+      <span>[${state.ship.max} slots]</span>
+    </div>
   `;
 }
 
@@ -2674,7 +2679,7 @@ function updateShip() {
 
   function addClassed(name, classes) {
     for (let c = 1; c <= classes; c++) {
-      ships.push({ d: day++, base: name, display: name + ' [class ' + c + ']', x: maxSlots, m: Math.round(maxSlots * 0.75) });
+      ships.push({ d: day++, base: name, display: name + ' - class ' + c, x: maxSlots, m: Math.round(maxSlots * 0.75) });
       maxSlots++;
     }
   }
@@ -2712,7 +2717,7 @@ function updateShip() {
     const cls = Math.floor((state.day - dreadStart) / 2) + 1;
     const maxSlotsDread = dreadMaxStart + Math.floor((state.day - dreadStart) / 2);
     state.ship = {
-      name: 'Dreadnought [class ' + cls + ']',
+      name: 'Dreadnought - class ' + cls,
       base: 'Dreadnought',
       max: maxSlotsDread,
       min: Math.round(maxSlotsDread * 0.75)
@@ -3004,7 +3009,7 @@ function updateMissionProgress() {
   const minSpan = `<span class="stat-val${minMet ? ' met' : ''}">${t('min')} ${minPct}%</span>`;
 
   const shipMet = crewCount >= state.ship.min;
-  const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${max}</span>`;
+  const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${state.ship.min}</span>`;
 
   const expMet = state.mission && state.mission.expReq
     && state.roster.some(a => a && a.exp === state.mission.expReq);
@@ -3064,16 +3069,13 @@ function updateLaunchState() {
   const warn = document.getElementById('launch-warning');
   if (warn && !activeDrawer) warn.style.display = disabled ? '' : 'none';
 
-  // Threshold sounds: fire target.mp3 when crossing min crew, max crew, or min success %
+  // Threshold sounds: fire target.mp3 when crossing min crew or min success %
   const m = state.mission;
   const prevCount = state._prevCrewCount || 0;
   if (m) {
     const minCrew = state.ship ? state.ship.min : 0;
-    const maxCrew = state.ship ? state.ship.max : 0;
     // Min crew threshold
     if (prevCount < minCrew && crewCount >= minCrew) { playSfx('target'); hapticTarget(); }
-    // Max crew threshold
-    else if (prevCount < maxCrew && crewCount >= maxCrew) { playSfx('target'); hapticTarget(); }
     // Min success % — check estimated score crosses minReq
     else {
       const prevScore = estimateScore(prevCount);
@@ -3939,19 +3941,28 @@ const DEBUG_ENABLED = true;
 function openDebug() {
   if (!DEBUG_ENABLED) return;
   const overlay = document.getElementById('debug-overlay');
-  const grid = document.getElementById('debug-days');
-  grid.innerHTML = '';
-  for (let d = 1; d <= 40; d++) {
-    grid.insertAdjacentHTML('beforeend',
-      `<button class="debug-day-btn" onclick="debugJumpToDay(${d})">${d}</button>`
-    );
-  }
+  document.getElementById('debug-day-input').value = state.day;
   document.getElementById('debug-credits').value = state.money;
   overlay.style.display = 'flex';
 }
 
 function closeDebug() {
   document.getElementById('debug-overlay').style.display = 'none';
+}
+
+function debugJumpToInput() {
+  const val = parseInt(document.getElementById('debug-day-input').value) || 1;
+  const day = Math.max(1, Math.min(200, val));
+  closeDebug();
+  if (activeDrawer) closeDrawer();
+  state.day = day;
+  state.money = 800;
+  state.gameOver = false;
+  state.roster = [];
+  state.pool = [];
+  document.getElementById('result-overlay').classList.remove('visible');
+  setStatusBar('light');
+  startDay();
 }
 
 function debugJumpToDay(day) {
@@ -3969,7 +3980,7 @@ function debugJumpToDay(day) {
 
 function debugSetCredits() {
   let val = parseInt(document.getElementById('debug-credits').value) || 0;
-  val = Math.max(0, Math.min(10000, val));
+  val = Math.max(0, Math.min(20000, val));
   state.money = val;
   document.getElementById('debug-credits').value = val;
   document.getElementById('ui-money').innerText = val - state.roster.reduce((s, a) => s + (a ? a.cost : 0), 0);
@@ -4627,7 +4638,6 @@ startDay();
       ${m.expReq ? `<div class="rules-flat-row"><span class="rules-flat-label">${t('experienceReq')}</span><span class="rules-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minSuccess')}</span><span class="rules-flat-value">${m.minReq}%</span></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minCrew')}</span><span class="rules-flat-value">${s.min}</span></div>
-      <div class="rules-flat-row"><span class="rules-flat-label">${t('maxCrew')}</span><span class="rules-flat-value">${s.max}</span></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('reward')}</span><span class="rules-flat-value">${m.reward} CR</span></div>
     `;
   }
@@ -4649,7 +4659,10 @@ startDay();
         <div class="rules-ship-box">
           <img class="rules-ship-img" src="${shipSrc}" onerror="this.style.display='none'">
         </div>
-        <div class="rules-ship-name">${s.name}</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-family:'VT323',monospace;font-size:18px;margin-top:6px;flex-wrap:wrap;gap:2px 8px;">
+          <span>${s.name}</span>
+          <span>[${s.max} slots]</span>
+        </div>
       </div>
     `;
   }
