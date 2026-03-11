@@ -1354,6 +1354,103 @@ body {
 }
 .checkpoint-btn.hidden { display: none; }
 
+.mandate-block-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #999 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.mandate-block-overlay.hidden { display: none; }
+.mandate-block-outer {
+  padding: 2px;
+  background: #000;
+  width: 100%;
+  max-width: 340px;
+  clip-path: polygon(0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px));
+}
+.mandate-block-box {
+  background: #fff;
+  color: #000;
+  padding: 20px 18px;
+  width: 100%;
+  box-sizing: border-box;
+  clip-path: polygon(0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px));
+}
+.mandate-block-title {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+.mandate-block-msg {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.mandate-block-list {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+.mandate-block-btn-wrap {
+  display: flex;
+  justify-content: center;
+}
+.mandate-block-btn {
+  display: block;
+  width: 80px;
+  position: relative;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  height: 36px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+}
+.mandate-block-btn svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.mandate-block-btn span {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 22px;
+  font-family: 'VT323', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.mandate-block-btn:active svg polygon { fill: #333; }
+.mandate-block-btn.bounce { animation: btnBounce 0.2s ease; }
+
 .result-overlay {
   position: fixed;
   inset: -50px 0 0 0;
@@ -1601,6 +1698,7 @@ body {
           <div id="rules-page-4" class="rules-page"></div>
           <div id="rules-page-5" class="rules-page"></div>
           <div id="rules-page-6" class="rules-page"></div>
+          <div id="rules-page-7" class="rules-page"></div>
         </div>
         <div class="rules-page-num" id="rules-page-text">1/2</div>
         <div class="rules-corner-icon icon-left" id="rules-icon-prev">
@@ -1714,6 +1812,22 @@ body {
 </div>
 
 <!-- CHECKPOINT SCREEN -->
+<div class="mandate-block-overlay hidden" id="mandate-block-overlay" onclick="closeMandateBlock()">
+  <div class="mandate-block-outer" onclick="event.stopPropagation()">
+    <div class="mandate-block-box">
+      <div class="mandate-block-title" id="mandate-block-title">Launch blocked</div>
+      <div class="mandate-block-msg" id="mandate-block-msg"></div>
+      <div class="mandate-block-list" id="mandate-block-list"></div>
+      <div class="mandate-block-btn-wrap">
+        <button class="mandate-block-btn" id="mandate-block-btn" onclick="event.stopPropagation(); this.classList.add('bounce'); setTimeout(()=>{ this.classList.remove('bounce'); closeMandateBlock(); }, 200)">
+          <svg viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+          <span id="mandate-block-btn-text">OK</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="checkpoint-overlay" id="checkpoint-overlay">
   <div class="checkpoint-inner">
     <div class="checkpoint-img-panel">
@@ -1777,6 +1891,7 @@ const LANG = {
     // Mission overlay
     missionIntel: "Mission intel",
     requirements: "Requirements",
+    skillReq: "Skill Req",
     minSuccess: "Min Success",
     minCrew: "Min Crew",
     maxCrew: "Max Crew",
@@ -1808,6 +1923,7 @@ const LANG = {
     experienceReq: "Experience Req",
     expMandateFulfilled: "Experience mandate fulfilled",
     expMandateIgnored: "Experience mandate ignored",
+    mandateComplied: "Client mandate fulfilled",
     overperformBonus: "Overperformance bonus",
     fineApplied: "FINE APPLIED",
     fineDetail: "Required %min%%, achieved %score%%",
@@ -1864,6 +1980,16 @@ const LANG = {
     saboteurWarning3: "Stay alert.",
     expDirective1: "Effective immediately, certain clients are specifying crew experience requirements alongside standard performance metrics.",
     expDirective2: "When an EXPERIENCE REQ is listed, assign at least one crew member with the requested classification. Failure to comply will result in a formal performance penalty.",
+    clientMandate: "CLIENT MANDATE",
+    mandateDirective1: "Effective immediately, all contracts carry binding crew mandates.",
+    mandateDirective2: "Certain clients require specific crew roles AND specific species aboard their vessel. Both must be satisfied before launch.",
+    mandateDirective3: "Failure to comply will result in a hard launch block. No exceptions.",
+    mandateExpReq: "Experience Req",
+    mandateSpeciesReq: "Species Req",
+    mandateBlockTitle: "Launch blocked",
+    mandateBlockMsg: "Client mandate not satisfied:",
+    mandateBlockOk: "OK",
+    mandateMissing: "Missing",
     continueCareer: "CONTINUE CAREER",
     startNewCareer: "NEW CAREER",
     slotEmpty: "EMPTY SLOT",
@@ -1918,6 +2044,7 @@ const LANG = {
     },
     missionIntel: "Informazioni missione",
     requirements: "Requisiti",
+    skillReq: "Req. Abilità",
     minSuccess: "Successo minimo",
     minCrew: "Equipaggio minimo",
     maxCrew: "Equipaggio massimo",
@@ -1946,6 +2073,7 @@ const LANG = {
     experienceReq: "Req. Esperienza",
     expMandateFulfilled: "Mandato esperienza soddisfatto",
     expMandateIgnored: "Mandato esperienza ignorato",
+    mandateComplied: "Mandato cliente soddisfatto",
     overperformBonus: "Bonus prestazione extra",
     fineApplied: "MULTA APPLICATA",
     fineDetail: "Richiesto %min%%, ottenuto %score%%",
@@ -2022,6 +2150,16 @@ const LANG = {
     saboteurWarning3: "Rimanete vigili.",
     expDirective1: "Con effetto immediato, alcuni clienti specificano requisiti di esperienza dell'equipaggio oltre alle metriche di performance standard.",
     expDirective2: "Quando è indicato un REQ. ESPERIENZA, assegnare almeno un membro dell'equipaggio con la classificazione richiesta. Il mancato rispetto comporterà una penalità sulla performance.",
+    clientMandate: "MANDATO CLIENTE",
+    mandateDirective1: "Con effetto immediato, tutti i contratti includono mandati vincolanti sull'equipaggio.",
+    mandateDirective2: "Alcuni clienti richiedono ruoli specifici E specie specifiche a bordo. Entrambi devono essere soddisfatti prima del lancio.",
+    mandateDirective3: "Il mancato rispetto bloccherà il lancio. Nessuna eccezione.",
+    mandateExpReq: "Req. Esperienza",
+    mandateSpeciesReq: "Req. Specie",
+    mandateBlockTitle: "Lancio bloccato",
+    mandateBlockMsg: "Mandato cliente non soddisfatto:",
+    mandateBlockOk: "OK",
+    mandateMissing: "Mancante",
     continueCareer: "CONTINUA CARRIERA",
     startNewCareer: "NUOVA CARRIERA",
     slotEmpty: "SLOT VUOTO",
@@ -2167,6 +2305,8 @@ function getMissionHTML() {
     <div class="mission-title" style="font-size:20px; font-family:'VT323',monospace; font-weight:700; margin-bottom:10px; line-height:1.1;">${title}</div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('requirements')}</span><span class="mission-flat-value">${reqStr}</span></div>
     ${m.expReq ? `<div class="mission-flat-row"><span class="mission-flat-label">${t('experienceReq')}</span><span class="mission-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
+    ${m.mandates ? (m.mandates.exp || []).map(em => `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateExpReq')}</span><span class="mission-flat-value">${em.count} ${roleName(em.role)}</span></div>`).join('') : ''}
+    ${m.mandates ? (m.mandates.species || []).map(sm => `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateSpeciesReq')}</span><span class="mission-flat-value">${sm.count} ${speciesName(sm.species)}</span></div>`).join('') : ''}
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minSuccess')}</span><span class="mission-flat-value">${m.minReq}%</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minCrew')}</span><span class="mission-flat-value">${state.ship.min}</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('reward')}</span><span class="mission-flat-value">${m.reward} cr</span></div>
@@ -2520,7 +2660,7 @@ function generateApplicant(id, forceRace) {
   if (raceKey === "Velkhorian") { hate = rand(0, 60); }
   if (raceKey === "Fungi") { hate = rand(80, 100); }
   if (raceKey === "Drakhen") {
-    // 30% chance of a surprisingly low-hate Drakhen
+    // 10% chance of a surprisingly low-hate Drakhen
     if (Math.random() < 0.10) hate = rand(10, 20);
     // Trait: always highest stats in pool — enforce minimums
     str = Math.max(str, 60);
@@ -2581,6 +2721,51 @@ function generateApplicant(id, forceRace) {
 // ══════════════════════════════════════════════
 // MISSION & SHIP
 // ══════════════════════════════════════════════
+
+const MANDATE_DAY = 50; // single constant — easy to change
+
+function generateMandates(statCount) {
+  if (state.day < MANDATE_DAY) return null;
+
+  const day = state.day;
+  const allSpecies = getUnlockedSpeciesForDay(day);
+
+  // Day scaling for species count and count-per-species
+  let maxSpeciesTypes, maxCountPerSpecies;
+  if (day < 60)       { maxSpeciesTypes = 1; maxCountPerSpecies = 2; }
+  else if (day < 70)  { maxSpeciesTypes = 2; maxCountPerSpecies = 3; }
+  else                { maxSpeciesTypes = 2; maxCountPerSpecies = 4; }
+
+  // Exp mandate — always 1 role, 1–2 count
+  const EXP_ROLES = ['FORCE', 'SCIENCE', 'COMMAND', 'LOGISTICS'];
+  const role = EXP_ROLES[rand(0, EXP_ROLES.length - 1)];
+  const expCount = rand(1, 2);
+  const expMandates = [{ role, count: expCount }];
+
+  // Species mandate — always present
+  const numTypes = rand(1, maxSpeciesTypes);
+  const candidates = allSpecies.filter(s => s !== 'Saboteur');
+  const chosen = [];
+  for (let attempt = 0; attempt < 30 && chosen.length < numTypes; attempt++) {
+    const candidate = candidates[rand(0, candidates.length - 1)];
+    if (chosen.includes(candidate)) continue;
+    let conflict = false;
+    for (const c of chosen) {
+      const isCheeseDrakh = (candidate === 'Cheesponge' && c === 'Drakhen') ||
+                            (candidate === 'Drakhen' && c === 'Cheesponge');
+      if (isCheeseDrakh) continue;
+      const rA = RACES[candidate], rB = RACES[c];
+      if (!rA || !rB) continue;
+      const aHatesB = rA.hates.includes(c) || rA.hates.includes('ALL');
+      const bHatesA = rB.hates.includes(candidate) || rB.hates.includes('ALL');
+      if (aHatesB || bHatesA) { conflict = true; break; }
+    }
+    if (!conflict) chosen.push(candidate);
+  }
+  const speciesMandates = chosen.map(sp => ({ species: sp, count: rand(1, maxCountPerSpecies) }));
+
+  return { exp: expMandates, species: speciesMandates };
+}
 
 function generateMission() {
   const types = [
@@ -2657,7 +2842,8 @@ function generateMission() {
 
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
     minReq: minReq, expReq: expReq,
-    reward: Math.round((500 + (state.day * 90)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)) };
+    reward: Math.round((500 + (state.day * 90)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)),
+    mandates: generateMandates(m.stat.length) };
 }
 
 function updateShip() {
@@ -2791,6 +2977,123 @@ function startDay() {
         const insertAt = rand(0, state.pool.length);
         state.pool.splice(insertAt, 0, app);
         expInjected++;
+      }
+    }
+
+    // Hard mandate pool injection (day 50+): guarantee required exp roles and species
+    if (state.mission.mandates) {
+      const mandates = state.mission.mandates;
+      // Inject required exp role crew
+      for (const em of (mandates.exp || [])) {
+        const have = state.pool.filter(a => a.exp === em.role).length;
+        const need = Math.max(0, em.count - have);
+        for (let n = 0; n < need; n++) {
+          const app = generateApplicant(state.pool.length);
+          app.exp = em.role;
+          state.pool.splice(rand(0, state.pool.length), 0, app);
+        }
+      }
+      // Inject required species — Drakhen get forced low-hate
+      const drakhMandated = (mandates.species || []).filter(sm => sm.species === 'Drakhen')
+                              .reduce((s, sm) => s + sm.count, 0);
+      for (const sm of (mandates.species || [])) {
+        const have = state.pool.filter(a => a.race === sm.species).length;
+        const need = Math.max(0, sm.count - have);
+        for (let n = 0; n < need; n++) {
+          const app = generateApplicant(state.pool.length);
+          app.race = sm.species;
+          const rd = RACES[sm.species];
+          if (rd) {
+            app.str = rand(rd.str[0], rd.str[1]);
+            app.int = rand(rd.int[0], rd.int[1]);
+            app.cha = rand(rd.cha[0], rd.cha[1]);
+            app.icon = rd.icon;
+          }
+          // Force low-hate for mandated Drakhens
+          if (sm.species === 'Drakhen') {
+            app.hate = rand(10, 20);
+            app.str = Math.max(app.str, 60);
+            app.int = app.str;
+            app.cha = Math.max(app.cha, 35);
+          }
+          state.pool.splice(rand(0, state.pool.length), 0, app);
+        }
+      }
+
+      // Drakhen mandate: inject 2x Cheesponges per mandated Drakhen + viability check
+      if (drakhMandated > 0) {
+        const cheesNeeded = drakhMandated * 2;
+        const cheesHave = state.pool.filter(a => a.race === 'Cheesponge').length;
+        const cheesAdd = Math.max(0, cheesNeeded - cheesHave);
+        for (let n = 0; n < cheesAdd; n++) {
+          const app = generateApplicant(state.pool.length);
+          app.race = 'Cheesponge';
+          const rd = RACES['Cheesponge'];
+          if (rd) {
+            app.str = rand(rd.str[0], rd.str[1]);
+            app.int = rand(rd.int[0], rd.int[1]);
+            app.cha = rand(rd.cha[0], rd.cha[1]);
+            app.icon = rd.icon;
+          }
+          state.pool.splice(rand(0, state.pool.length), 0, app);
+        }
+
+        // Viability check: can the top-N pool applicants by relevant stats reach minReq%?
+        const m = state.mission;
+        const maxSlots = state.ship.max;
+        const reqs = m.reqs;
+        // Score each pool applicant by their contribution to required stats
+        const scored = state.pool.map(a => {
+          let power = 0;
+          reqs.forEach(s => {
+            if (s === 'str') power += a.str;
+            else if (s === 'int') power += a.int;
+            else if (s === 'cha') power += a.cha;
+          });
+          return power;
+        }).sort((a, b) => b - a);
+        const topN = scored.slice(0, maxSlots);
+        const totalPower = topN.reduce((s, v) => s + v, 0);
+        const maxPower = maxSlots * reqs.length * 50;
+        const estScore = Math.round((totalPower / maxPower) * 100);
+        // If best possible score doesn't clear minReq, top up with high-stat applicants
+        if (estScore < m.minReq) {
+          const statBoost = Math.min(15, Math.floor((state.day - 20) / 2) + 1);
+          const races = getUnlockedSpeciesForDay(state.day).filter(r => r !== 'Drakhen' && r !== 'Cheesponge');
+          let attempts = 0;
+          while (attempts < 20) {
+            attempts++;
+            // Re-evaluate after each addition
+            const rescored = state.pool.map(a => {
+              let p = 0;
+              reqs.forEach(s => {
+                if (s === 'str') p += a.str;
+                else if (s === 'int') p += a.int;
+                else if (s === 'cha') p += a.cha;
+              });
+              return p;
+            }).sort((a, b) => b - a);
+            const newEst = Math.round((rescored.slice(0, maxSlots).reduce((s, v) => s + v, 0) / maxPower) * 100);
+            if (newEst >= m.minReq) break;
+            // Add a high-stat applicant in the primary required stat
+            const primaryStat = reqs[0];
+            const raceKey = races[rand(0, races.length - 1)];
+            const rd = RACES[raceKey];
+            if (!rd) continue;
+            const app = generateApplicant(state.pool.length);
+            app.race = raceKey;
+            app.str = rand(rd.str[0], rd.str[1]);
+            app.int = rand(rd.int[0], rd.int[1]);
+            app.cha = rand(rd.cha[0], rd.cha[1]);
+            app.icon = rd.icon;
+            // Boost primary stat to upper end
+            const hiStat = Math.min(100, (primaryStat === 'str' ? rd.str[1] : primaryStat === 'int' ? rd.int[1] : rd.cha[1]) + statBoost);
+            if (primaryStat === 'str') app.str = hiStat;
+            else if (primaryStat === 'int') app.int = hiStat;
+            else app.cha = hiStat;
+            state.pool.splice(rand(0, state.pool.length), 0, app);
+          }
+        }
       }
     }
 
@@ -3019,40 +3322,50 @@ function updateMissionProgress() {
   const fill = document.getElementById('mission-progress-fill');
   if (fill) fill.style.width = avg.toFixed(1) + '%';
 
-  // Info row: MISSION REQ: <stat vals bold, black if met> | SHIP: 0/5
+  // Info row: MISSION STR 400 | INT 450 | REQ 0/3 | MIN 72% | 0/32
   const minPct = m.minReq;
-  const reqParts = m.reqs.map(r => {
+
+  const shortLabel = { str: 'S', int: 'I', cha: 'C' };
+  const useShort = m.reqs.length === 3;
+
+  // Build all parts as individual spans — separator applied uniformly between them
+  const parts = [];
+
+  // Stat parts
+  m.reqs.forEach(r => {
     const met = statMet[r];
-    return `<span class="stat-val${met ? ' met' : ''}">${t(r)} ${m.targets[r]}</span>`;
-  }).join(' &nbsp;|&nbsp; ');
+    const label = useShort ? shortLabel[r] : t(r);
+    parts.push(`<span class="stat-val${met ? ' met' : ''}">${label} ${m.targets[r]}</span>`);
+  });
 
+  // Mandate REQ
+  if (m.mandates) {
+    const totalMandated = (m.mandates.exp || []).reduce((s, em) => s + em.count, 0)
+                        + (m.mandates.species || []).reduce((s, sm) => s + sm.count, 0);
+    let mandateMet = 0;
+    const hiredNow = state.roster.filter(a => a !== null);
+    for (const em of (m.mandates.exp || [])) mandateMet += Math.min(em.count, hiredNow.filter(a => a.exp === em.role).length);
+    for (const sm of (m.mandates.species || [])) mandateMet += Math.min(sm.count, hiredNow.filter(a => a.race === sm.species).length);
+    const allMet = mandateMet >= totalMandated;
+    parts.push(`<span class="stat-val${allMet ? ' met' : ''}">REQ ${mandateMet}/${totalMandated}</span>`);
+  }
+
+  // Min success
   const minMet = avg >= minPct;
-  const minSpan = `<span class="stat-val${minMet ? ' met' : ''}">${t('min')} ${minPct}%</span>`;
+  parts.push(`<span class="stat-val${minMet ? ' met' : ''}">MIN ${minPct}%</span>`);
 
+  // Crew count
   const shipMet = crewCount >= state.ship.min;
-  const shipSpan = `<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${state.ship.min}</span>`;
+  parts.push(`<span class="stat-val${shipMet ? ' met' : ''}">${crewCount}/${state.ship.min}</span>`);
 
-  const expMet = state.mission && state.mission.expReq
-    && state.roster.some(a => a && a.exp === state.mission.expReq);
-  const expPart = state.mission && state.mission.expReq
-    ? ` &nbsp;|&nbsp; <span class="stat-val${expMet ? ' met' : ''}">${roleName(state.mission.expReq)}</span>`
-    : '';
-  document.getElementById('slot-info-row').innerHTML =
-    `${t('missionLabel')}&nbsp;${reqParts}${expPart} &nbsp;|&nbsp; ${minSpan} &nbsp;|&nbsp; ${shipSpan}`;
-
-  // Compress letter-spacing only if content overflows one line
   const row = document.getElementById('slot-info-row');
-  row.style.letterSpacing = '';
   row.style.fontSize = '17px';
+  row.style.letterSpacing = '0px';
+
+  // Always try wide separators first, fall back to tight if overflow
+  row.innerHTML = `${t('missionLabel')}&nbsp;` + parts.join(' &nbsp;|&nbsp; ');
   if (row.scrollWidth > row.clientWidth) {
-    row.style.letterSpacing = '-1px';
-  }
-  if (row.scrollWidth > row.clientWidth) {
-    row.style.letterSpacing = '-2px';
-  }
-  if (row.scrollWidth > row.clientWidth) {
-    row.style.fontSize = '15px';
-    row.style.letterSpacing = '-1px';
+    row.innerHTML = `${t('missionLabel')}&nbsp;` + parts.join(' | ');
   }
 }
 
@@ -3242,6 +3555,23 @@ function launchMission() {
   const hired = state.roster.filter(a => a !== null);
   if (hired.length === 0) { document.getElementById('launch-warning').style.display = 'block'; return; }
 
+  // Hard mandate block (day 50+)
+  if (state.mission.mandates) {
+    const missing = [];
+    for (const em of (state.mission.mandates.exp || [])) {
+      const have = hired.filter(a => a.exp === em.role).length;
+      if (have < em.count) missing.push(`${em.count - have} ${roleName(em.role).toUpperCase()}`);
+    }
+    for (const sm of (state.mission.mandates.species || [])) {
+      const have = hired.filter(a => a.race === sm.species).length;
+      if (have < sm.count) missing.push(`${sm.count - have} ${speciesName(sm.species).toUpperCase()}`);
+    }
+    if (missing.length > 0) {
+      showMandateBlock(missing);
+      return;
+    }
+  }
+
   const cost = hired.reduce((sum, app) => sum + app.cost, 0);
   const preDeductionBalance = state.money;
   state.money -= cost;
@@ -3314,9 +3644,13 @@ function launchMission() {
     }
   }
 
-  // 6. EXPERIENCE MANDATE
+  // 6. EXPERIENCE / MANDATE BONUS
   let expMandateMod = 0;
-  if (state.mission.expReq) {
+  if (state.day >= MANDATE_DAY) {
+    // Day 50+: hard mandates are enforced, so launch always means they're met → flat +10%
+    if (state.mission.mandates) expMandateMod = 10;
+  } else if (state.mission.expReq) {
+    // Days 10-49: soft exp mandate ±10%
     const hasExp = hired.some(a => a.exp === state.mission.expReq);
     expMandateMod = hasExp ? 10 : -10;
   }
@@ -3406,9 +3740,11 @@ function launchMission() {
     html += resDivider();
   }
 
-  // Experience mandate
-  if (state.mission.expReq) {
-    if (expMandateMod > 0) {
+  // Experience / mandate bonus
+  if (expMandateMod !== 0) {
+    if (state.day >= MANDATE_DAY) {
+      html += resRow(t('mandateComplied'), '+10%');
+    } else if (expMandateMod > 0) {
       html += resRow(t('expMandateFulfilled'), '+10%');
     } else {
       html += resRow(t('expMandateIgnored'), '-10%');
@@ -3861,16 +4197,16 @@ function showCheckpoint(onDone) {
       bounceThen(btn, function() {
         saveCheckpoint();
         overlay.classList.remove('visible');
-        scrollEl.removeEventListener('touchstart', onTapSkip);
+        overlay.removeEventListener('touchstart', onTapSkip);
         onDone();
       });
     };
     setTimeout(() => scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' }), 50);
   }
 
-  // Tap anywhere on scroll area to skip typewriter
+  // Tap anywhere on overlay to skip typewriter
   function onTapSkip() { revealAll(); }
-  scrollEl.addEventListener('touchstart', onTapSkip, { passive: true });
+  overlay.addEventListener('touchstart', onTapSkip, { passive: true });
 
   let i = 0;
   const delay = 30;
@@ -3890,6 +4226,21 @@ function showCheckpoint(onDone) {
 }
 
 function closeCheckpoint() {} // handled via btn.onclick above
+
+function showMandateBlock(missingLines) {
+  const overlay = document.getElementById('mandate-block-overlay');
+  document.getElementById('mandate-block-title').innerText = t('mandateBlockTitle');
+  document.getElementById('mandate-block-msg').innerText = t('mandateBlockMsg');
+  document.getElementById('mandate-block-btn-text').innerText = t('mandateBlockOk');
+  const list = document.getElementById('mandate-block-list');
+  list.innerHTML = missingLines.map(l => `<div>${l}</div>`).join('');
+  overlay.classList.remove('hidden');
+  playSfx('wrong');
+}
+
+function closeMandateBlock() {
+  document.getElementById('mandate-block-overlay').classList.add('hidden');
+}
 
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
@@ -4780,9 +5131,198 @@ startDay();
     `;
   }
 
+  function buildMandateIntroPage(pageEl) {
+    const liSize = currentLang === 'it' ? '14px' : '17px';
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('missionBriefing')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <ul style="margin-top:5px;font-size:${liSize};">
+        <li>${t('mandateDirective1')}</li>
+        <li>${t('mandateDirective2')}</li>
+        <li>${t('mandateDirective3')}</li>
+      </ul>
+    `;
+  }
+
+  function buildMandateFlavour(mandates) {
+    const expList = mandates.exp || [];
+    const spList  = mandates.species || [];
+    const lang    = currentLang;
+    const pick    = (arr) => arr[rand(0, arr.length - 1)];
+    const pl      = (n, s, p) => n === 1 ? s : p;
+    const u       = (s) => `<u>${s}</u>`;
+
+    const combinedTemplates = {
+      en: [
+        (expN, expR, sp) => `The client needs ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to navigate the debris field around Kepler-9 without triggering the defence grid. They also require ${u(sp)} on board. Apparently ${u(sp)} emit a subsonic frequency that jams proximity sensors. We did not know this. Now we do.`,
+        (expN, expR, sp) => `Our client is staging a hostile takeover of a rival cargo consortium. They need ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to falsify the transit manifests and ${u(sp)} to intimidate the dock supervisors into signing. Standard business practice, we are told.`,
+        (expN, expR, sp) => `The contract involves retrieving a stolen artefact from the Muuvari Syndicate. ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to authenticate it on-site. ${u(sp)} because — direct quote — "the Syndicate is terrified of them." We are not asking follow-up questions.`,
+        (expN, expR, sp) => `A VIP requires extraction from a moon that has, in their words, "gone politically complicated." ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to plan the route. ${u(sp)} for everything else the route involves. The client approved a bonus for discretion.`,
+        (expN, expR, sp) => `The destination system stopped honouring standard docking codes last week. The client needs ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to improvise alternatives and ${u(sp)} to stand near the airlock during negotiations. Their words were "just have them stand there."`,
+        (expN, expR, sp) => `A research station is being stripped for parts. The original schematics are gone. The client needs ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to improvise, and ${u(sp)} because the last two crews sent there did not come back. The client called this a "minor complication."`,
+        (expN, expR, sp) => `The client is running an unsanctioned diplomatic channel with a faction the Bureau classifies as "hostile but manageable." ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} for the paperwork. ${u(sp)} at the table because the faction considers them sacred emissaries. Do not tell the Bureau.`,
+        (expN, expR, sp) => `A mining claim on KX-441 is contested by three armed parties. The client wants ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to establish legal presence and ${u(sp)} because they have, quote, "a look that settles disputes." We are choosing to believe this.`,
+        (expN, expR, sp) => `The client is delivering a package to a station that officially does not exist. ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} to forge the approach telemetry. ${u(sp)} because the receiving party requested them in a cipher. We decoded it. We wish we hadn't.`,
+        (expN, expR, sp) => `There is a political prisoner on a transit vessel the client wants moved before the Bureau's inspection window closes. ${u(expN+' '+pl(expN,expR.toLowerCase(),expR.toLowerCase()+'s'))} for the timing. ${u(sp)} to deal with the guards. "Deal with" was not defined. The pay rate suggests a generous interpretation.`,
+      ],
+      it: [
+        (expN, expR, sp) => `Il cliente ha bisogno di ${u(expN+' '+expR.toLowerCase())} per navigare il campo di detriti intorno a Keplero-9 senza attivare la griglia difensiva. Richiede inoltre ${u(sp)} a bordo. Pare che ${u(sp)} emettano una frequenza subsonica che disturba i sensori. Non lo sapevamo. Ora sì.`,
+        (expN, expR, sp) => `Il cliente sta tentando una scalata ostile a un consorzio merci rivale. Ha bisogno di ${u(expN+' '+expR.toLowerCase())} per falsificare i manifesti di transito e di ${u(sp)} per intimidire i supervisori del porto. Prassi commerciale standard, ci dicono.`,
+        (expN, expR, sp) => `Il contratto prevede il recupero di un artefatto dal Sindacato Muuvari. ${u(expN+' '+expR.toLowerCase())} per autenticarlo in loco. ${u(sp)} perché — citazione diretta — "il Sindacato ne è terrorizzato." Non poniamo domande.`,
+        (expN, expR, sp) => `Un VIP richiede estrazione da una luna che, parole sue, "è diventata politicamente complicata." ${u(expN+' '+expR.toLowerCase())} per il percorso. ${u(sp)} per tutto il resto. Il cliente ha approvato un bonus per la discrezione.`,
+        (expN, expR, sp) => `Il sistema di destinazione ha smesso di rispettare i codici di attracco standard. Il cliente ha bisogno di ${u(expN+' '+expR.toLowerCase())} per improvvisare alternative e di ${u(sp)} vicino all'airlock durante le trattative. Le sue parole: "fateli stare lì."`,
+        (expN, expR, sp) => `Una stazione di ricerca viene smantellata per ricavarne pezzi. Gli schemi originali sono perduti. Servono ${u(expN+' '+expR.toLowerCase())} per improvvisare e ${u(sp)} perché gli ultimi due equipaggi inviati non sono tornati. Il cliente ha chiamato questo una "complicazione minore."`,
+        (expN, expR, sp) => `Il cliente gestisce un canale diplomatico non autorizzato con una fazione "ostile ma gestibile." ${u(expN+' '+expR.toLowerCase())} per la burocrazia. ${u(sp)} al tavolo perché la fazione li considera emissari sacri. Non dirlo all'Ufficio.`,
+        (expN, expR, sp) => `Una concessione mineraria su KX-441 è contesa da tre parti armate. Il cliente vuole ${u(expN+' '+expR.toLowerCase())} per la presenza legale e ${u(sp)} perché hanno, cito, "uno sguardo che risolve le dispute." Scegliamo di crederci.`,
+        (expN, expR, sp) => `Il cliente consegna un pacco a una stazione che ufficialmente non esiste. ${u(expN+' '+expR.toLowerCase())} per la telemetria. ${u(sp)} perché la parte ricevente li ha richiesti in codice. Lo abbiamo decifrato. Avremmo preferito non farlo.`,
+        (expN, expR, sp) => `C'è un prigioniero politico su un vascello che il cliente vuole spostare prima dell'ispezione dell'Ufficio. ${u(expN+' '+expR.toLowerCase())} per i tempi. ${u(sp)} per le guardie. "Occuparsi" non è stato definito. La tariffa suggerisce un'interpretazione generosa.`,
+      ],
+    };
+
+    const expOnlyTemplates = {
+      en: [
+        (n, role) => `The previous crew attempted this without a single ${role.toLowerCase()} aboard. The debrief was seventeen pages and ended with "never again." You will bring ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))}.`,
+        (n, role) => `Bureau regulations technically allow launch without a ${role.toLowerCase()}. The client read those regulations and is ignoring them. They want ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))}. So do we.`,
+        (n, role) => `The destination station runs on a proprietary OS not updated since the second colonisation wave. Only ${u(pl(n,'a trained '+role.toLowerCase(),n+' trained '+role.toLowerCase()+'s'))} can interface with it without triggering a full lockdown.`,
+        (n, role) => `The client's legal team spent three hours explaining why ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))} ${pl(n,'is','are')} contractually mandatory. We stopped listening at hour two but signed anyway.`,
+        (n, role) => `Last quarter's identical mission failed because the crew improvised where ${u(pl(n,'a '+role.toLowerCase(),role.toLowerCase()+'s'))} should have planned. The client was not happy. The paperwork was enormous.`,
+        (n, role) => `The transit corridor passes through a region where ${role.toLowerCase()} credentials are the only recognised ID. Without ${u(pl(n,'one','them'))}, you will be boarded and fined. Bring ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))}.`,
+        (n, role) => `The client described this as "straightforward." Their definition includes ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))} and a non-disclosure agreement covering three solar systems.`,
+        (n, role) => `A previous agency sent this crew out without a ${role.toLowerCase()}. The client switched to us because we "seem like the type to read the requirements." Prove them right. Bring ${u(n+' '+pl(n,role.toLowerCase(),role.toLowerCase()+'s'))}.`,
+      ],
+      it: [
+        (n, role) => `L'equipaggio precedente ha tentato questa missione senza un ${role.toLowerCase()} a bordo. Il debriefing finiva con "mai più." Ne porterai ${u(n)}.`,
+        (n, role) => `I regolamenti permettono tecnicamente di lanciare senza un ${role.toLowerCase()}. Il cliente li ha letti e li ignora. Vuole ${u(n+' '+role.toLowerCase())}. Anche noi.`,
+        (n, role) => `La stazione di destinazione usa un OS non aggiornato dalla seconda colonizzazione. Solo ${u(n+' '+role.toLowerCase())} può interfacciarsi senza provocare un blocco totale.`,
+        (n, role) => `Il team legale ha impiegato tre ore a spiegare perché ${u(n+' '+role.toLowerCase())} ${n===1?'è':'sono'} obbligatori. Abbiamo smesso di ascoltare alla seconda ora ma abbiamo firmato comunque.`,
+        (n, role) => `La missione identica del trimestre scorso è fallita perché l'equipaggio ha improvvisato dove ${u(n===1?'un '+role.toLowerCase():role.toLowerCase()+'s')} avrebbe pianificato. Il cliente non era contento.`,
+        (n, role) => `Il corridoio richiede credenziali di ${role.toLowerCase()} come unica forma di identificazione. Senza ${u(n===1?'uno':'di loro')} verrete fermati e multati. Portane ${u(n)}.`,
+        (n, role) => `Il cliente ha descritto questa come "semplice." La sua definizione include ${u(n+' '+role.toLowerCase())} e un accordo di non divulgazione su tre sistemi solari.`,
+        (n, role) => `Un'agenzia precedente ha mandato l'equipaggio senza un ${role.toLowerCase()}. Il cliente è passato a noi perché "sembriamo il tipo che legge i requisiti." Dimostrategli che ha ragione. Portane ${u(n)}.`,
+      ],
+    };
+
+    const spOnlyTemplates = {
+      en: [
+        (sp) => `The client requested ${u(sp)} for reasons they consider self-evident. We asked for elaboration. They sent a photograph of the destination planet and a thumbs up. We have since researched ${u(sp)}. We understand now.`,
+        (sp) => `The contract specifies ${u(sp)} aboard. No role. No task description. Just ${u(sp)}, listed under "essential personnel." The pay is excellent. We have decided to trust the process.`,
+        (sp) => `The receiving faction communicates exclusively through biological scent signals. Only ${u(sp)} can interpret and respond accurately. Bring them. Do not ask them how they know this.`,
+        (sp) => `Three rival crews declined this contract specifically because of the ${u(sp)} requirement. We are choosing to see this as a competitive advantage rather than a warning.`,
+        (sp) => `The client needs ${u(sp)} to clear a Vorrk tunnel-slug infestation from a derelict cargo hold. ${u(sp)} are the only species Vorrk tunnel-slugs will voluntarily evacuate for. Specialist skill.`,
+        (sp) => `The receiving colony requires at least one ${u(sp)} representative aboard any vessel applying for premium docking rights. The client wants premium docking rights.`,
+        (sp) => `The Thek Hegemony will only negotiate with crews that include ${u(sp)}, whom they regard as neutral arbiters by a treaty predating the Bureau by six hundred years.`,
+        (sp) => `The client offended a ${u(sp)} elder at a trade summit. They are now employing ${u(sp)} on every contract until further notice. Diplomatic wisdom or superstition. We bill the same either way.`,
+        (sp) => `The checkpoint en route is staffed exclusively by ${u(sp)} border enforcement. The client learned, the hard way, that they respond very differently to ships crewed by their own kind.`,
+        (sp) => `The payload requires ${u(sp)} handling due to a biochemical interaction we are not authorised to disclose. The client's exact words: "just make sure ${u(sp)} are touching the crates."`,
+      ],
+      it: [
+        (sp) => `Il cliente ha richiesto ${u(sp)} per ragioni che considera autoevidenti. Abbiamo chiesto chiarimenti. Hanno inviato una fotografia e un pollice su. Da allora abbiamo studiato ${u(sp)}. Ora capiamo.`,
+        (sp) => `Il contratto specifica ${u(sp)} a bordo. Nessun ruolo. Nessuna descrizione. Solo ${u(sp)}, sotto "personale essenziale." La paga è ottima. Abbiamo deciso di fidarci.`,
+        (sp) => `La fazione ricevente comunica tramite segnali odorosi biologici. Solo ${u(sp)} sono in grado di interpretarli. Portateli. Non chiedete come lo sanno.`,
+        (sp) => `Tre equipaggi rivali hanno rifiutato questo contratto a causa del requisito ${u(sp)}. Scegliamo di vederlo come vantaggio competitivo.`,
+        (sp) => `Il cliente ha bisogno di ${u(sp)} per gestire un'infestazione di lumache-tunnel Vorrk in una stiva abbandonata. ${u(sp)} sono l'unica specie per cui evacuano volontariamente.`,
+        (sp) => `La colonia di destinazione richiede almeno un rappresentante ${u(sp)} per i diritti di attracco premium. Il cliente vuole i diritti premium.`,
+        (sp) => `L'Egemonia Thek negozia solo con equipaggi che includono ${u(sp)}, arbitri neutrali per antico trattato che precede l'Ufficio di seicento anni.`,
+        (sp) => `Il cliente ha offeso un anziano ${u(sp)} a un vertice. Sta assumendo ${u(sp)} in ogni contratto. Saggezza diplomatica o superstizione. Fatturiamo allo stesso modo.`,
+        (sp) => `Il posto di controllo en route è presidiato da forze ${u(sp)}. Il cliente ha imparato che reagiscono molto diversamente ai vascelli con equipaggi della loro specie.`,
+        (sp) => `Il carico richiede la manipolazione di ${u(sp)} per un'interazione biochimica non divulgabile. Parole del cliente: "assicuratevi che ${u(sp)} tocchino le casse."`,
+      ],
+    };
+
+    const hasExp = expList.length > 0;
+    const hasSp  = spList.length > 0;
+
+    if (hasExp && hasSp) {
+      const em    = expList[0];
+      const spStr = spList.map(sm => `${sm.count} ${speciesName(sm.species)}`).join(lang === 'it' ? ' e ' : ' and ');
+      return pick(combinedTemplates[lang] || combinedTemplates.en)(em.count, roleName(em.role), spStr);
+    } else if (hasExp) {
+      const em = expList[0];
+      return pick(expOnlyTemplates[lang] || expOnlyTemplates.en)(em.count, roleName(em.role));
+    } else if (hasSp) {
+      const spStr = spList.map(sm => `${sm.count} ${speciesName(sm.species)}`).join(lang === 'it' ? ' e ' : ' and ');
+      return pick(spOnlyTemplates[lang] || spOnlyTemplates.en)(spStr);
+    }
+    return '';
+  }
+
+
+  function buildMandateFlavourPage(pageEl) {
+    const m = state.mission;
+    const mandates = m.mandates;
+    if (!mandates) { pageEl.innerHTML = ''; return; }
+
+    const rawTitle = m.title.charAt(0).toUpperCase() + m.title.slice(1).toLowerCase();
+    const mType = missionTypeName(m.type);
+    const missionLabel = `${mType}: ${missionTitle(rawTitle)}`;
+    const flavour = buildMandateFlavour(mandates);
+
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('missionBriefing')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-mission-title">${missionLabel}</div>
+      <div style="font-family:'VT323',monospace;font-size:19px;line-height:1.25;color:#000;margin:10px 0 0 0;">${flavour}</div>
+    `;
+  }
+
+  function buildMandateStatsPage(pageEl) {
+    const m = state.mission;
+    const mandates = m.mandates;
+    if (!mandates) { pageEl.innerHTML = ''; return; }
+
+    const expRows = (mandates.exp || []).map(em =>
+      `<div class="rules-flat-row"><span class="rules-flat-label">${t('mandateExpReq')}</span><span class="rules-flat-value">${em.count} ${roleName(em.role)}</span></div>`
+    ).join('');
+
+    // Species: one label, all species stacked on the right, single bottom border
+    let speciesBlock = '';
+    const spList = mandates.species || [];
+    if (spList.length === 1) {
+      speciesBlock = `<div class="rules-flat-row"><span class="rules-flat-label">${t('mandateSpeciesReq')}</span><span class="rules-flat-value">${spList[0].count} ${speciesName(spList[0].species)}</span></div>`;
+    } else if (spList.length > 1) {
+      const spLines = spList.map(sm => `<div>${sm.count} ${speciesName(sm.species)}</div>`).join('');
+      speciesBlock = `
+        <div class="rules-flat-row" style="align-items:flex-start;">
+          <span class="rules-flat-label">${t('mandateSpeciesReq')}</span>
+          <span class="rules-flat-value" style="display:flex;flex-direction:column;gap:2px;">${spLines}</span>
+        </div>`;
+    }
+
+    const reqStr = m.reqs.map(r => `${t(r)} ${m.targets[r]}`).join(', ');
+
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('missionBriefing')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('skillReq')}</span><span class="rules-flat-value">${reqStr}</span></div>
+      ${expRows}
+      ${speciesBlock}
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('minSuccess')}</span><span class="rules-flat-value">${m.minReq}%</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('minCrew')}</span><span class="rules-flat-value">${state.ship.min}</span></div>
+      <div class="rules-flat-row"><span class="rules-flat-label">${t('reward')}</span><span class="rules-flat-value">${m.reward} CR</span></div>
+    `;
+  }
+
   function populateSheetContent() {
     // Clear all pages first
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 7; i++) {
       const p = document.getElementById('rules-page-' + i);
       if (p) p.innerHTML = '';
     }
@@ -4816,39 +5356,40 @@ startDay();
       buildMissionPage(document.getElementById('rules-page-4'));
       buildShipPage(document.getElementById('rules-page-5'));
     } else {
-      // Day 2+: pages depend on new species and exp mandate introduction
+      // Day 2+: pages depend on new species, exp mandate introduction, and client mandate
       const prevUnlocked = new Set(getUnlockedSpeciesForDay(state.day - 1));
       const hasNewSpecies = getUnlockedSpeciesForDay(state.day).some(r => !prevUnlocked.has(r));
       const isExpMandateDay = state.day === 10;
-
       const isSaboteurDay = state.day === 15;
+      const isMandateIntroDay = state.day === MANDATE_DAY;
+      const hasMandates = state.day >= MANDATE_DAY && state.mission.mandates;
 
-      if (isExpMandateDay && isSaboteurDay) {
-        // Both on same day (shouldn't happen but handle gracefully)
-        RULES_TOTAL = hasNewSpecies ? 5 : 4;
-        buildExpMandatePage(document.getElementById('rules-page-1'));
-        buildSaboteurWarningPage(document.getElementById('rules-page-2'));
-        buildMissionPage(document.getElementById('rules-page-3'));
-        buildShipPage(document.getElementById('rules-page-4'));
-        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-5'));
-      } else if (isExpMandateDay) {
-        RULES_TOTAL = hasNewSpecies ? 4 : 3;
-        buildExpMandatePage(document.getElementById('rules-page-1'));
-        buildMissionPage(document.getElementById('rules-page-2'));
-        buildShipPage(document.getElementById('rules-page-3'));
-        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
-      } else if (isSaboteurDay) {
-        RULES_TOTAL = hasNewSpecies ? 4 : 3;
-        buildSaboteurWarningPage(document.getElementById('rules-page-1'));
-        buildMissionPage(document.getElementById('rules-page-2'));
-        buildShipPage(document.getElementById('rules-page-3'));
-        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-4'));
-      } else {
-        RULES_TOTAL = hasNewSpecies ? 3 : 2;
-        buildMissionPage(document.getElementById('rules-page-1'));
-        buildShipPage(document.getElementById('rules-page-2'));
-        if (hasNewSpecies) buildNewSpeciesPage(document.getElementById('rules-page-3'));
-      }
+      // Build page list dynamically
+      const pages = [];
+      if (isMandateIntroDay)  pages.push('mandateIntro');
+      if (isExpMandateDay)    pages.push('expMandate');
+      if (isSaboteurDay)      pages.push('saboteur');
+      if (hasMandates) {
+        pages.push('mandateFlavour');
+        pages.push('mandateStats');
+      } else                  pages.push('mission');
+      pages.push('ship');
+      if (hasNewSpecies)      pages.push('newSpecies');
+
+      RULES_TOTAL = pages.length;
+
+      pages.forEach((type, idx) => {
+        const pageEl = document.getElementById('rules-page-' + (idx + 1));
+        if (!pageEl) return;
+        if (type === 'mandateIntro')         buildMandateIntroPage(pageEl);
+        else if (type === 'expMandate')      buildExpMandatePage(pageEl);
+        else if (type === 'saboteur')        buildSaboteurWarningPage(pageEl);
+        else if (type === 'mandateFlavour')  buildMandateFlavourPage(pageEl);
+        else if (type === 'mandateStats')    buildMandateStatsPage(pageEl);
+        else if (type === 'mission')         buildMissionPage(pageEl);
+        else if (type === 'ship')            buildShipPage(pageEl);
+        else if (type === 'newSpecies')      buildNewSpeciesPage(pageEl);
+      });
     }
   }
 
