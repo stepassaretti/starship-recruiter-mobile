@@ -1819,7 +1819,7 @@ body {
       <div class="mandate-block-msg" id="mandate-block-msg"></div>
       <div class="mandate-block-list" id="mandate-block-list"></div>
       <div class="mandate-block-btn-wrap">
-        <button class="mandate-block-btn" id="mandate-block-btn" onclick="event.stopPropagation(); this.classList.add('bounce'); setTimeout(()=>{ this.classList.remove('bounce'); closeMandateBlock(); }, 200)">
+        <button class="mandate-block-btn" id="mandate-block-btn" onclick="event.stopPropagation(); playSfx('button'); this.classList.add('bounce'); setTimeout(()=>{ this.classList.remove('bounce'); closeMandateBlock(); }, 200)">
           <svg viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
           <span id="mandate-block-btn-text">OK</span>
         </button>
@@ -1900,6 +1900,8 @@ const LANG = {
     class: "Class",
     // Manual
     xenoManual: "Xeno-biology manual",
+    lastHired: "Last hired",
+    allSpecies: "Others",
     hates: "HATES:",
     // Bottom info row
     missionLabel: "MISSION:",
@@ -1986,8 +1988,8 @@ const LANG = {
     mandateDirective3: "Failure to comply will result in a hard launch block. No exceptions.",
     mandateExpReq: "Experience Req",
     mandateSpeciesReq: "Species Req",
-    mandateBlockTitle: "Launch blocked",
-    mandateBlockMsg: "Client mandate not satisfied:",
+    mandateBlockTitle: "Launch blocked.",
+    mandateBlockMsg: "You must hire the following:",
     mandateBlockOk: "OK",
     mandateMissing: "Missing",
     continueCareer: "CONTINUE CAREER",
@@ -2044,7 +2046,7 @@ const LANG = {
     },
     missionIntel: "Informazioni missione",
     requirements: "Requisiti",
-    skillReq: "Req. Abilità",
+    skillReq: "Req Skills",
     minSuccess: "Successo minimo",
     minCrew: "Equipaggio minimo",
     maxCrew: "Equipaggio massimo",
@@ -2052,6 +2054,8 @@ const LANG = {
     yourShip: "La tua nave",
     class: "Classe",
     xenoManual: "Manuale di xenobiologia",
+    lastHired: "Ultima assunzione",
+    allSpecies: "Altre specie",
     hates: "NEMICI:",
     missionLabel: "MISSIONE:",
     min: "MIN",
@@ -2156,8 +2160,8 @@ const LANG = {
     mandateDirective3: "Il mancato rispetto bloccherà il lancio. Nessuna eccezione.",
     mandateExpReq: "Req. Esperienza",
     mandateSpeciesReq: "Req. Specie",
-    mandateBlockTitle: "Lancio bloccato",
-    mandateBlockMsg: "Mandato cliente non soddisfatto:",
+    mandateBlockTitle: "Lancio bloccato.",
+    mandateBlockMsg: "Devi ancora assumere:",
     mandateBlockOk: "OK",
     mandateMissing: "Mancante",
     continueCareer: "CONTINUA CARRIERA",
@@ -2219,6 +2223,7 @@ function openDrawer(type) {
   // If switching between panels while already open
   if (activeDrawer && activeDrawer !== type) {
     content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
+    if (type === 'manual') content.scrollTop = 0;
     activeDrawer = type;
     updateIconButtons();
     playSfx('button');
@@ -2232,6 +2237,7 @@ function openDrawer(type) {
 
   // Populate content
   content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
+  if (type === 'manual') content.scrollTop = 0;
 
   // Update icons
   updateIconButtons();
@@ -2267,6 +2273,7 @@ function closeDrawer() {
 
   activeDrawer = null;
   updateIconButtons();
+  document.getElementById('bar-content').scrollTop = 0;
 
   // After animation, remove expanded state
   setTimeout(() => {
@@ -2303,10 +2310,27 @@ function getMissionHTML() {
   return `
     <div class="section-title" style="margin-bottom:10px;">${t('missionIntel').toUpperCase()}</div>
     <div class="mission-title" style="font-size:20px; font-family:'VT323',monospace; font-weight:700; margin-bottom:10px; line-height:1.1;">${title}</div>
-    <div class="mission-flat-row"><span class="mission-flat-label">${t('requirements')}</span><span class="mission-flat-value">${reqStr}</span></div>
+    <div class="mission-flat-row"><span class="mission-flat-label">${state.day >= MANDATE_DAY ? t('skillReq') : t('requirements')}</span><span class="mission-flat-value">${reqStr}</span></div>
     ${m.expReq ? `<div class="mission-flat-row"><span class="mission-flat-label">${t('experienceReq')}</span><span class="mission-flat-value">1 ${roleName(m.expReq)}</span></div>` : ''}
-    ${m.mandates ? (m.mandates.exp || []).map(em => `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateExpReq')}</span><span class="mission-flat-value">${em.count} ${roleName(em.role)}</span></div>`).join('') : ''}
-    ${m.mandates ? (m.mandates.species || []).map(sm => `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateSpeciesReq')}</span><span class="mission-flat-value">${sm.count} ${speciesName(sm.species)}</span></div>`).join('') : ''}
+    ${(() => {
+      if (!m.mandates) return '';
+      const expList = m.mandates.exp || [];
+      const spList  = m.mandates.species || [];
+      let html = '';
+      if (expList.length === 1) {
+        html += `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateExpReq')}</span><span class="mission-flat-value">${expList[0].count} ${roleName(expList[0].role)}</span></div>`;
+      } else if (expList.length > 1) {
+        const lines = expList.map(em => `<div>${em.count} ${roleName(em.role)}</div>`).join('');
+        html += `<div class="mission-flat-row" style="align-items:flex-start;"><span class="mission-flat-label">${t('mandateExpReq')}</span><span class="mission-flat-value" style="display:flex;flex-direction:column;gap:2px;">${lines}</span></div>`;
+      }
+      if (spList.length === 1) {
+        html += `<div class="mission-flat-row"><span class="mission-flat-label">${t('mandateSpeciesReq')}</span><span class="mission-flat-value">${spList[0].count} ${speciesName(spList[0].species)}</span></div>`;
+      } else if (spList.length > 1) {
+        const lines = spList.map(sm => `<div>${sm.count} ${speciesName(sm.species)}</div>`).join('');
+        html += `<div class="mission-flat-row" style="align-items:flex-start;"><span class="mission-flat-label">${t('mandateSpeciesReq')}</span><span class="mission-flat-value" style="display:flex;flex-direction:column;gap:2px;">${lines}</span></div>`;
+      }
+      return html;
+    })()}
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minSuccess')}</span><span class="mission-flat-value">${m.minReq}%</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('minCrew')}</span><span class="mission-flat-value">${state.ship.min}</span></div>
     <div class="mission-flat-row"><span class="mission-flat-label">${t('reward')}</span><span class="mission-flat-value">${m.reward} cr</span></div>
@@ -2327,8 +2351,29 @@ function getUnlockedSpeciesForDay(day) {
 
 function getManualHTML() {
   let html = `<div class="section-title" style="margin-bottom:10px;">${t('xenoManual').toUpperCase()}</div>`;
+
+  // Last hired section
+  const lhKey = state.lastHired;
+  if (lhKey && RACES[lhKey]) {
+    const rd = RACES[lhKey];
+    const hateNames = rd.hates.map(h => speciesName(h)).join(', ');
+    html += `
+      <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('lastHired').toUpperCase()}</div>
+      <div class="manual-entry" style="margin-bottom:10px;">
+        <div class="manual-name">
+          <div class="manual-icon"><img src="${rd.icon}" alt="${lhKey}" onerror="this.style.display='none'"></div>
+          ${speciesName(lhKey)}
+        </div>
+        <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
+        <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
+      </div>
+      <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('allSpecies').toUpperCase()}</div>`;
+  }
+
   const unlockedSpecies = getUnlockedSpeciesForDay(state.day);
-  const sorted = [...unlockedSpecies].sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
+  const sorted = [...unlockedSpecies]
+    .filter(k => k !== lhKey)
+    .sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
   sorted.forEach(rKey => {
     const rd = RACES[rKey];
     const hateNames = rd.hates.map(h => speciesName(h)).join(', ');
@@ -2577,7 +2622,7 @@ function anySlotOccupied() {
   return [1,2,3,4,5].some(s => getSave(s) !== null);
 }
 
-let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [],
+let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [], lastHired: null,
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
@@ -3000,8 +3045,7 @@ function startDay() {
         const have = state.pool.filter(a => a.race === sm.species).length;
         const need = Math.max(0, sm.count - have);
         for (let n = 0; n < need; n++) {
-          const app = generateApplicant(state.pool.length);
-          app.race = sm.species;
+          const app = generateApplicant(state.pool.length, sm.species);
           const rd = RACES[sm.species];
           if (rd) {
             app.str = rand(rd.str[0], rd.str[1]);
@@ -3026,8 +3070,7 @@ function startDay() {
         const cheesHave = state.pool.filter(a => a.race === 'Cheesponge').length;
         const cheesAdd = Math.max(0, cheesNeeded - cheesHave);
         for (let n = 0; n < cheesAdd; n++) {
-          const app = generateApplicant(state.pool.length);
-          app.race = 'Cheesponge';
+          const app = generateApplicant(state.pool.length, 'Cheesponge');
           const rd = RACES['Cheesponge'];
           if (rd) {
             app.str = rand(rd.str[0], rd.str[1]);
@@ -3080,8 +3123,7 @@ function startDay() {
             const raceKey = races[rand(0, races.length - 1)];
             const rd = RACES[raceKey];
             if (!rd) continue;
-            const app = generateApplicant(state.pool.length);
-            app.race = raceKey;
+            const app = generateApplicant(state.pool.length, raceKey);
             app.str = rand(rd.str[0], rd.str[1]);
             app.int = rand(rd.int[0], rd.int[1]);
             app.cha = rand(rd.cha[0], rd.cha[1]);
@@ -3498,6 +3540,7 @@ function tapCard(appId) {
   card.classList.add('selected');
   playSfx('select_card');
   state.roster[nextSlot] = app;
+  if (!app.isSaboteur) state.lastHired = app.race;
   // Track species selection order (first time only)
   if (!state.speciesOrder.includes(app.race)) state.speciesOrder.push(app.race);
   sortRoster();
@@ -5282,9 +5325,18 @@ startDay();
     const mandates = m.mandates;
     if (!mandates) { pageEl.innerHTML = ''; return; }
 
-    const expRows = (mandates.exp || []).map(em =>
-      `<div class="rules-flat-row"><span class="rules-flat-label">${t('mandateExpReq')}</span><span class="rules-flat-value">${em.count} ${roleName(em.role)}</span></div>`
-    ).join('');
+    const expList = mandates.exp || [];
+    let expBlock = '';
+    if (expList.length === 1) {
+      expBlock = `<div class="rules-flat-row"><span class="rules-flat-label">${t('mandateExpReq')}</span><span class="rules-flat-value">${expList[0].count} ${roleName(expList[0].role)}</span></div>`;
+    } else if (expList.length > 1) {
+      const expLines = expList.map(em => `<div>${em.count} ${roleName(em.role)}</div>`).join('');
+      expBlock = `
+        <div class="rules-flat-row" style="align-items:flex-start;">
+          <span class="rules-flat-label">${t('mandateExpReq')}</span>
+          <span class="rules-flat-value" style="display:flex;flex-direction:column;gap:2px;">${expLines}</span>
+        </div>`;
+    }
 
     // Species: one label, all species stacked on the right, single bottom border
     let speciesBlock = '';
@@ -5312,7 +5364,7 @@ startDay();
       </div>
       <div class="rules-divider"></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('skillReq')}</span><span class="rules-flat-value">${reqStr}</span></div>
-      ${expRows}
+      ${expBlock}
       ${speciesBlock}
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minSuccess')}</span><span class="rules-flat-value">${m.minReq}%</span></div>
       <div class="rules-flat-row"><span class="rules-flat-label">${t('minCrew')}</span><span class="rules-flat-value">${state.ship.min}</span></div>
