@@ -2643,7 +2643,7 @@ const SABOTEUR_STORIES_IT = [
 
 function getSaboteurStory(hired) {
   const crew = hired.filter(a => !a.isSaboteur);
-  const pool = LANG === 'it' ? SABOTEUR_STORIES_IT : SABOTEUR_STORIES;
+  const pool = currentLang === 'it' ? SABOTEUR_STORIES_IT : SABOTEUR_STORIES;
   const idx = Math.floor(Math.random() * pool.length);
   const fn = pool[idx];
   const c1 = crew[0] ? crew[0].name : 'The crew';
@@ -2796,7 +2796,7 @@ function getDebriefStory(outcome, missionType, modifiers, hired, conflictLines) 
     return s.replace(/\s{2,}/g, ' ').trim();
   };
 
-  const templates = LANG === 'it' ? STORY_TEMPLATES_IT : STORY_TEMPLATES;
+  const templates = currentLang === 'it' ? STORY_TEMPLATES_IT : STORY_TEMPLATES;
   const pool = templates[outcome] || [];
   const crewCount = crew.length;
   const mType = missionType ? missionType.toUpperCase() : '';
@@ -2925,9 +2925,9 @@ function buildConflictSuffix(conflictLines) {
   const absorbed = conflictLines.find(c => c.absorbed);
   const nonAbsorbed = conflictLines.filter(c => !c.absorbed).sort((a, b) => (b.penalty || 0) - (a.penalty || 0));
 
-  const CS_SINGLE = LANG === 'it' ? CONFLICT_SUFFIXES_SINGLE_IT : CONFLICT_SUFFIXES_SINGLE;
-  const CS_DOUBLE = LANG === 'it' ? CONFLICT_SUFFIXES_DOUBLE_IT : CONFLICT_SUFFIXES_DOUBLE;
-  const CS_CHEESE = LANG === 'it' ? CONFLICT_SUFFIXES_CHEESPONGE_IT : CONFLICT_SUFFIXES_CHEESPONGE;
+  const CS_SINGLE = currentLang === 'it' ? CONFLICT_SUFFIXES_SINGLE_IT : CONFLICT_SUFFIXES_SINGLE;
+  const CS_DOUBLE = currentLang === 'it' ? CONFLICT_SUFFIXES_DOUBLE_IT : CONFLICT_SUFFIXES_DOUBLE;
+  const CS_CHEESE = currentLang === 'it' ? CONFLICT_SUFFIXES_CHEESPONGE_IT : CONFLICT_SUFFIXES_CHEESPONGE;
 
   // If top conflict is absorbed Cheesponge/Drakhen and no worse regular conflicts, use cheesponge
   if (absorbed && (nonAbsorbed.length === 0 || (nonAbsorbed[0]?.penalty || 0) < 8)) {
