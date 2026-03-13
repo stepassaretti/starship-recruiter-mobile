@@ -1881,7 +1881,7 @@ body {
     <div class="result-msg" id="res-msg">SUCCESS</div>
     <div class="result-log" id="res-log"></div>
     <div class="result-story" id="res-story" onclick="tapStory()">
-      <span class="result-story-text" id="res-story-text"></span><span class="result-story-seemore" id="res-story-seemore" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"> show more</span><span class="result-story-seeless" id="res-story-seeless" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"> show less</span>
+      <span class="result-story-text" id="res-story-text"></span><span class="result-story-seemore" id="res-story-seemore" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"></span><span class="result-story-seeless" id="res-story-seeless" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"></span>
     </div>
   </div>
   <div class="result-btn-row" id="result-btn-row">
@@ -2053,7 +2053,7 @@ const LANG = {
     missionTitles: {},
     day: "DAY",
     applicants: "APPLICANTS",
-    rule1: "Read the mission intel carefully. Meet the <u>required stats</u> and the <u>min success %</u>, or the contract fails.",
+    rule1: "Read the mission intel carefully. Meet the <u>required stats</u> (STRENGTH, INTELLIGENCE, CHARISMA) and the <u>min success %</u>, or the contract fails.",
     rule2: "Understaffed ships underperform — keep an eye on the <u>min crew requirement</u>.",
     rule3: "Some species don't work well together. Always consult the <u>Xeno-Biology Manual</u>.",
     rule4: "Every applicant has a <u>HATE value</u>. Higher HATE means more damage if an interspecies conflict breaks out.",
@@ -2079,6 +2079,9 @@ const LANG = {
     mandateBlockMsg: "You must hire the following:",
     mandateBlockOk: "OK",
     mandateMissing: "Missing",
+    back: "BACK",
+    showMore: "show more",
+    showLess: "show less",
     continueCareer: "CONTINUE CAREER",
     startNewCareer: "NEW CAREER",
     slotEmpty: "EMPTY SLOT",
@@ -2227,7 +2230,7 @@ const LANG = {
     },
     day: "GIORNO",
     applicants: "CANDIDATI",
-    rule1: "Leggi il briefing con attenzione. Raggiungi le <u>statistiche richieste</u> e la <u>% di successo minima</u>, o la missione fallisce.",
+    rule1: "Leggi il briefing con attenzione. Raggiungi le <u>statistiche richieste</u> (FORZA, INTELLIGENZA, CARISMA) e la <u>% di successo minima</u>, o la missione fallisce.",
     rule2: "Le navi con equipaggio insufficiente rendono meno — tieni d'occhio il <u>requisito minimo di equipaggio</u>.",
     rule3: "Alcune specie non vanno d'accordo. Consulta sempre il <u>Manuale di Xenobiologia</u>.",
     rule4: "Ogni candidato ha un valore <u>ODIO</u>. Se elevato, può causare più danni se scoppia un conflitto tra specie.",
@@ -2253,6 +2256,9 @@ const LANG = {
     mandateBlockMsg: "Devi ancora assumere:",
     mandateBlockOk: "OK",
     mandateMissing: "Mancante",
+    back: "INDIETRO",
+    showMore: "leggi",
+    showLess: "nascondi",
     continueCareer: "CONTINUA CARRIERA",
     startNewCareer: "NUOVA CARRIERA",
     slotEmpty: "SLOT VUOTO",
@@ -2629,16 +2635,154 @@ const SABOTEUR_STORIES = [
   () => `The ship returned on schedule. The crew returned on schedule. The mission did not return at all. Someone on board made sure of that.`,
 ];
 
+const SABOTEUR_STORIES_IT = [
+  (c1, s1, c2, s2) => `La missione ha proceduto senza incidenti nella prima tratta. ${c1} [${s1}] registrava progressi regolari. ${c2} [${s2}] registrava progressi regolari. Qualcun altro a bordo stava registrando tutt'altra cosa.`,
+  (c1, s1) => `${c1} [${s1}] ha notato la discrepanza al minuto 04:30. Nel frattempo, tre sistemi erano stati silenziosamente reindirizzati. Chiunque l'abbia fatto sapeva esattamente quello che stava facendo.`,
+  () => `La nave è rientrata in orario. L'equipaggio è rientrato in orario. La missione non è rientrata affatto. Qualcuno a bordo si è assicurato di questo.`,
+];
+
 function getSaboteurStory(hired) {
   const crew = hired.filter(a => !a.isSaboteur);
-  const idx = Math.floor(Math.random() * SABOTEUR_STORIES.length);
-  const fn = SABOTEUR_STORIES[idx];
+  const pool = LANG === 'it' ? SABOTEUR_STORIES_IT : SABOTEUR_STORIES;
+  const idx = Math.floor(Math.random() * pool.length);
+  const fn = pool[idx];
   const c1 = crew[0] ? crew[0].name : 'The crew';
   const s1 = crew[0] ? speciesName(crew[0].race) : '';
   const c2 = crew[1] ? crew[1].name : 'the others';
   const s2 = crew[1] ? speciesName(crew[1].race) : '';
   return fn(c1, s1, c2, s2);
 }
+
+
+const STORY_TEMPLATES_IT = {
+  overwhelming: [
+    { tags: [], min: 1, t: `{c1} [{s1}] ha consegnato il rapporto post-missione prima che la nave avesse superato il campo di detriti. Ogni obiettivo era segnato come completato. C'era una voce bonus dal cliente etichettata "efficienza inattesa." Nessuno ha chiesto cosa significasse. {c2} [{s2}] è già passato ad altro.` },
+    { tags: [], min: 1, t: `La missione era finita prima che l'agenzia avesse finito di elaborare le pratiche di lancio. {c1} [{s1}] ha inviato una trasmissione di una riga al ritorno: "Fatto." Il cliente ha inviato tre messaggi di follow-up chiedendo chiarimenti. Nessuno è stato risposto.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha gestito gli obiettivi primari. {c2} [{s2}] ha gestito tutto il resto. Tra loro, nulla è rimasto irrisolto. Il cliente ha poi descritto l'operazione come "inquietante nella sua completezza."` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno diviso la missione in tre parti e hanno eseguito ciascuna con quella che i testimoni hanno descritto come "aggressività organizzata." Il debriefing è durato quattro minuti. La missione stessa meno.` },
+    { tags: ['max_crew'], min: 3, t: `Nave al completo, missione pulita. {c1} [{s1}] ha guidato. {c2} [{s2}] e {c3} [{s3}] hanno seguito senza bisogno di essere chiesto due volte. L'equipaggio ha ruotato i turni con precisione meccanica. Il cliente ha inviato un encomio. È stato archiviato e dimenticato.` },
+    { tags: ['max_crew'], min: 4, t: `Ogni posto occupato, ogni obiettivo raggiunto. {c1} [{s1}] ha coordinato dal ponte mentre {c2} [{s2}], {c3} [{s3}] e {c4} [{s4}] lavoravano sulla lista delle attività. Un membro dell'equipaggio ha mangiato il piatto di formaggio commemorativo del cliente, ma la missione conta ancora come successo completo.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno operato come se si fossero esercitati per anni. Non lo avevano fatto. L'osservatore della Sindacato Muuvari sul posto ha descritto la scena come "nauseante da guardare." Il risultato era immacolato.` },
+    { tags: [], min: 3, t: `Nessun conflitto registrato. Nessun reclamo presentato. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno completato ogni attività in sequenza senza alcuna frizione. Gli equipaggi successivi hanno visto il registro della missione come esempio di formazione. Non è stato replicato.` },
+    { tags: [], min: 1, t: `Il file della missione contiene un gap di tre secondi nel registro dei sensori al minuto 04:12. Prima: undici ostili irrisolti. Dopo: nessuno. {c1} [{s1}] è elencato come presente. Non sono disponibili ulteriori dettagli.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha completato gli obiettivi primari mentre {c2} [{s2}] ha gestito le complicazioni che, secondo il registro ufficiale, "si sono risolte da sole." Il Drakhen non ha presentato alcun rapporto di incidente. La politica dell'agenzia ora lo richiede.` },
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] ha assorbito quattro incidenti pre-conflitto separati durante l'operazione. Nessuno ha mai alzato la voce. {c2} [{s2}] se ne è accorto ma non ha detto nulla. Il Cheesponge sembrava soddisfatto, in qualunque modo i Cheesponge lo esprimano.` },
+    { tags: [], min: 2, t: `L'installazione obiettivo è stata neutralizzata nella prima ora. {c1} [{s1}] ha effettuato la breccia mentre {c2} [{s2}] garantiva l'estrazione. I rinforzi sono arrivati dopo. Il registro post-missione li elenca sotto "irrilevanti."` },
+    { tags: [], min: 1, t: `Tutti i dati raccolti. Tutti i campioni catalogati. {c1} [{s1}] ha presentato diciassette osservazioni supplementari che il cliente non aveva richiesto. Il cliente le sta ancora leggendo.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha aperto i negoziati. {c2} [{s2}] li ha chiusi. L'accordo è stato firmato prima che arrivasse il catering. La delegazione Vorrk ha descritto l'equipaggio come "inaspettatamente professionale," che, per i Vorrk, è il massimo elogio disponibile.` },
+    { tags: [], min: 1, t: `Infiltrazione completata. Tutti gli obiettivi acquisiti. {c1} [{s1}] era dentro e fuori prima che la sicurezza della struttura avesse finito la rotazione del turno. Il cliente ha chiesto come. La risposta non era inclusa nel rapporto.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno recuperato il 94% degli asset elencati dal relitto. L'altro 6% è stato recuperato comunque. Il cliente non lo aveva chiesto. {c2} [{s2}] lo ha descritto come "riordinare."` },
+    { tags: [], min: 2, t: `Obiettivo localizzato. Obiettivo neutralizzato. {c1} [{s1}] ha gestito l'avvicinamento mentre {c2} [{s2}] ha gestito tutto ciò che è venuto dopo. L'Egemonia Thek ha pagato il bonus per intero senza richiedere una ricevuta dettagliata.` },
+    { tags: [], min: 2, t: `Contatto stabilito. Comunicazione raggiunta. {c1} [{s1}] ha effettuato la trasmissione iniziale mentre {c2} [{s2}] stava nelle vicinanze con un'aria non minacciosa, il che ha aiutato. La specie precedentemente sconosciuta ha richiesto una visita di follow-up. La richiesta è stata inoltrata all'agenzia. È in attesa.` },
+    { tags: [], min: 2, t: `Tutti gli obiettivi atmosferici raggiunti in anticipo rispetto ai tempi previsti. {c1} [{s1}] ha gestito i sistemi primari mentre {c2} [{s2}] gestiva l'array secondario. Il pianeta è ora tecnicamente abitabile. Nessuno si è ancora trasferito lì, il che è considerato normale.` },
+  ],
+  success: [
+    { tags: [], min: 1, t: `Missione completata. {c1} [{s1}] ha compilato le pratiche burocratiche. Erano accurate. Il cliente ha pagato senza reclami. Questo è considerato un buon risultato.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha guidato l'operazione. {c2} [{s2}] ha contribuito in modo significativo. Non tutto è andato secondo i piani, ma abbastanza sì. Il cliente non ha dato seguito, il che è il risultato preferito.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno completato tutti gli obiettivi primari. Alcuni secondari sono caduti, ma nessuno li ha inclusi nel rapporto finale. La missione è registrata come un successo.` },
+    { tags: [], min: 2, t: `C'è stato un incidente durante il transito. È stato risolto. {c1} [{s1}] lo ha gestito. {c2} [{s2}] ha aiutato. Il cliente ha ricevuto una missione completata ed è stato informato che l'incidente è classificato.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha condotto questa missione con personale ridotto. I compiti sono stati completati. La tempistica è slittata. Il cliente ha notato lo slittamento ma era soddisfatto del risultato. {c1} [{s1}] ha inviato una richiesta di "un equipaggio la prossima volta."` },
+    { tags: [], min: 2, t: `Due membri, più lavoro del solito. {c1} [{s1}] e {c2} [{s2}] si sono coperti a vicenda per tutta la durata. Hanno avuto successo. Nessuno dei due discuterà i dettagli.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] non si sono parlati dopo la terza ora. La missione è stata completata in silenzio. Gli obiettivi sono stati raggiunti. L'agenzia ha raccomandato una "revisione della compatibilità dell'equipaggio." Nessuno ne ha programmata una.` },
+    { tags: [], min: 3, t: `Ci sono stati tre disaccordi documentati tra {c1} [{s1}] e {c2} [{s2}]. {c3} [{s3}] si è tenuto fuori. La missione è riuscita nonostante questo, o forse grazie alla tensione competitiva. Il debriefing è stato imbarazzante.` },
+    { tags: ['veteran'], min: 1, t: `L'esperienza di {c1} [{s1}] in questo campo era visibile dalla prima ora. L'operazione si è mossa con una precisione che il resto dell'equipaggio ha alla fine eguagliato. Il cliente ha segnalato il risultato come "superiore alle aspettative di base."` },
+    { tags: ['veteran'], min: 2, t: `{c2} [{s2}] ha deferreduto all'esperienza di {c1} [{s1}] per tutta l'operazione. È stata la scelta corretta. Gli obiettivi sono stati raggiunti in ordine. Il cliente ha pagato senza negoziare.` },
+    { tags: [], min: 2, t: `La missione ha incontrato resistenza inaspettata a metà strada. {c1} [{s1}] la stava gestendo. Poi è arrivato {c2} [{s2}]. Poi era gestita. Al cliente è stato detto che la resistenza "si è dispersa." Questo è tecnicamente vero.` },
+    { tags: ['cheesponge'], min: 3, t: `{c1} [{s1}] e {c2} [{s2}] avevano un punto di attrito il secondo giorno. {c3} [{s3}] si è mosso tra di loro. L'attrito si è dissipato. Il Cheesponge è poi tornato alla sua posizione e non ha riconosciuto ciò che aveva fatto.` },
+    { tags: [], min: 2, t: `Scontro riuscito. {c1} [{s1}] ha guidato la breccia. {c2} [{s2}] ha coperto l'estrazione. C'erano più ostili di quanto suggerisse il briefing. È sempre così. Obiettivi raggiunti.` },
+    { tags: [], min: 2, t: `Dati raccolti. Alcuni metodi di raccolta erano non ortodossi. {c1} [{s1}] li ha descritti come "adattativi." {c2} [{s2}] li ha descritti come "allarmanti." Il cliente ha ricevuto i dati e non ha chiesto chiarimenti.` },
+    { tags: [], min: 2, t: `Negoziati conclusi. La delegazione Crassoviana è uscita due volte. {c1} [{s1}] li ha riportati entrambe le volte. {c2} [{s2}] non ha parlato, il che i Crassoviani hanno interpretato come gravitas. Ha funzionato.` },
+    { tags: [], min: 2, t: `Obiettivo recuperato. {c1} [{s1}] li ha localizzati. {c2} [{s2}] ha garantito l'estrazione. L'obiettivo era illeso ma aveva forti opinioni sulla tempistica del salvataggio. Il loro feedback è stato annotato e inserito in un file separato.` },
+    { tags: [], min: 2, t: `Carico consegnato. {c1} [{s1}] ha gestito il percorso mentre {c2} [{s2}] gestiva i tre checkpoint non menzionati nel briefing. Nessun carico è stato ispezionato. Questo è descritto come "buona fortuna" nel registro ufficiale.` },
+    { tags: [], min: 2, t: `Conformità raggiunta. {c1} [{s1}] e {c2} [{s2}] hanno preso contatto con la parte non conforme. La parte non conforme è ora conforme. Nessuna elaborazione è inclusa in questo rapporto su richiesta del cliente.` },
+    { tags: [], min: 2, t: `VIP consegnato in sicurezza. Ci sono stati due tentativi. {c1} [{s1}] ha neutralizzato il primo. {c2} [{s2}] ha neutralizzato il secondo. Il VIP ha descritto il viaggio come "inutilmente movimentato" e ha richiesto un'agenzia diversa la prossima volta. Il cliente ha pagato per intero comunque.` },
+    { tags: [], min: 3, t: `Insediamento iniziale stabilito. {c1} [{s1}] ha gestito la selezione del sito. {c2} [{s2}] e {c3} [{s3}] hanno gestito la logistica. La colonia è valutata come vitale. Un'unità prefabbricata è andata persa a causa di quello che il registro descrive come "un malinteso con la fauna locale."` },
+    { tags: [], min: 2, t: `Asset estratto. {c1} [{s1}] ha navigato tre livelli di sicurezza senza attivarne nessuno. Il quarto è stato attivato. Era comunque a posto. Il cliente ha ricevuto l'asset e non ha chiesto del quarto livello.` },
+    { tags: [], min: 2, t: `Obiettivi atmosferici raggiunti. {c1} [{s1}] ha gestito i sistemi primari. {c2} [{s2}] ha riparato l'array secondario dopo che aveva sviluppato quello che il registro chiama "un caratteraccio." Il pianeta è ora valutato come abitabile. Se qualcuno vorrà viverci rimane poco chiaro.` },
+    { tags: [], min: 2, t: `Asset primari recuperati. {c1} [{s1}] ha guidato le operazioni di recupero. {c2} [{s2}] ha rattoppato la breccia abbastanza a lungo da estrarre il carico. Non tutto il manifesto è stato recuperato. Ciò che non è stato recuperato non è più strutturalmente accessibile. Il cliente è stato informato.` },
+  ],
+  marginal: [
+    { tags: [], min: 1, t: `{c1} [{s1}] ha compilato il rapporto della missione. La parola "tecnicamente" appare quattro volte. La missione è, tecnicamente, un successo.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno completato la missione. Non comodamente. Il cliente ha accettato il risultato notando di aspettarsi di più. Questo è stato riconosciuto e declassato.` },
+    { tags: [], min: 3, t: `L'operazione ha superato la soglia di successo per un margine che l'agenzia preferisce non pubblicare. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno contribuito ciascuno per quello che potevano. Era abbastanza. A malapena.` },
+    { tags: [], min: 1, t: `La missione è riuscita. {c1} [{s1}] vorrebbe che fosse annotato che le circostanze erano difficili. Le circostanze sono state annotate. La paga rimane la stessa.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha condotto questo da solo per la maggior parte. L'obiettivo è stato raggiunto. Il registro della missione è scarso nelle sezioni che sarebbero più interessanti da leggere. Il cliente ha accettato il risultato.` },
+    { tags: [], min: 2, t: `Due membri per un lavoro che ne voleva di più. {c1} [{s1}] e {c2} [{s2}] lo hanno coperto. Uno di loro era in due posti contemporaneamente per circa quaranta minuti. Questo non è nel registro ufficiale. La missione conta come completata.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha completato la missione. {c2} [{s2}] ha anche completato la missione. Hanno completato parti diverse della stessa missione in modo completamente indipendente, in parallelo, senza parlare. Ha funzionato. Il cliente non lo sa.` },
+    { tags: [], min: 3, t: `A un certo punto {c1} [{s1}] e {c2} [{s2}] stavano perseguendo lo stesso obiettivo da direzioni opposte. {c3} [{s3}] ne ha reindirizzato uno. La missione è ancora riuscita. Il debriefing è stato descritto come "vivace."` },
+    { tags: [], min: 2, t: `I requisiti specifici del cliente sono stati soddisfatti. {c1} [{s1}] lo ha confermato per iscritto. {c2} [{s2}] lo ha confermato verbalmente. La missione è andata avanti comunque. Il rappresentante della Sindacato Muuvari ha accettato il risultato e se ne è andato senza ulteriori commenti.` },
+    { tags: [], min: 2, t: `La missione stava andando storta. Poi {c1} [{s1}] ha preso una decisione che non è completamente documentata nel registro. La missione non stava più andando storta. {c2} [{s2}] ha rifiutato di essere sottoposto a debriefing sui dettagli.` },
+    { tags: [], min: 2, t: `Obiettivi di assalto raggiunti. Non pulitamente. {c1} [{s1}] ha guidato la breccia. {c2} [{s2}] ha tenuto la retroguardia. C'è stato un momento in cui entrambi tenevano la retroguardia e nessuno guidava nulla. Si è risolto da solo. Gli obiettivi sono elencati come completati.` },
+    { tags: [], min: 2, t: `Contatto stabilito. Comunicazione tentata. {c1} [{s1}] ha trasmesso il pacchetto di saluto standard mentre {c2} [{s2}] era in attesa. La specie ha risposto. La loro risposta era ambigua. La missione è classificata come riuscita in attesa della traduzione dell'ambiguità.` },
+    { tags: [], min: 2, t: `Obiettivo recuperato. {c1} [{s1}] li ha trovati. {c2} [{s2}] li ha portati fuori. Ci ha voluto più tempo del previsto e l'obiettivo ha perso uno stivale da qualche parte nel processo. Sono vivi. Lo stivale non è recuperabile.` },
+    { tags: [], min: 2, t: `Obiettivo neutralizzato. {c1} [{s1}] ha tracciato l'obiettivo. {c2} [{s2}] ha chiuso il gap. L'approccio era improvvisato. L'Egemonia Thek ha ricevuto la conferma e ha pagato il tasso concordato senza il bonus di performance.` },
+    { tags: [], min: 3, t: `Evacuazione raggiunta. Non tutta, e non secondo il programma originale, ma la popolazione è fuori dal pianeta. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno gestito zone separate. La zona di {c3} [{s3}] era quella difficile. {c3} [{s3}] ha richiesto un incarico diverso la prossima volta.` },
+    { tags: [], min: 3, t: `Il furto è riuscito. L'uscita era non programmata. {c1} [{s1}] aveva l'asset. {c2} [{s2}] aveva il percorso. {c3} [{s3}] aveva un percorso diverso. Hanno usato il percorso di {c3} [{s3}]. L'asset è arrivato. La Sindacato ha pagato. Nessuno ha chiesto dell'altro percorso.` },
+  ],
+  near_miss: [
+    { tags: [], min: 1, t: `{c1} [{s1}] era vicino. Il registro della missione lo conferma. Il cliente non considera la vicinanza un risultato fatturabile. La fattura è stata modificata di conseguenza.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno completato la maggior parte della missione. La maggior parte non era sufficiente. Il rappresentante del cliente ha espresso delusione in un linguaggio misurato e professionale. Era in qualche modo peggio delle urla.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] sono arrivati a portata dell'obiettivo e non sono riusciti a chiuderlo. Il debriefing ha identificato quattro punti decisionali in cui i risultati avrebbero potuto essere diversi. Nessuna di quelle decisioni è stata presa.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha tentato questo con personale ridotto ed era vicino. La missione è fallita. L'agenzia lo ha annotato nella revisione del personale che nessuno leggerà.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno esaurito la capacità prima di esaurire gli obiettivi. L'ultimo compito non è stato completato. Il cliente è stato informato. {c1} [{s1}] ha presentato una nota indicando che più personale avrebbe aiutato.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] non erano d'accordo sull'approccio per l'ultimo terzo della missione. Nessun approccio è stato completato. Il cliente ha ricevuto un risultato parziale e una fattura che sta contestando.` },
+    { tags: [], min: 3, t: `{c1} [{s1}] è andato da una parte. {c2} [{s2}] è andato dall'altra. {c3} [{s3}] è rimasto fermo e ha presentato un reclamo. Gli obiettivi non sono stati raggiunti. Tutti e tre i rapporti descrivono il fallimento come colpa dell'altro.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno lavorato bene insieme. Questo è annotato. Hanno lavorato bene insieme verso l'obiettivo sbagliato per le ultime due ore. La missione è fallita. Armoniosamente.` },
+    { tags: [], min: 2, t: `L'operazione stava progredendo. Poi {c1} [{s1}] ha preso una decisione. La decisione non era quella necessaria. {c2} [{s2}] non ha spiegato perché non sia intervenuto. La missione è fallita. Il Drakhen non ha presentato alcun rapporto.` },
+    { tags: [], min: 2, t: `I requisiti specifici del cliente sono stati soddisfatti. La missione stessa no. Il Gruppo Interstellare Vorrk ha confermato la ricezione della configurazione del personale richiesta e sta fatturando separatamente per gli obiettivi non raggiunti.` },
+    { tags: [], min: 2, t: `La breccia è riuscita. Gli obiettivi oltre la breccia no. {c1} [{s1}] ha raggiunto la zona obiettivo. {c2} [{s2}] ha tenuto il perimetro. L'obiettivo non era nella zona obiettivo. Questo non era nel briefing.` },
+    { tags: [], min: 2, t: `I negoziati sono continuati per undici ore. {c1} [{s1}] ha mantenuto la posizione. {c2} [{s2}] ha mantenuto la calma. Un accordo non è stato raggiunto. L'altra parte ha richiesto una sessione riprogrammata con personale diverso.` },
+    { tags: [], min: 2, t: `L'obiettivo è stato localizzato. L'estrazione è stata tentata. {c1} [{s1}] ha raggiunto l'obiettivo. {c2} [{s2}] ha gestito il percorso. Il percorso si è chiuso prima che l'estrazione fosse completa. L'obiettivo è ora nello stesso posto, ma sa che qualcuno ha provato.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha raggiunto l'obiettivo. L'obiettivo era stato spostato. La nuova posizione è stata identificata tre ore dopo la chiusura della finestra di estrazione. Il cliente è stato avvisato. Il cliente non è contento.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] sono entrati nel caveau. Il caveau conteneva un secondo caveau. Il secondo caveau aveva un codice diverso. Il tempo è scaduto durante il tentativo del secondo codice. Il primo caveau è ancora accessibile. Questo non è stato utile.` },
+  ],
+  failed: [
+    { tags: [], min: 1, t: `{c1} [{s1}] è tornato dalla missione. La missione non è tornata con lui, in nessun senso significativo. Il cliente è stato avvisato. La multa è stata applicata. {c1} [{s1}] ha presentato un rapporto post-missione di due parole. È stato archiviato.` },
+    { tags: [], min: 2, t: `La missione non è stata completata. {c1} [{s1}] e {c2} [{s2}] hanno ciascuno presentato rapporti che spiegano perché fosse colpa dell'altro. Entrambi i rapporti sono in esame. Nessuno dei due è convincente.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno fallito la missione. Nel debriefing, tutti e tre erano d'accordo sulla sequenza degli eventi e in disaccordo su chi fosse responsabile di ciascuno di essi. La revisione è in corso.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno smesso di cooperare prima della metà. La missione è continuata comunque. Non è riuscita. Il registro contiene diciassette voci che consistono interamente nella parola "disaccordo."` },
+    { tags: [], min: 3, t: `L'equipaggio si è fratturato il secondo giorno. {c1} [{s1}] ha guidato una fazione. {c2} [{s2}] ne ha guidata un'altra. {c3} [{s3}] ha tentato la mediazione ed è stato ignorato da entrambi. La missione è fallita. Le fazioni rimangono tecnicamente irrisolte.` },
+    { tags: [], min: 4, t: `Entro il terzo giorno, {c1} [{s1}] e {c2} [{s2}] non si parlavano. {c3} [{s3}] e {c4} [{s4}] avevano formato un gruppo di lavoro separato. L'obiettivo della missione non è stato completato da nessuno. Tutti e quattro hanno presentato rapporti di fallimento individuali. Ognuno è diverso.` },
+    { tags: [], min: 1, t: `Un membro dell'equipaggio. Non abbastanza. {c1} [{s1}] ha tentato tutto e ne ha completato una parte. La parte non era quella importante. L'agenzia ha una nuova raccomandazione permanente riguardo ai requisiti minimi di equipaggio.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno diviso un lavoro da tre persone. Il terzo del lavoro che nessuno ha preso è diventato il terzo critico. La missione è fallita nella sezione scoperta. Il rapporto sul personale raccomanda più personale.` },
+    { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] ha eseguito come previsto. {c2} [{s2}] ha eseguito meglio del previsto, poi ha fatto una scelta che ha invalidato la prestazione precedente. Il rapporto post-missione del Drakhen è un singolo paragrafo. Al dipartimento legale è stato chiesto di esaminarlo.` },
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] aveva assorbito la tensione inter-equipaggio. Questo ha aiutato per un po'. Poi la tensione è tornata in una forma diversa. {c2} [{s2}] ha presentato un reclamo formale sul coinvolgimento del Cheesponge. Il reclamo è in elaborazione.` },
+    { tags: [], min: 2, t: `I requisiti di equipaggio del cliente sono stati soddisfatti integralmente. La missione stessa no. L'Ufficio Logistico Crassoviano ha confermato che le specie corrette erano presenti per il risultato scorretto. Hanno emesso una richiesta di rimborso parziale.` },
+    { tags: [], min: 2, t: `Il team d'assalto ha violato il perimetro. Il perimetro era quello sbagliato. {c1} [{s1}] lo ha identificato al minuto quaranta. {c2} [{s2}] lo ha confermato. Erano dal lato sbagliato della struttura. L'estrazione è seguita poco dopo.` },
+    { tags: [], min: 3, t: `{c1} [{s1}] ha guidato l'assalto. {c2} [{s2}] e {c3} [{s3}] hanno supportato. La resistenza era più pesante di quanto indicasse il briefing. L'obiettivo non è stato raggiunto. La valutazione post-missione di {c1} [{s1}] consiste in una frase e un diagramma. Il diagramma è allarmante.` },
+    { tags: [], min: 2, t: `La raccolta dati è iniziata. Il soggetto della ricerca ha poi fatto qualcosa che il briefing descriveva come "bassa probabilità." {c1} [{s1}] ha tentato di adattare la metodologia. {c2} [{s2}] ha tentato di contenere il soggetto. Nessuno dei due ha funzionato. I dati sono andati persi.` },
+    { tags: [], min: 2, t: `I negoziati si sono aperti. {c1} [{s1}] ha consegnato la dichiarazione di apertura. {c2} [{s2}] era presente. La delegazione avversaria ha lasciato la sala al minuto quaranta. Il motivo addotto era "incompatibilità culturale." L'agenzia sta indagando su cosa significhi.` },
+    { tags: [], min: 2, t: `Il carico non ha raggiunto la destinazione. {c1} [{s1}] ha gestito il percorso principale. {c2} [{s2}] ha gestito l'interferenza. L'interferenza era insufficiente. Il carico è stato ispezionato. Il contenuto del carico è ora una questione separata per un'agenzia separata.` },
+    { tags: [], min: 2, t: `L'obiettivo è stato localizzato. {c1} [{s1}] ha confermato il contatto visivo. {c2} [{s2}] ha confermato il percorso di avvicinamento. L'obiettivo se ne è andato prima che l'avvicinamento fosse completo. L'Egemonia Thek ha espresso "continua fiducia nel successo eventuale dell'agenzia." Non è così che funziona il bonus.` },
+    { tags: [], min: 2, t: `Il VIP non è stato danneggiato. Il VIP è stato, tuttavia, trasferito in una destinazione non programmata da parti sconosciute. {c1} [{s1}] e {c2} [{s2}] sono attualmente elencati come "in inseguimento." Il cliente è stato avvisato. Il cliente ha anche avvisato il suo avvocato.` },
+    { tags: [], min: 2, t: `Elaborazione atmosferica avviata. L'atmosfera è stata elaborata nella direzione sbagliata. {c1} [{s1}] ha eseguito diagnostica. {c2} [{s2}] ha tentato un override manuale. Il pianeta è ora leggermente meno abitabile di prima dell'inizio della missione. Il cliente è stato informato.` },
+  ],
+  catastrophic: [
+    { tags: [], min: 1, t: `{c1} [{s1}] è tornato. La nave è tornata. Tutto il resto della missione è o mancante dal registro, o oscurato dall'agenzia, o semplicemente non discusso. Il reclamo del cliente è stato inoltrato al dipartimento competente.` },
+    { tags: [], min: 2, t: `Il registro della missione per questa operazione è lungo sette pagine. Le pagine da due a sei sono in bianco. {c1} [{s1}] e {c2} [{s2}] sono stati messi in revisione amministrativa in attesa di una spiegazione. Nessuno ne ha fornita una.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] erano sulla stessa nave e sembrano aver avuto missioni completamente separate. Nessuna delle missioni era quella corretta. Il cliente ha presentato tre reclami, apparentemente uno per membro dell'equipaggio.` },
+    { tags: [], min: 1, t: `L'agenzia ha ricevuto un avviso formale dall'Autorità di Commercio Interstellare a seguito di questa operazione. A {c1} [{s1}] è stato chiesto di fornire una dichiarazione. {c1} [{s1}] ha rifiutato su consiglio del suo legale.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] erano in disaccordo dal momento della partenza. Entro il secondo giorno la nave era stata divisa in zone. Entro il terzo giorno le zone avevano nomi. La missione non è stata tentata. La nave è tornata con due bandiere che l'agenzia non aveva fornito.` },
+    { tags: [], min: 3, t: `Quella che era iniziata come un'operazione standard è terminata con {c1} [{s1}] barricato nella sala macchine, {c2} [{s2}] che presentava un reclamo di 40 pagine in tempo reale, e {c3} [{s3}] che tentava di mediare tramite nota scritta infilata sotto la porta della sala macchine. L'obiettivo non è mai stato raggiunto.` },
+    { tags: [], min: 4, t: `Il debriefing della missione ha richiesto stanze separate. {c1} [{s1}] rifiuta di stare nello stesso edificio di {c2} [{s2}]. {c3} [{s3}] e {c4} [{s4}] hanno richiesto la riassegnazione a sistemi stellari diversi. L'obiettivo è stato visitato brevemente il primo giorno prima che tutto si sgretolasse.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] è stato mandato da solo. La missione richiedeva di più. {c1} [{s1}] ha raggiunto il sito, ha valutato la situazione, ha trasmesso la parola "no," e ha avviato i protocolli di rientro. Questo è l'intero registro della missione.` },
+    { tags: [], min: 2, t: `Non era previsto che ci fossero ostacoli a questo punto della missione. Ce n'erano sette. {c1} [{s1}] ha gestito due. {c2} [{s2}] ha gestito uno. I restanti quattro hanno gestito la missione.` },
+    { tags: [], min: 2, t: `La relazione post-missione di {c1} [{s1}] è lunga due pagine. La prima descrive l'approccio. La seconda è una richiesta formale di trasferimento. {c2} [{s2}] ha presentato qualcosa di simile. L'agenzia sta cercando di determinare se esistesse ancora una missione a un certo punto.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno concordato su esattamente una cosa durante la missione: che andasse male. Erano in disaccordo su tutto il resto, incluso il modo in cui andasse male. Il registro è di conseguenza incoerente.` },
+    { tags: [], min: 1, t: `L'agenzia ha ricevuto tredici comunicazioni separate dal cliente nel corso di questa missione. Le prime dodici erano richieste di aggiornamento. La tredicesima era dal loro avvocato.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] ha preso la decisione sbagliata. {c2} [{s2}] ha supportato la decisione sbagliata. Questo è tutto quello che c'è da dire. La fattura è stata rivista verso il basso e l'agenzia sta valutando le sue opzioni.` },
+    { tags: [], min: 2, t: `Il registro mostra che la missione ha avuto un momento promettente nella prima ora. Successivamente il registro diventa irregolare, poi frammentato, poi si interrompe del tutto per quattro ore. {c1} [{s1}] e {c2} [{s2}] non hanno spiegato le quattro ore.` },
+    { tags: [], min: 3, t: `Tre crew, tre versioni diverse di cosa sia successo. Nessuna di esse è compatibile con le prove fisiche. {c1} [{s1}] ha chiamato le versioni degli altri due "fiction." {c2} [{s2}] ha chiamato quella di {c1} [{s1}] "wishful thinking." {c3} [{s3}] non ha risposto alle domande.` },
+    { tags: [], min: 2, t: `La nave si è allontanata con le istruzioni sbagliate, ha ricevuto le istruzioni corrette a metà strada, ha fatto inversione, ha ricevuto le istruzioni sbagliate di nuovo, e si è infine messa a parcheggio in orbita aspettando chiarimenti. {c1} [{s1}] ha descritto questo come "una questione di comunicazione." {c2} [{s2}] non ha commentato.` },
+    { tags: [], min: 2, t: `L'obiettivo non è mai stato raggiunto. L'obiettivo non è stato perso neanche, nel senso che nessuno è mai andato abbastanza lontano da perderlo. {c1} [{s1}] e {c2} [{s2}] hanno entrambi certificato di essere stati pronti a procedere. Nessuno ha proceduto.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha presentato il rapporto post-missione in tempo. Il rapporto era preciso. Descriveva accuratamente un fallimento completo e documentato. L'agenzia apprezza la tempestività. Non cambia nulla riguardo al fallimento.` },
+    { tags: [], min: 3, t: `Il cliente ha richiesto un'indagine. L'agenzia ha avviato un'indagine. L'indagine ha rilevato che {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno preso decisioni che erano individualmente difendibili e collettivamente disastrose. Il cliente non ha trovato questo confortante.` },
+    { tags: [], min: 2, t: `Il rapporto finale occupa quattordici pagine. Undici di esse riguardano la lista di ciò che è andato storto. Due riguardano il perché. L'ultima è una nota di {c1} [{s1}] che afferma che {c2} [{s2}] avrebbe dovuto gestire l'ultima parte. {c2} [{s2}] contesta questo.` },
+    { tags: [], min: 2, t: `Ci sono stati quattro punti in cui la missione avrebbe potuto essere salvata. {c1} [{s1}] ha gestito tre di essi in modo errato. {c2} [{s2}] ha gestito il quarto. Il quarto era il più importante. Non è stato gestito bene.` },
+    { tags: [], min: 1, t: `{c1} [{s1}] ha fatto del suo meglio. Questo è annotato nel suo fascicolo personale. Questo non ha aiutato la missione, ma è annotato.` },
+    { tags: [], min: 2, t: `Il cliente ha chiesto cosa si può fare diversamente la prossima volta. L'agenzia ha preparato un elenco. È lungo. Il primo punto è "assumere qualcun altro." {c1} [{s1}] e {c2} [{s2}] sono stati informati in modo professionale.` },
+  ],
+};
 
 function getDebriefStory(outcome, missionType, modifiers, hired, conflictLines) {
   const crew = hired.filter(a => !a.isSaboteur);
@@ -2652,7 +2796,8 @@ function getDebriefStory(outcome, missionType, modifiers, hired, conflictLines) 
     return s.replace(/\s{2,}/g, ' ').trim();
   };
 
-  const pool = STORY_TEMPLATES[outcome] || [];
+  const templates = LANG === 'it' ? STORY_TEMPLATES_IT : STORY_TEMPLATES;
+  const pool = templates[outcome] || [];
   const crewCount = crew.length;
   const mType = missionType ? missionType.toUpperCase() : '';
   const hasConflict = modifiers.includes('conflict');
@@ -2713,6 +2858,23 @@ const CONFLICT_SUFFIXES_SINGLE = [
   (n1,s1,n2,s2) => `The compatibility assessment for ${n1} [${s1}] and ${n2} [${s2}] was not run before deployment. It has since been run. The results have been filed under "preventable."`,
 ];
 
+const CONFLICT_SUFFIXES_SINGLE_IT = [
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] hanno trascorso buona parte della missione a ostacolarsi a vicenda. Questo è stato notato.`,
+  (n1,s1,n2,s2) => `La principale fonte di attrito era ${n1} [${s1}] e ${n2} [${s2}], il cui rapporto di lavoro potrebbe essere definito funzionale con generosità, e inaccettabile con precisione.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] non erano d'accordo sull'approccio fin dal primo giorno. Hanno continuato a non esserlo. La missione ne ha subito le conseguenze.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] si è rifiutato di cooperare con ${n2} [${s2}] per ragioni apparentemente ovvie a entrambi e a nessun altro.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] erano individualmente competenti e congiuntamente catastrofici.`,
+  (n1,s1,n2,s2) => `Il principale problema erano ${n1} [${s1}] e ${n2} [${s2}]. Esiste un registro scritto di questo. Entrambi ne sono stati informati.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] hanno registrato diciassette incidenti separati l'uno con l'altro. All'agenzia è stato chiesto di non assumerli insieme di nuovo.`,
+  (n1,s1,n2,s2) => `L'attrito tra ${n1} [${s1}] e ${n2} [${s2}] non era inatteso. Era tuttavia costante. Ha influenzato i risultati in modi che il cliente ha notato e che l'agenzia sta ancora documentando.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] ha descritto ${n2} [${s2}] come "un problema strutturale." ${n2} [${s2}] ha descritto ${n1} [${s1}] con termini che hanno richiesto traduzione. Entrambi erano parzialmente corretti.`,
+  (n1,s1,n2,s2) => `La missione sarebbe andata diversamente senza ${n1} [${s1}] e ${n2} [${s2}] nello stesso compartimento. Questa osservazione è stata inclusa nelle note di assunzione.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] hanno mantenuto quella che il registro dell'equipaggio descrive come "un'ostilità produttiva." Non lo era.`,
+  (n1,s1,n2,s2) => `Tutto ciò che ${n2} [${s2}] completava, ${n1} [${s1}] trovava un modo per complicarlo. Valeva anche il contrario. La missione è andata avanti comunque, con efficienza ridotta.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] e ${n2} [${s2}] non si sono scambiati una singola comunicazione cooperativa durante l'intera missione. Questo è registrato. Non è un record di cui l'agenzia vada fiera.`,
+  (n1,s1,n2,s2) => `La valutazione di compatibilità per ${n1} [${s1}] e ${n2} [${s2}] non è stata eseguita prima del dispiegamento. Da allora è stata eseguita. I risultati sono stati archiviati sotto "prevenibile."`,
+];
+
 const CONFLICT_SUFFIXES_DOUBLE = [
   (n1,s1,n2,s2,n3,s3,n4,s4) => `The most damage came from ${n1} [${s1}] and ${n2} [${s2}], followed by ${n3} [${s3}] and ${n4} [${s4}], who created a secondary problem before the first one was resolved.`,
   (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] vs ${n2} [${s2}] was the main event. ${n3} [${s3}] and ${n4} [${s4}] provided additional complications the mission did not need.`,
@@ -2728,11 +2890,33 @@ const CONFLICT_SUFFIXES_DOUBLE = [
   (n1,s1,n2,s2,n3,s3,n4,s4) => `The mission ran with two unresolved interpersonal conflicts active simultaneously. ${n1} [${s1}] vs ${n2} [${s2}] and ${n3} [${s3}] vs ${n4} [${s4}]. One was louder. Both were expensive.`,
 ];
 
+const CONFLICT_SUFFIXES_DOUBLE_IT = [
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Il danno maggiore è venuto da ${n1} [${s1}] e ${n2} [${s2}], seguiti da ${n3} [${s3}] e ${n4} [${s4}], che hanno creato un problema secondario prima che il primo fosse risolto.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] contro ${n2} [${s2}] era il problema principale. ${n3} [${s3}] e ${n4} [${s4}] hanno aggiunto complicazioni di cui la missione non aveva bisogno.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] e ${n2} [${s2}] erano il punto di attrito principale. ${n3} [${s3}] e ${n4} [${s4}] hanno apparentemente preso questo come un invito a iniziare il proprio.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Due conflitti separati si sono svolti in parallelo: ${n1} [${s1}] contro ${n2} [${s2}], e ${n3} [${s3}] contro ${n4} [${s4}]. Nessuno si è risolto prima della fine della missione.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] e ${n2} [${s2}] avevano una storia. Anche ${n3} [${s3}] e ${n4} [${s4}]. La missione non aveva spazio per nessuna delle due.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Il registro dell'equipaggio contiene voci di ${n1} [${s1}], ${n2} [${s2}], ${n3} [${s3}] e ${n4} [${s4}] che si contraddicono a tal punto che l'agenzia ha smesso di tentare di riconciliarle.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] e ${n2} [${s2}] hanno ridotto il rendimento nella prima metà. ${n3} [${s3}] e ${n4} [${s4}] hanno gestito la seconda. L'equipaggio ha funzionato a turni, il che non è il modo in cui gli equipaggi dovrebbero funzionare.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Le due abbinazioni peggiori erano ${n1} [${s1}] con ${n2} [${s2}], e ${n3} [${s3}] con ${n4} [${s4}]. Entrambe erano evitabili. Nessuna è stata evitata.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] e ${n2} [${s2}] hanno presentato reclami separati il primo giorno. ${n3} [${s3}] e ${n4} [${s4}] ne hanno presentato uno congiunto il secondo. L'agenzia li sta leggendo in ordine di gravità.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `L'attrito tra ${n1} [${s1}] e ${n2} [${s2}] era previsto e pianificato. Quello tra ${n3} [${s3}] e ${n4} [${s4}] non lo era. Il secondo è costato di più.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n3} [${s3}] e ${n4} [${s4}] avrebbero potuto essere gestiti. Anche ${n1} [${s1}] e ${n2} [${s2}] avrebbero potuto essere gestiti. Nessuno li ha gestiti.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `La missione si è svolta con due conflitti interpersonali irrisolti attivi contemporaneamente. ${n1} [${s1}] contro ${n2} [${s2}] e ${n3} [${s3}] contro ${n4} [${s4}]. Uno era più rumoroso. Entrambi costosi.`,
+];
+
 const CONFLICT_SUFFIXES_CHEESPONGE = [
   (nc,nk,sk) => `${nc} [Cheesponge] absorbed every escalation between ${nk} [${sk}] and the rest of the crew without comment. It is unclear whether ${nc} understood what it was doing. The sensor log suggests it did.`,
   (nc,nk,sk) => `${nk} [${sk}] attempted to intimidate ${nc} [Cheesponge] on multiple occasions. ${nc} absorbed all of them. ${nk} has not raised the subject again.`,
   (nc,nk,sk) => `The ${sk} was a problem. ${nc} [Cheesponge] was, apparently, the solution. Nobody asked ${nc} to do this. ${nc} did it anyway. ${nk} [${sk}] filed no complaint, which is the most unsettling part.`,
   (nc,nk,sk) => `${nc} [Cheesponge] positioned itself between ${nk} [${sk}] and every potential incident with a consistency that could only be described as deliberate. The Drakhen never escalated. This was not an accident.`,
+];
+
+const CONFLICT_SUFFIXES_CHEESPONGE_IT = [
+  (nc,nk,sk) => `${nc} [Cheesponge] ha assorbito ogni escalation tra ${nk} [${sk}] e il resto dell'equipaggio senza commenti. Non è chiaro se ${nc} capisse quello che stava facendo. Il registro dei sensori suggerisce di sì.`,
+  (nc,nk,sk) => `${nk} [${sk}] ha tentato di intimidire ${nc} [Cheesponge] in più occasioni. ${nc} le ha assorbite tutte. ${nk} non ha più sollevato l'argomento.`,
+  (nc,nk,sk) => `Lo ${sk} era un problema. ${nc} [Cheesponge] era, apparentemente, la soluzione. Nessuno aveva chiesto a ${nc} di farlo. L'ha fatto comunque. ${nk} [${sk}] non ha presentato reclami, il che è la parte più inquietante.`,
+  (nc,nk,sk) => `${nc} [Cheesponge] si è posizionato tra ${nk} [${sk}] e ogni potenziale incidente con una costanza che poteva essere descritta solo come deliberata. Il Drakhen non ha mai escalato. Non è stato un caso.`,
 ];
 
 function buildConflictSuffix(conflictLines) {
@@ -2741,27 +2925,31 @@ function buildConflictSuffix(conflictLines) {
   const absorbed = conflictLines.find(c => c.absorbed);
   const nonAbsorbed = conflictLines.filter(c => !c.absorbed).sort((a, b) => (b.penalty || 0) - (a.penalty || 0));
 
+  const CS_SINGLE = LANG === 'it' ? CONFLICT_SUFFIXES_SINGLE_IT : CONFLICT_SUFFIXES_SINGLE;
+  const CS_DOUBLE = LANG === 'it' ? CONFLICT_SUFFIXES_DOUBLE_IT : CONFLICT_SUFFIXES_DOUBLE;
+  const CS_CHEESE = LANG === 'it' ? CONFLICT_SUFFIXES_CHEESPONGE_IT : CONFLICT_SUFFIXES_CHEESPONGE;
+
   // If top conflict is absorbed Cheesponge/Drakhen and no worse regular conflicts, use cheesponge
   if (absorbed && (nonAbsorbed.length === 0 || (nonAbsorbed[0]?.penalty || 0) < 8)) {
     const nc = absorbed.nameA;
     const nk = absorbed.nameB;
     const sk = speciesName('Drakhen');
-    return ' ' + pickRandom(CONFLICT_SUFFIXES_CHEESPONGE)(nc, nk, sk);
+    return ' ' + pickRandom(CS_CHEESE)(nc, nk, sk);
   }
 
   const top = nonAbsorbed.slice(0, 2);
   if (top.length === 0) {
-    if (absorbed) return ' ' + pickRandom(CONFLICT_SUFFIXES_CHEESPONGE)(absorbed.nameA, absorbed.nameB, speciesName('Drakhen'));
+    if (absorbed) return ' ' + pickRandom(CS_CHEESE)(absorbed.nameA, absorbed.nameB, speciesName('Drakhen'));
     return '';
   }
 
   if (top.length === 1) {
     const c = top[0];
-    return ' ' + pickRandom(CONFLICT_SUFFIXES_SINGLE)(c.nameA, speciesName(c.raceA), c.nameB, speciesName(c.raceB));
+    return ' ' + pickRandom(CS_SINGLE)(c.nameA, speciesName(c.raceA), c.nameB, speciesName(c.raceB));
   }
 
   const c1 = top[0], c2 = top[1];
-  return ' ' + pickRandom(CONFLICT_SUFFIXES_DOUBLE)(
+  return ' ' + pickRandom(CS_DOUBLE)(
     c1.nameA, speciesName(c1.raceA), c1.nameB, speciesName(c1.raceB),
     c2.nameA, speciesName(c2.raceA), c2.nameB, speciesName(c2.raceB)
   );
@@ -4390,6 +4578,8 @@ function launchMission() {
           requestAnimationFrame(() => {
             const isClamped = textEl.scrollHeight > textEl.clientHeight + 2;
             moreEl.dataset.hasMore = isClamped ? '1' : '0';
+            moreEl.innerText = ' ' + t('showMore');
+            document.getElementById('res-story-seeless').innerText = ' ' + t('showLess');
             moreEl.style.display = isClamped ? 'inline' : 'none';
             smoothScroll();
           });
@@ -5266,6 +5456,7 @@ function openSlotSelect(mode) {
 function renderSaveSlots() {
   const L = LANG[currentLang];
   document.getElementById('slots-title').innerText = slotSelectMode === 'continue' ? L.continueCareer : L.startNewCareer;
+  document.getElementById('btn-slots-back-text').innerText = L.back;
   document.getElementById('btn-overwrite-confirm-text').innerText = L.overwriteConfirm;
   document.getElementById('btn-overwrite-cancel-text').innerText = L.overwriteCancel;
 
