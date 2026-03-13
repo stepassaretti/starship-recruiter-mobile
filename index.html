@@ -4314,7 +4314,7 @@ function launchMission() {
     const current = Math.floor(eased * targetScore);
     scoreEl.innerText = current + '%';
     if (current !== lastDisplayed) {
-      playSfx('typing', 0.4);
+      playSfx('score', 0.4);
       hapticTick();
     }
     lastDisplayed = current;
@@ -5068,6 +5068,7 @@ const SFX_FILES = {
   select_card:  'sound/select_card.m4a',
   unselect_card:'sound/unselect_card.m4a',
   typing:       'sound/typing.m4a',
+  score:        'sound/score.m4a',
   target:       'sound/target.m4a',
   menu_open:    'sound/menu_open.m4a',
   menu_close:   'sound/menu_close.m4a',
