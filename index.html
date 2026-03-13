@@ -1451,6 +1451,47 @@ body {
 .mandate-block-btn:active svg polygon { fill: #333; }
 .mandate-block-btn.bounce { animation: btnBounce 0.2s ease; }
 
+/* ── DEBRIEF STORY SCREEN ── */
+#debrief-story-screen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 401;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 100px 32px 100px;
+  cursor: pointer;
+}
+#debrief-story-screen.visible { display: flex; }
+#debrief-story-text {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #fff;
+  line-height: 1.5;
+  text-align: left;
+  max-width: 320px;
+  white-space: pre-wrap;
+  width: 100%;
+}
+#debrief-story-cursor {
+  display: inline-block;
+  width: 10px;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #fff;
+  animation: cursorBlink 0.5s step-end infinite;
+}
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+#debrief-story-btn {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+
 .result-overlay {
   position: fixed;
   inset: -50px 0 0 0;
@@ -1501,8 +1542,38 @@ body {
   font-weight: bold;
   text-align: center;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   text-transform: uppercase;
+}
+.result-story {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: #ccc;
+  line-height: 1.3;
+  text-align: left;
+  margin-bottom: 16px;
+  padding: 0;
+  width: 100%;
+}
+.result-story-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.result-story-text.expanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+.result-story-seemore,
+.result-story-seeless {
+  display: inline;
+  color: #888;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
 }
 
 /* Outcome rows table */
@@ -1792,12 +1863,26 @@ body {
 </div>
 
 <!-- RESULT OVERLAY -->
+<!-- DEBRIEF STORY SCREEN -->
+<div id="debrief-story-screen" onclick="skipDebriefStory()">
+  <div id="debrief-story-text"></div>
+  <div id="debrief-story-btn">
+    <button class="launch-btn-inverted" id="see-outcome-btn" onclick="event.stopPropagation(); showOutcomeScreen();">
+      <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
+      <span class="launch-btn-text-inv" id="see-outcome-btn-text">SEE OUTCOME</span>
+    </button>
+  </div>
+</div>
+
 <div class="result-overlay" id="result-overlay">
   <div class="result-inner">
-    <div class="result-title" id="res-title">DEBRIEFING</div>
+    <div class="result-title" id="res-title">MISSION REPORT</div>
     <div class="result-score" id="res-score">100%</div>
     <div class="result-msg" id="res-msg">SUCCESS</div>
     <div class="result-log" id="res-log"></div>
+    <div class="result-story" id="res-story" onclick="tapStory()">
+      <span class="result-story-text" id="res-story-text"></span><span class="result-story-seemore" id="res-story-seemore" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"> show more</span><span class="result-story-seeless" id="res-story-seeless" onclick="event.stopPropagation(); toggleStoryExpand()" style="display:none;"> show less</span>
+    </div>
   </div>
   <div class="result-btn-row" id="result-btn-row">
     <button class="launch-btn-inverted" id="modal-btn">
@@ -1908,6 +1993,8 @@ const LANG = {
     min: "MIN",
     // Debriefing
     debriefing: "DEBRIEFING",
+    missionReport: "MISSION REPORT",
+    seeOutcome: "SEE REPORT",
     missionSuccess: "MISSION SUCCESS",
     missionFailed: "MISSION FAILED",
     nextDay: "NEXT DAY",
@@ -2060,6 +2147,8 @@ const LANG = {
     missionLabel: "MISSIONE:",
     min: "MIN",
     debriefing: "RISULTATO",
+    missionReport: "RAPPORTO MISSIONE",
+    seeOutcome: "VEDI RAPPORTO",
     missionSuccess: "MISSIONE RIUSCITA",
     missionFailed: "MISSIONE FALLITA",
     nextDay: "GIORNO SUCCESSIVO",
@@ -2348,6 +2437,353 @@ function getUnlockedSpeciesForDay(day) {
   const count = Math.min(4 + Math.floor(day / 2), allSpecies.length);
   return allSpecies.slice(0, count);
 }
+
+// ══════════════════════════════════════════════
+// MISSION STORY TEMPLATES
+// ══════════════════════════════════════════════
+
+const STORY_TEMPLATES = {
+
+  // ─── OVERWHELMING SUCCESS ───────────────────────────────────────────────
+  overwhelming: [
+    // generic
+    { tags: [], min: 1, t: `{c1} [{s1}] submitted the after-action report before the ship had cleared the debris field. Every objective was marked complete. There was a bonus line item from the client labelled "unexpected efficiency." Nobody asked what it meant. {c2} [{s2}] has already moved on.` },
+    { tags: [], min: 1, t: `The mission was over before the agency had finished processing the launch paperwork. {c1} [{s1}] sent a single-line transmission on return: "Done." The client sent three follow-up messages asking for clarification. None were answered.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] handled primary objectives. {c2} [{s2}] handled everything else. Between them, nothing was left unresolved. The client later described the operation as "unsettling in its completeness."` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] divided the mission into thirds and executed each with what witnesses described as "organised aggression." The debrief lasted four minutes. The mission itself lasted less.` },
+    // max_crew
+    { tags: ['max_crew'], min: 3, t: `A full ship, a clean mission. {c1} [{s1}] led. {c2} [{s2}] and {c3} [{s3}] followed without being asked twice. The crew rotated shifts with mechanical precision. The client sent a commendation. It was filed and forgotten.` },
+    { tags: ['max_crew'], min: 4, t: `Every slot filled, every objective cleared. {c1} [{s1}] coordinated from the bridge while {c2} [{s2}], {c3} [{s3}] and {c4} [{s4}] worked through the task list. One crew member did eat the client's commemorative cheese platter, but the mission still counted as a full success.` },
+    // synergy
+    { tags: ['synergy'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] operated as if they had rehearsed this for years. They had not. The Muuvari Syndicate observer on site described it as "nauseating to watch." The result was immaculate.` },
+    { tags: ['synergy'], min: 3, t: `No conflicts logged. No complaints filed. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] completed every task in sequence with zero friction. Subsequent crews have been shown the mission log as a training example. It has not been replicated.` },
+    // drakhen
+    { tags: ['drakhen'], min: 1, t: `The mission file contains a three-second gap in the sensor log at the 04:12 mark. Before it: eleven unresolved hostiles. After it: none. {c1} [{s1}] is listed as present. No further details are available.` },
+    { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] completed primary objectives while {c2} [{s2}] dealt with complications that, per the official log, "resolved themselves." The Drakhen filed no incident report. Agency policy now requires them to.` },
+    // cheesponge
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] absorbed four separate pre-conflict incidents during the operation. Nobody ever raised their voice. {c2} [{s2}] noticed but said nothing. The Cheesponge seemed pleased, in whatever way Cheesponges express that.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `The target installation was neutralised inside the first hour. {c1} [{s1}] breached while {c2} [{s2}] secured extraction. Reinforcements arrived after the fact. The after-action log lists them under "irrelevant."` },
+    { tags: ['RESEARCH'], min: 1, t: `All data collected. All specimens catalogued. {c1} [{s1}] filed seventeen supplementary observations that the client had not requested. The client is still reading them.` },
+    { tags: ['DIPLOMACY'], min: 2, t: `{c1} [{s1}] opened negotiations. {c2} [{s2}] closed them. The agreement was signed before the catering arrived. The Vorrk delegation described the crew as "unexpectedly professional," which, for Vorrk, is the highest available praise.` },
+    { tags: ['ESPIONAGE'], min: 1, t: `Infiltration complete. All targets acquired. {c1} [{s1}] was in and out before the facility's own security had finished their shift rotation. The client asked how. The answer was not included in the report.` },
+    { tags: ['SALVAGE'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] recovered 94% of listed assets from the wreck. The other 6% was recovered anyway. The client had not asked for it. {c2} [{s2}] described it as "tidying up."` },
+    { tags: ['WARLORD HUNT'], min: 2, t: `Target located. Target neutralised. {c1} [{s1}] handled the approach while {c2} [{s2}] handled everything that came after. The Thek Hegemony paid the bonus in full without requesting an itemised receipt.` },
+    { tags: ['FIRST CONTACT'], min: 2, t: `Contact established. Communication achieved. {c1} [{s1}] made the initial transmission while {c2} [{s2}] stood nearby looking non-threatening, which helped. The previously unknown species has requested a follow-up visit. The request was forwarded to the agency. It is pending.` },
+    { tags: ['TERRAFORMING'], min: 2, t: `All atmospheric targets met ahead of schedule. {c1} [{s1}] ran primary systems while {c2} [{s2}] managed the secondary array. The planet is now technically habitable. Nobody has moved there yet, which is considered normal.` },
+  ],
+
+  // ─── SUCCESS ────────────────────────────────────────────────────────────
+  success: [
+    // generic
+    { tags: [], min: 1, t: `Mission complete. {c1} [{s1}] filed the paperwork. It was accurate. The client paid without complaint. This is considered a good outcome.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] led the operation. {c2} [{s2}] contributed meaningfully. Not everything went to plan, but enough did. The client has not followed up, which is the preferred outcome.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] completed all primary objectives. Some secondary ones fell through, but nobody included them in the final report. The mission is logged as a success.` },
+    { tags: [], min: 2, t: `There was an incident during transit. It was resolved. {c1} [{s1}] handled it. {c2} [{s2}] helped. The client received a completed mission and has been advised that the incident is classified.` },
+    // understaffed
+    { tags: ['understaffed'], min: 1, t: `{c1} [{s1}] ran this mission short-handed. The tasks were completed. The timeline slipped. The client noticed the timeline slipped but was satisfied with the outcome. {c1} [{s1}] has submitted a request for "a crew next time."` },
+    { tags: ['understaffed'], min: 2, t: `Two crew, more work than usual. {c1} [{s1}] and {c2} [{s2}] covered each other's blindspots for the duration. They succeeded. Neither of them will discuss specifics.` },
+    // conflict
+    { tags: ['conflict'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] did not speak after the third hour. The mission was completed in silence. Objectives were met. The agency has recommended a "crew compatibility review." Nobody has scheduled one.` },
+    { tags: ['conflict'], min: 3, t: `There were three documented disagreements between {c1} [{s1}] and {c2} [{s2}]. {c3} [{s3}] stayed out of it. The mission succeeded despite this, or possibly because of the competitive tension. The debrief was awkward.` },
+    // exp
+    { tags: ['exp'], min: 1, t: `{c1} [{s1}]'s experience in this field was visible from the first hour. The operation moved with a precision the rest of the crew eventually matched. The client flagged the result as "exceeding baseline expectations."` },
+    { tags: ['exp'], min: 2, t: `{c2} [{s2}] deferred to {c1} [{s1}]'s expertise throughout the operation. It was the correct call. Objectives were met in order. The client paid without negotiating.` },
+    // drakhen
+    { tags: ['drakhen'], min: 2, t: `The mission encountered unexpected resistance at the midpoint. {c1} [{s1}] was handling it. Then {c2} [{s2}] arrived. Then it was handled. The client was told the resistance "dispersed." This is technically true.` },
+    // cheesponge
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] had a friction point on day two. {c3} [{s3}] moved between them. The friction dissipated. The Cheesponge then returned to its position and did not acknowledge what it had done.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `Engagement successful. {c1} [{s1}] led the breach. {c2} [{s2}] covered extraction. There were more hostiles than the briefing suggested. This is always the case. Objectives cleared.` },
+    { tags: ['RESEARCH'], min: 2, t: `Data collected. Some of the collection methods were unorthodox. {c1} [{s1}] described them as "adaptive." {c2} [{s2}] described them as "alarming." The client received the data and has not asked for clarification.` },
+    { tags: ['DIPLOMACY'], min: 2, t: `Negotiations concluded. The Crassovian delegation walked out twice. {c1} [{s1}] brought them back both times. {c2} [{s2}] did not speak, which the Crassovians interpreted as gravitas. It worked.` },
+    { tags: ['RESCUE OP'], min: 2, t: `Target recovered. {c1} [{s1}] located them. {c2} [{s2}] secured extraction. The target was unharmed but strongly opinionated about the rescue timeline. Their feedback has been noted and placed in a separate file.` },
+    { tags: ['SMUGGLING'], min: 2, t: `Cargo delivered. {c1} [{s1}] ran the route while {c2} [{s2}] managed the three checkpoints that were not mentioned in the brief. No cargo was inspected. This is described as "good fortune" in the official log.` },
+    { tags: ['ENFORCEMENT'], min: 2, t: `Compliance achieved. {c1} [{s1}] and {c2} [{s2}] made contact with the non-compliant party. The non-compliant party is now compliant. No elaboration is included in this report at the client's request.` },
+    { tags: ['VIP PROTECTION'], min: 2, t: `VIP delivered safely. There were two attempts. {c1} [{s1}] neutralised the first. {c2} [{s2}] neutralised the second. The VIP has described the journey as "needlessly eventful" and requested a different agency next time. The client has paid in full regardless.` },
+    { tags: ['COLONIZATION'], min: 3, t: `Initial settlement established. {c1} [{s1}] handled site selection. {c2} [{s2}] and {c3} [{s3}] managed logistics. The colony is rated viable. One prefab unit was lost to what the log describes as "a misunderstanding with local fauna."` },
+    { tags: ['ESPIONAGE'], min: 1, t: `Asset extracted. {c1} [{s1}] navigated three security layers without triggering any of them. The fourth was triggered. It was still fine. The client received the asset and has not asked about the fourth layer.` },
+    { tags: ['TERRAFORMING'], min: 2, t: `Atmospheric targets met. {c1} [{s1}] ran primary systems. {c2} [{s2}] fixed the secondary array after it developed what the log calls "an attitude." The planet is now rated habitable. Whether anyone will want to live there remains unclear.` },
+    { tags: ['SALVAGE'], min: 2, t: `Primary assets recovered. {c1} [{s1}] led salvage ops. {c2} [{s2}] patched the breach long enough to extract the cargo. Not everything on the manifest was retrieved. What was not retrieved is no longer structurally accessible. The client has been informed.` },
+  ],
+
+  // ─── MARGINAL SUCCESS ───────────────────────────────────────────────────
+  marginal: [
+    // generic
+    { tags: [], min: 1, t: `{c1} [{s1}] filed the mission report. The word "technically" appears four times. The mission is, technically, a success.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] completed the mission. Not comfortably. The client has accepted the result while noting they expected more. This has been acknowledged and deprioritised.` },
+    { tags: [], min: 3, t: `The operation crossed the success threshold by a margin the agency prefers not to publish. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] each contributed what they could. It was enough. Barely.` },
+    { tags: [], min: 1, t: `The mission succeeded. {c1} [{s1}] would like it noted that the circumstances were difficult. The circumstances have been noted. The pay remains the same.` },
+    // understaffed
+    { tags: ['understaffed'], min: 1, t: `{c1} [{s1}] ran this alone for most of it. The objective was met. The mission log is sparse in the sections that would be most interesting to read. The client accepted the result.` },
+    { tags: ['understaffed'], min: 2, t: `Two crew for a job that wanted more. {c1} [{s1}] and {c2} [{s2}] covered it. One of them was in two places at once for approximately forty minutes. This is not in the official log. The mission counts as complete.` },
+    // conflict
+    { tags: ['conflict'], min: 2, t: `{c1} [{s1}] completed the mission. {c2} [{s2}] also completed the mission. They completed different parts of the same mission entirely independently, in parallel, without speaking. It worked. The client does not know this.` },
+    { tags: ['conflict'], min: 3, t: `At one point {c1} [{s1}] and {c2} [{s2}] were pursuing the same objective from opposite directions. {c3} [{s3}] redirected one of them. The mission still succeeded. The debrief has been described as "lively."` },
+    // mandate
+    { tags: ['mandate'], min: 2, t: `The client's specific requirements were met. {c1} [{s1}] confirmed this in writing. {c2} [{s2}] confirmed it verbally. The mission scraped through regardless. The Muuvari Syndicate rep accepted the outcome and left without further comment.` },
+    // drakhen
+    { tags: ['drakhen'], min: 2, t: `The mission was going sideways. Then {c1} [{s1}] made a decision that is not fully documented in the log. The mission was no longer going sideways. {c2} [{s2}] has declined to be debriefed on the specifics.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `Assault objectives cleared. Not cleanly. {c1} [{s1}] led the breach. {c2} [{s2}] held the rear. There was a point at which both of them were holding the rear and nobody was leading anything. It resolved itself. The objectives are listed as complete.` },
+    { tags: ['FIRST CONTACT'], min: 2, t: `Contact was made. Communication was attempted. {c1} [{s1}] transmitted the standard greeting package while {c2} [{s2}] stood by. The species responded. Their response was ambiguous. The mission is classified as successful pending translation of the ambiguity.` },
+    { tags: ['RESCUE OP'], min: 2, t: `Target recovered. {c1} [{s1}] found them. {c2} [{s2}] got them out. It took longer than planned and the target lost a boot somewhere in the process. They are alive. The boot is not recoverable.` },
+    { tags: ['WARLORD HUNT'], min: 2, t: `Target neutralised. {c1} [{s1}] tracked the target. {c2} [{s2}] closed the gap. The approach was improvised. The Thek Hegemony received confirmation and paid the agreed rate without the performance bonus.` },
+    { tags: ['PLANETARY EVACUATION'], min: 3, t: `Evacuation achieved. Not all of it, and not according to the original schedule, but the population is off-planet. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] managed separate zones. {c3} [{s3}]'s zone was the difficult one. {c3} [{s3}] has requested a different assignment next time.` },
+    { tags: ['THE GRAND HEIST'], min: 3, t: `The heist succeeded. The exit was unscheduled. {c1} [{s1}] had the asset. {c2} [{s2}] had the route. {c3} [{s3}] had a different route. They used {c3} [{s3}]'s route. The asset arrived. The Syndicate paid. Nobody has asked about the other route.` },
+  ],
+
+  // ─── NEAR MISS (failed, but close) ──────────────────────────────────────
+  near_miss: [
+    // generic
+    { tags: [], min: 1, t: `{c1} [{s1}] was close. The mission log confirms this. The client does not consider proximity a billable outcome. The invoice has been adjusted accordingly.` },
+    { tags: [], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] completed most of the mission. Most was not enough. The client's rep expressed disappointment in measured, professional language. This was somehow worse than shouting.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] came within range of the objective and could not close it. The debrief identified four decision points where outcomes might have differed. None of those decisions were made.` },
+    // understaffed
+    { tags: ['understaffed'], min: 1, t: `{c1} [{s1}] attempted this short-handed and came close. The mission failed. The agency has noted this in the staffing review that nobody is going to read.` },
+    { tags: ['understaffed'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] ran out of capacity before they ran out of objectives. The final task was not completed. The client was informed. {c1} [{s1}] has submitted a note indicating that more crew would have helped.` },
+    // conflict
+    { tags: ['conflict'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] disagreed on approach for the last third of the mission. Neither approach was completed. The client received a partial result and a bill they are contesting.` },
+    { tags: ['conflict'], min: 3, t: `{c1} [{s1}] went one way. {c2} [{s2}] went another. {c3} [{s3}] stayed put and filed a complaint. The objectives were not met. All three reports describe the failure as the other person's fault.` },
+    // synergy
+    { tags: ['synergy'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] worked well together. This is noted. They worked well together toward the wrong objective for the final two hours. The mission failed. Harmoniously.` },
+    // drakhen
+    { tags: ['drakhen'], min: 2, t: `The operation was progressing. Then {c1} [{s1}] made a decision. The decision was not the one that was needed. {c2} [{s2}] has not explained why they did not intervene. The mission failed. The Drakhen filed no report.` },
+    // mandate
+    { tags: ['mandate'], min: 2, t: `The client's specific requirements were met. The mission itself was not. The Vorrk Interstellar Group has confirmed receipt of their requested personnel configuration and is billing separately for the unmet objectives.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `The breach was successful. The objectives beyond the breach were not. {c1} [{s1}] reached the target zone. {c2} [{s2}] held the perimeter. The target was not in the target zone. This was not in the brief.` },
+    { tags: ['DIPLOMACY'], min: 2, t: `Negotiations continued for eleven hours. {c1} [{s1}] maintained position. {c2} [{s2}] maintained composure. An agreement was not reached. The other party has requested a rescheduled session with different crew.` },
+    { tags: ['RESCUE OP'], min: 2, t: `The target was located. Extraction was attempted. {c1} [{s1}] reached the target. {c2} [{s2}] managed the route. The route closed before extraction was complete. The target is now in the same place, but aware that someone tried.` },
+    { tags: ['ESPIONAGE'], min: 1, t: `{c1} [{s1}] reached the objective. The objective had been moved. The new location was identified three hours after the extraction window closed. The client has been notified. The client is not happy.` },
+    { tags: ['THE GRAND HEIST'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] got into the vault. The vault contained a second vault. The second vault had a different code. Time ran out during the second code attempt. The first vault is still accessible. This has not been helpful.` },
+  ],
+
+  // ─── FAILED ─────────────────────────────────────────────────────────────
+  failed: [
+    // generic
+    { tags: [], min: 1, t: `{c1} [{s1}] returned from the mission. The mission did not return with them, in any meaningful sense. The client has been notified. The fine has been applied. {c1} [{s1}] has submitted a two-word after-action report. It has been filed.` },
+    { tags: [], min: 2, t: `The mission was not completed. {c1} [{s1}] and {c2} [{s2}] have each submitted reports explaining why this was the other one's fault. Both reports are being reviewed. Neither is convincing.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] failed the mission. In the debrief, all three agreed on the sequence of events and disagreed on who was responsible for each of them. The review is ongoing.` },
+    // conflict
+    { tags: ['conflict'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] stopped cooperating before the halfway point. The mission continued regardless. It did not succeed. The log contains seventeen entries that consist entirely of the word "disagree."` },
+    { tags: ['conflict'], min: 3, t: `The crew fractured on day two. {c1} [{s1}] led one faction. {c2} [{s2}] led another. {c3} [{s3}] attempted mediation and was ignored by both. The mission failed. The factions remain technically unresolved.` },
+    { tags: ['conflict'], min: 4, t: `By the third day, {c1} [{s1}] and {c2} [{s2}] were not speaking. {c3} [{s3}] and {c4} [{s4}] had formed a separate working group. The mission objective was completed by nobody. All four filed individual failure reports. Each is different.` },
+    // understaffed
+    { tags: ['understaffed'], min: 1, t: `One crew member. Not enough. {c1} [{s1}] attempted everything and completed a portion of it. The portion was not the part that mattered. The agency has a new standing recommendation regarding minimum crew requirements.` },
+    { tags: ['understaffed'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] divided a three-person job. The third of the job nobody took became the critical third. The mission failed at the uncovered section. The staffing report recommends more staff.` },
+    // drakhen
+    { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] performed as expected. {c2} [{s2}] performed better than expected, then made a choice that invalidated the preceding performance. The Drakhen's after-action report is a single paragraph. Legal has been asked to review it.` },
+    // cheesponge
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] had absorbed the inter-crew tension. This helped for a while. Then the tension returned in a different form. {c2} [{s2}] filed a formal complaint about the Cheesponge's involvement. The complaint is being processed.` },
+    // mandate
+    { tags: ['mandate'], min: 2, t: `The client's crew requirements were met in full. The mission itself was not. The Crassovian Logistics Bureau has confirmed that the correct species were present for the incorrect outcome. They have issued a partial refund demand.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `The assault team breached the perimeter. The perimeter was the wrong perimeter. {c1} [{s1}] identified this at the forty-minute mark. {c2} [{s2}] confirmed it. They were on the wrong side of the facility. Extraction followed shortly after.` },
+    { tags: ['ASSAULT'], min: 3, t: `{c1} [{s1}] led the assault. {c2} [{s2}] and {c3} [{s3}] supported. Resistance was heavier than the brief indicated. The objective was not reached. {c1} [{s1}]'s post-mission assessment consists of one sentence and a diagram. The diagram is alarming.` },
+    { tags: ['RESEARCH'], min: 2, t: `Data collection commenced. The research subject then did something that the briefing described as "low probability." {c1} [{s1}] attempted to adapt the methodology. {c2} [{s2}] attempted to contain the subject. Neither worked. The data was lost.` },
+    { tags: ['DIPLOMACY'], min: 2, t: `Negotiations opened. {c1} [{s1}] delivered the opening statement. {c2} [{s2}] was present. The opposing delegation walked out at the forty-minute mark. The reason given was "cultural incompatibility." The agency is looking into what that means.` },
+    { tags: ['SMUGGLING'], min: 2, t: `The cargo did not reach the destination. {c1} [{s1}] ran the primary route. {c2} [{s2}] ran interference. Interference was insufficient. The cargo was inspected. The contents of the cargo are now a separate matter for a separate agency.` },
+    { tags: ['WARLORD HUNT'], min: 2, t: `The target was located. {c1} [{s1}] confirmed visual contact. {c2} [{s2}] confirmed the approach route. The target left before the approach was complete. The Thek Hegemony has expressed "continued confidence in the agency's eventual success." This is not how the bonus works.` },
+    { tags: ['VIP PROTECTION'], min: 2, t: `The VIP was not harmed. The VIP was, however, relocated to an unscheduled destination by parties unknown. {c1} [{s1}] and {c2} [{s2}] are currently listed as "in pursuit." The client has been notified. The client has also notified their lawyer.` },
+    { tags: ['TERRAFORMING'], min: 2, t: `Atmospheric processing initiated. The atmosphere processed in the wrong direction. {c1} [{s1}] ran diagnostics. {c2} [{s2}] attempted a manual override. The planet is now slightly less habitable than before the mission began. The client has been informed.` },
+  ],
+
+  // ─── CATASTROPHIC ───────────────────────────────────────────────────────
+  catastrophic: [
+    // generic
+    { tags: [], min: 1, t: `{c1} [{s1}] returned. The ship returned. Everything else about the mission is either missing from the log, redacted by the agency, or simply not discussed. The client's complaint has been forwarded to the relevant department.` },
+    { tags: [], min: 2, t: `The mission log for this operation is seven pages long. Pages two through six are blank. {c1} [{s1}] and {c2} [{s2}] have been placed on administrative review pending an explanation. Neither has provided one.` },
+    { tags: [], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] were on the same ship and appear to have had entirely separate missions. None of the missions were the correct one. The client has filed three complaints, apparently one per crew member.` },
+    { tags: [], min: 1, t: `The agency has received a formal notice from the Interstellar Commerce Authority following this operation. {c1} [{s1}] has been asked to provide a statement. {c1} [{s1}] has declined on the advice of counsel.` },
+    // conflict / casualties
+    { tags: ['conflict'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] disagreed from the moment of departure. By day two the ship had been divided into zones. By day three the zones had names. The mission was not attempted. The ship returned with two flags the agency did not provide.` },
+    { tags: ['conflict'], min: 3, t: `What began as a standard operation ended with {c1} [{s1}] barricaded in the engine room, {c2} [{s2}] filing a 40-page grievance in real-time, and {c3} [{s3}] attempting to mediate via written note slid under the engine room door. The objective was never reached.` },
+    { tags: ['conflict'], min: 4, t: `The mission debrief required separate rooms. {c1} [{s1}] refuses to be in the same building as {c2} [{s2}]. {c3} [{s3}] and {c4} [{s4}] have requested reassignment to different star systems. The objective was visited briefly on day one before everything unravelled.` },
+    // understaffed
+    { tags: ['understaffed'], min: 1, t: `{c1} [{s1}] was sent alone. The mission required more. {c1} [{s1}] reached the site, assessed the situation, transmitted the word "no," and initiated return protocols. This is the entirety of the mission log.` },
+    { tags: ['understaffed'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] attempted a mission designed for twice the crew. On the third day, {c2} [{s2}] went to sleep and did not wake up for the rest of the mission. {c1} [{s1}] continued. {c1} [{s1}] should not have continued.` },
+    // drakhen wildcard
+    { tags: ['drakhen'], min: 1, t: `The mission objective was neutralised. Along with two adjacent objectives, one uninvolved structure, and what the ship's sensor log describes as "a significant portion of the surrounding geography." {c1} [{s1}] has not commented. The agency is composing an apology.` },
+    { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] made a decision at the 06:40 mark that {c2} [{s2}] describes as "not what we discussed." The sensor log from that point forward shows only white space. The client's installation is no longer at its listed coordinates.` },
+    // cheesponge gone wrong
+    { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] reached a state of tension that exceeded the Cheesponge's buffering capacity. {c2} [{s2}] observes that this has never happened before. It has now happened once. The mission site has been added to a list of locations the agency recommends avoiding.` },
+    // mission types
+    { tags: ['ASSAULT'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] assaulted the facility. The facility was a diplomatic outpost. The briefing had indicated otherwise. The agency's legal team is currently in its fourth week of correspondence with the Vorrk Foreign Ministry.` },
+    { tags: ['ASSAULT'], min: 3, t: `The assault was launched. The target retaliated. {c1} [{s1}] called for support. {c2} [{s2}] provided support in the wrong direction. {c3} [{s3}] attempted extraction before the objective was reached. Nobody has written a version of this where the agency looks good.` },
+    { tags: ['RESEARCH'], min: 2, t: `The research subject was not contained. {c1} [{s1}] and {c2} [{s2}] attempted containment using available materials. Available materials were insufficient. The research subject is now somewhere in sector 7. The data is lost. The sector is being monitored.` },
+    { tags: ['FIRST CONTACT'], min: 2, t: `First contact was made. {c1} [{s1}] initiated. The species responded with what has been tentatively translated as "a declaration of hostility toward all known agency vessels." {c2} [{s2}] was present. {c2} [{s2}] has suggested this may have been avoidable.` },
+    { tags: ['DIPLOMACY'], min: 2, t: `{c1} [{s1}] opened negotiations. Within twenty minutes, the opposing delegation had called security. Within forty, {c2} [{s2}] had been escorted from the building. The talks have been suspended indefinitely. A formal apology is pending ratification by both parties.` },
+    { tags: ['RESCUE OP'], min: 2, t: `{c1} [{s1}] located the target. {c2} [{s2}] initiated extraction. In the process of extracting the target, {c2} [{s2}] extracted two additional individuals who were not the target and were not in distress. All three are now in agency custody pending clarification.` },
+    { tags: ['THE GRAND HEIST'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] entered the target facility. The alarm triggered immediately. The vault was empty. The crew was detained. The Crassovian Security Authority has submitted a bill. It is larger than the potential heist value. The agency is reviewing its processes.` },
+    { tags: ['PLANETARY EVACUATION'], min: 3, t: `Evacuation was initiated. The ships were loaded. The ships departed to the wrong planet. {c1} [{s1}] confirmed the destination. {c2} [{s2}] confirmed the coordinates. {c3} [{s3}] had entered them. The planet they arrived at is uninhabited. The planet they left is still being evacuated by someone else.` },
+    { tags: ['SMUGGLING'], min: 2, t: `{c1} [{s1}] ran the cargo. {c2} [{s2}] managed the route. The route passed through a checkpoint that was not on the route. The cargo was examined. The cargo was confiscated. The agency has received paperwork from four separate jurisdictions. Two of them are new.` },
+    { tags: ['WARLORD HUNT'], min: 2, t: `The target was located. {c1} [{s1}] confirmed the location. {c2} [{s2}] initiated engagement. The target turned out to be the warlord's administrative assistant, who was attending a regional logistics summit. The actual warlord was not present. He is now aware of the mission.` },
+    { tags: ['COLONIZATION'], min: 3, t: `The colony was established. The site selected by {c1} [{s1}] was technically habitable. The site selected by {c2} [{s2}] was where the colonists were told to go. These were different sites. {c3} [{s3}] attempted to reconcile this on day four. The colony is now disputed.` },
+  ]
+};
+
+const SABOTEUR_STORIES = [
+  (c1, s1, c2, s2) => `The mission proceeded without incident for the first leg. ${c1} [${s1}] logged normal progress. ${c2} [${s2}] logged normal progress. Someone else on board was logging something entirely different.`,
+  (c1, s1) => `${c1} [${s1}] noticed the discrepancy at the 04:30 mark. By then, three systems had been quietly rerouted. Whoever did it knew exactly what they were doing.`,
+  () => `The ship returned on schedule. The crew returned on schedule. The mission did not return at all. Someone on board made sure of that.`,
+];
+
+function getSaboteurStory(hired) {
+  const crew = hired.filter(a => !a.isSaboteur);
+  const idx = Math.floor(Math.random() * SABOTEUR_STORIES.length);
+  const fn = SABOTEUR_STORIES[idx];
+  const c1 = crew[0] ? crew[0].name : 'The crew';
+  const s1 = crew[0] ? speciesName(crew[0].race) : '';
+  const c2 = crew[1] ? crew[1].name : 'the others';
+  const s2 = crew[1] ? speciesName(crew[1].race) : '';
+  return fn(c1, s1, c2, s2);
+}
+
+function getDebriefStory(outcome, missionType, modifiers, hired, conflictLines) {
+  const crew = hired.filter(a => !a.isSaboteur);
+  const fill = (template) => {
+    let s = template;
+    for (let i = 0; i < 5; i++) {
+      const a = crew[i];
+      s = s.replace(new RegExp(`\\{c${i+1}\\}`, 'g'), a ? a.name : '');
+      s = s.replace(new RegExp(`\\{s${i+1}\\}`, 'g'), a ? speciesName(a.race) : '');
+    }
+    return s.replace(/\s{2,}/g, ' ').trim();
+  };
+
+  const pool = STORY_TEMPLATES[outcome] || [];
+  const crewCount = crew.length;
+  const mType = missionType ? missionType.toUpperCase() : '';
+  const hasConflict = modifiers.includes('conflict');
+
+  // +2 for type match, +2 for conflict match, +1 for other modifiers
+  // A template tagged [type, conflict] scores 4 and beats either alone
+  const scored = pool
+    .filter(tpl => crewCount >= tpl.min)
+    .map(tpl => {
+      let score = 0;
+      tpl.tags.forEach(tag => {
+        if (tag === mType) score += 2;
+        else if (tag === 'conflict' && hasConflict) score += 2;
+        else if (modifiers.includes(tag)) score += 1;
+      });
+      return { tpl, score };
+    });
+
+  if (!scored.length) return '';
+
+  const maxScore = Math.max(...scored.map(s => s.score));
+  // Include everything within 2 points of max — broadens the pool significantly
+  // while still preferring well-matched templates
+  const threshold = Math.max(0, maxScore - 2);
+  const candidates = scored.filter(s => s.score >= threshold);
+  // Weighted random: higher-scored templates get more weight
+  const totalWeight = candidates.reduce((sum, s) => sum + (s.score + 1), 0);
+  let pick = Math.random() * totalWeight;
+  let chosen = candidates[candidates.length - 1].tpl;
+  for (const c of candidates) {
+    pick -= (c.score + 1);
+    if (pick <= 0) { chosen = c.tpl; break; }
+  }
+  let story = fill(chosen.t);
+
+  // Append conflict suffix for top 1-2 worst pairs
+  if (hasConflict && conflictLines && conflictLines.length > 0) {
+    story += buildConflictSuffix(conflictLines);
+  }
+
+  return story;
+}
+
+const CONFLICT_SUFFIXES_SINGLE = [
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] spent most of the mission actively making each other's jobs harder. This was noticed.`,
+  (n1,s1,n2,s2) => `The principal source of friction was ${n1} [${s1}] and ${n2} [${s2}], whose working relationship could be generously described as functional and accurately described as not.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] disagreed on approach from day one. They continued disagreeing. The mission absorbed the consequences.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] refused to cooperate with ${n2} [${s2}] for reasons apparently self-evident to both of them and nobody else.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] were separately competent and jointly catastrophic.`,
+  (n1,s1,n2,s2) => `The primary liability was ${n1} [${s1}] and ${n2} [${s2}]. There is a written record of this. Both have been made aware.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] logged seventeen separate incidents involving each other. The agency has been asked not to hire them together again.`,
+  (n1,s1,n2,s2) => `The friction between ${n1} [${s1}] and ${n2} [${s2}] was not unexpected. It was, however, sustained. It affected output in ways the client noticed and the agency is still documenting.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] described ${n2} [${s2}] as "a structural problem." ${n2} [${s2}] described ${n1} [${s1}] using terms that required translation. Both were partially correct.`,
+  (n1,s1,n2,s2) => `The mission would have gone differently without ${n1} [${s1}] and ${n2} [${s2}] in the same compartment. This observation has been included in the staffing notes.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] maintained what the crew log describes as "a productive hostility." It was not productive.`,
+  (n1,s1,n2,s2) => `Everything ${n2} [${s2}] completed, ${n1} [${s1}] found a way to complicate. The reverse was also true. The mission moved forward anyway, at reduced efficiency.`,
+  (n1,s1,n2,s2) => `${n1} [${s1}] and ${n2} [${s2}] did not exchange a single cooperative communication during the entire mission. This is logged. It is not a record the agency is proud of.`,
+  (n1,s1,n2,s2) => `The compatibility assessment for ${n1} [${s1}] and ${n2} [${s2}] was not run before deployment. It has since been run. The results have been filed under "preventable."`,
+];
+
+const CONFLICT_SUFFIXES_DOUBLE = [
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `The most damage came from ${n1} [${s1}] and ${n2} [${s2}], followed by ${n3} [${s3}] and ${n4} [${s4}], who created a secondary problem before the first one was resolved.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] vs ${n2} [${s2}] was the main event. ${n3} [${s3}] and ${n4} [${s4}] provided additional complications the mission did not need.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] and ${n2} [${s2}] were the primary friction point. ${n3} [${s3}] and ${n4} [${s4}] apparently took this as an invitation to start their own.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Two separate conflicts ran concurrently: ${n1} [${s1}] against ${n2} [${s2}], and ${n3} [${s3}] against ${n4} [${s4}]. Neither resolved before the mission ended.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] and ${n2} [${s2}] had history. So did ${n3} [${s3}] and ${n4} [${s4}]. The mission did not have room for either of those histories.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `The crew log contains entries from ${n1} [${s1}], ${n2} [${s2}], ${n3} [${s3}], and ${n4} [${s4}] that contradict each other so thoroughly the agency has stopped trying to reconcile them.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] and ${n2} [${s2}] reduced output in the first half. ${n3} [${s3}] and ${n4} [${s4}] handled the second half. The crew functioned in shifts, which is not how crews are supposed to function.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `The two worst pairings were ${n1} [${s1}] with ${n2} [${s2}], and ${n3} [${s3}] with ${n4} [${s4}]. Both pairings were avoidable. Neither was avoided.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n1} [${s1}] and ${n2} [${s2}] filed separate complaints on day one. ${n3} [${s3}] and ${n4} [${s4}] filed a joint one on day two. The agency is reading them in order of severity.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `Friction between ${n1} [${s1}] and ${n2} [${s2}] was expected and planned for. Friction between ${n3} [${s3}] and ${n4} [${s4}] was not. The second one cost more.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `${n3} [${s3}] and ${n4} [${s4}] could have been managed. ${n1} [${s1}] and ${n2} [${s2}] could also have been managed. Nobody managed either.`,
+  (n1,s1,n2,s2,n3,s3,n4,s4) => `The mission ran with two unresolved interpersonal conflicts active simultaneously. ${n1} [${s1}] vs ${n2} [${s2}] and ${n3} [${s3}] vs ${n4} [${s4}]. One was louder. Both were expensive.`,
+];
+
+const CONFLICT_SUFFIXES_CHEESPONGE = [
+  (nc,nk,sk) => `${nc} [Cheesponge] absorbed every escalation between ${nk} [${sk}] and the rest of the crew without comment. It is unclear whether ${nc} understood what it was doing. The sensor log suggests it did.`,
+  (nc,nk,sk) => `${nk} [${sk}] attempted to intimidate ${nc} [Cheesponge] on multiple occasions. ${nc} absorbed all of them. ${nk} has not raised the subject again.`,
+  (nc,nk,sk) => `The ${sk} was a problem. ${nc} [Cheesponge] was, apparently, the solution. Nobody asked ${nc} to do this. ${nc} did it anyway. ${nk} [${sk}] filed no complaint, which is the most unsettling part.`,
+  (nc,nk,sk) => `${nc} [Cheesponge] positioned itself between ${nk} [${sk}] and every potential incident with a consistency that could only be described as deliberate. The Drakhen never escalated. This was not an accident.`,
+];
+
+function buildConflictSuffix(conflictLines) {
+  if (!conflictLines || conflictLines.length === 0) return '';
+
+  const absorbed = conflictLines.find(c => c.absorbed);
+  const nonAbsorbed = conflictLines.filter(c => !c.absorbed).sort((a, b) => (b.penalty || 0) - (a.penalty || 0));
+
+  // If top conflict is absorbed Cheesponge/Drakhen and no worse regular conflicts, use cheesponge
+  if (absorbed && (nonAbsorbed.length === 0 || (nonAbsorbed[0]?.penalty || 0) < 8)) {
+    const nc = absorbed.nameA;
+    const nk = absorbed.nameB;
+    const sk = speciesName('Drakhen');
+    return ' ' + pickRandom(CONFLICT_SUFFIXES_CHEESPONGE)(nc, nk, sk);
+  }
+
+  const top = nonAbsorbed.slice(0, 2);
+  if (top.length === 0) {
+    if (absorbed) return ' ' + pickRandom(CONFLICT_SUFFIXES_CHEESPONGE)(absorbed.nameA, absorbed.nameB, speciesName('Drakhen'));
+    return '';
+  }
+
+  if (top.length === 1) {
+    const c = top[0];
+    return ' ' + pickRandom(CONFLICT_SUFFIXES_SINGLE)(c.nameA, speciesName(c.raceA), c.nameB, speciesName(c.raceB));
+  }
+
+  const c1 = top[0], c2 = top[1];
+  return ' ' + pickRandom(CONFLICT_SUFFIXES_DOUBLE)(
+    c1.nameA, speciesName(c1.raceA), c1.nameB, speciesName(c1.raceB),
+    c2.nameA, speciesName(c2.raceA), c2.nameB, speciesName(c2.raceB)
+  );
+}
+
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function getOutcomeTier(score, minReq) {
+  if (score < minReq) {
+    if (score <= 0) return 'catastrophic';
+    const gap = minReq - score;
+    if (gap <= 5) return 'near_miss';
+    if (gap <= 20) return 'failed';
+    return 'catastrophic';
+  } else {
+    const margin = score - minReq;
+    if (margin <= 5) return 'marginal';
+    if (margin <= 20) return 'success';
+    return 'overwhelming';
+  }
+}
+
 
 function getManualHTML() {
   let html = `<div class="section-title" style="margin-bottom:10px;">${t('xenoManual').toUpperCase()}</div>`;
@@ -3654,7 +4090,9 @@ function launchMission() {
         const cheesp = a.race==='Cheesponge' ? a : b;
         const drakhen = a.race==='Drakhen' ? a : b;
         conflictCount++;
-        conflictLines.push({raceA:'Cheesponge',raceB:'Drakhen',text:`${speciesName('Cheesponge')} absorbed ${speciesName('Drakhen')}'s hate (-0%)`,absorbed:true});
+        conflictLines.push({raceA:'Cheesponge',raceB:'Drakhen',text:`${speciesName('Cheesponge')} absorbed ${speciesName('Drakhen')}'s hate (-0%)`,absorbed:true,penalty:0,
+          nameA: hired.find(x=>x.race==='Cheesponge')?.name || 'Unknown',
+          nameB: hired.find(x=>x.race==='Drakhen')?.name || 'Unknown'});
         continue;
       }
       let aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
@@ -3664,11 +4102,11 @@ function launchMission() {
         if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
         if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
         if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=5 + (a.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-        else if(bW>aW){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
-        else{let pA=(5 + (a.hate / 100) * 25)/2,pB=(5 + (b.hate / 100) * 25)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
-      } else if(aHatesB){let p=5 + (a.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-      else if(bHatesA){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        if(aW>bW){let p=5+(a.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:p,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+        else if(bW>aW){let p=5+(b.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,penalty:p,nameA:b.name,nameB:a.name,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        else{let pA=(5+(a.hate/100)*25)/2,pB=(5+(b.hate/100)*25)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:pA+pB,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
+      } else if(aHatesB){let p=5+(a.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:p,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
+      else if(bHatesA){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,penalty:p,nameA:b.name,nameB:a.name,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
     }
   }
 
@@ -3736,7 +4174,43 @@ function launchMission() {
 
   let html = '';
 
-  // Base power
+  // Story blurb — shown on DEBRIEF screen first
+  const outcomeTier = getOutcomeTier(score, state.mission.minReq);
+  const storyMods = [];
+  if (hired.length === state.ship.max) storyMods.push('max_crew');
+  if (hired.length < state.ship.min) storyMods.push('understaffed');
+  if (conflictPenalty > 0) storyMods.push('conflict');
+  if (synergy > 0) storyMods.push('synergy');
+  if (hired.some(a => a.race === 'Drakhen')) storyMods.push('drakhen');
+  if (hired.some(a => a.race === 'Cheesponge')) storyMods.push('cheesponge');
+  if (state.day >= MANDATE_DAY && state.mission.mandates) storyMods.push('mandate');
+  if (expMandateMod > 0 && state.day < MANDATE_DAY) storyMods.push('exp');
+  const storyText = isSabotaged
+    ? getSaboteurStory(hired)
+    : (getDebriefStory(outcomeTier, state.mission.type, storyMods, hired, conflictLines) || '');
+
+  // Reset outcome screen UI (prepared in background, shown on SEE OUTCOME tap)
+  document.getElementById('res-score').innerText = '0%';
+  document.getElementById('res-score').style.color = '';
+  document.getElementById('res-msg').style.color = '';
+  document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
+  if (!isSuccess && !isSabotaged) document.getElementById('res-msg').style.color = '#ff4444';
+  document.getElementById('res-msg').style.visibility = 'hidden';
+  document.getElementById('res-log').innerHTML = '';
+  document.getElementById('res-story-text').innerText = '';
+  document.getElementById('res-story-text').classList.remove('expanded');
+  document.getElementById('res-story-seemore').style.display = 'none';
+  document.getElementById('res-story-seeless').style.display = 'none';
+  document.getElementById('res-title').innerText = t('missionReport');
+  document.getElementById('modal-btn').onclick = function() {
+    bounceThen(document.getElementById('modal-btn'), nextDay);
+  };
+  const willBankrupt = (state.money < -100) || (state.money <= 0);
+  document.getElementById('modal-btn-text').innerText = willBankrupt ? t('continue') : t('nextDay');
+  document.getElementById('modal-btn').style.visibility = 'hidden';
+  setStatusBar('dark');
+  if (state.money < -100) state.gameOver = true;
+
   html += resRow(t('crewPowerOutput'), `${Math.floor(rawScore)}%`);
   html += resDivider();
 
@@ -3813,26 +4287,15 @@ function launchMission() {
   const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
   html += resRow(t('netFinancialChange'), netStr, true);
 
-  // Reset UI — hide msg and button until animation completes
-  document.getElementById('res-score').innerText = '0%';
-  document.getElementById('res-score').style.color = '';
-  document.getElementById('res-msg').style.color = '';
-  document.getElementById('res-msg').innerText = isSuccess ? t('missionSuccess') : t('missionFailed');
-  if (!isSuccess && !isSabotaged) document.getElementById('res-msg').style.color = '#ff4444';
-  document.getElementById('res-msg').style.visibility = 'hidden';
-  document.getElementById('res-log').innerHTML = '';
-  document.getElementById('res-title').innerText = isSabotaged ? t('debriefing') : t('debriefing');
-  document.getElementById('modal-btn').onclick = function() {
-    bounceThen(document.getElementById('modal-btn'), nextDay);
-  };
-  const willBankrupt = (state.money < -100) || (state.money <= 0);
-  document.getElementById('modal-btn-text').innerText = willBankrupt ? t('continue') : t('nextDay');
-  document.getElementById('modal-btn').style.visibility = 'hidden';
-  document.getElementById('result-overlay').classList.add('visible');
-  setStatusBar('dark');
-  if (state.money < -100) state.gameOver = true;
+  // Show debrief story screen first, pass completed html for outcome screen
+  _pendingDebriefText = storyText;
+  showDebriefStory(storyText, html, isSabotaged);
 
-  // Score duration is proportional: 2500ms for 100%, so score/100 * 2500
+  // Score animation starts when SEE OUTCOME is tapped — called from showOutcomeScreen()
+  window._startOutcomeAnimation = function() {
+    try {
+    const isSabotaged = _pendingIsSabotaged;
+    document.getElementById('res-log').innerHTML = '';
   const scoreEl = document.getElementById('res-score');
   const targetScore = isSabotaged ? 85 : score;
   const duration = (targetScore / 100) * 2500;
@@ -3866,18 +4329,21 @@ function launchMission() {
     }
   }
   requestAnimationFrame(animateScore);
+    } catch(e) { alert('OUTCOME ERR: ' + e.message + '\n' + e.stack); }
+  }; // end _startOutcomeAnimation
 
   function triggerSabotageGlitch() {
     // 1-bit glitch: corrupt the score counter with block chars, then snap to SABOTAGED
+    const sabScoreEl = document.getElementById('res-score');
     const glitchFrames = ['█5%', '##%', '█%', '  %', '███'];
     let f = 0;
     const glitchTimer = setInterval(() => {
-      scoreEl.innerText = glitchFrames[f % glitchFrames.length];
+      sabScoreEl.innerText = glitchFrames[f % glitchFrames.length];
       f++;
       if (f >= 8) {
         clearInterval(glitchTimer);
-        scoreEl.innerText = '—';
-        scoreEl.style.color = '#ff4444';
+        sabScoreEl.innerText = '—';
+        sabScoreEl.style.color = '#ff4444';
         document.getElementById('res-msg').innerText = t('missionSabotaged');
         document.getElementById('res-msg').style.color = '#ff4444';
         document.getElementById('res-msg').style.visibility = '';
@@ -3897,7 +4363,7 @@ function launchMission() {
   function revealMsg() {
     document.getElementById('res-msg').style.visibility = '';
     // Small pause then start log typewriter
-    setTimeout(() => animateLogRows(html), 200);
+    setTimeout(() => animateLogRows(_pendingOutcomeHtml), 200);
   }
 
   function animateLogRows(fullHtml) {
@@ -3913,6 +4379,21 @@ function launchMission() {
       if (i >= children.length) {
         document.getElementById('modal-btn').style.visibility = '';
         smoothScroll();
+        // Show story below the completed table
+        if (_pendingDebriefText) {
+          const textEl = document.getElementById('res-story-text');
+          const moreEl = document.getElementById('res-story-seemore');
+          textEl.innerText = _pendingDebriefText;
+          textEl.classList.remove('expanded');
+          moreEl.style.display = 'none';
+          document.getElementById('res-story-seeless').style.display = 'none';
+          requestAnimationFrame(() => {
+            const isClamped = textEl.scrollHeight > textEl.clientHeight + 2;
+            moreEl.dataset.hasMore = isClamped ? '1' : '0';
+            moreEl.style.display = isClamped ? 'inline' : 'none';
+            smoothScroll();
+          });
+        }
         return;
       }
       const node = children[i];
@@ -4131,13 +4612,13 @@ function buildCheckpointDialogue() {
     ? (lang === 'it' ? `Media storica: ${allAvg}%\n` : `All-time average: ${allAvg}%\n`)
     : '';
   const STATS_LINES = lang === 'it' ? [
-    `La tua percentuale media di successo negli ultimi 5 giorni è ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`,
-    `Negli ultimi cinque giorni, la tua percentuale media di successo è stata del ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`,
-    `La tua performance recente è in media al ${avg5}% negli ultimi cinque giorni.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}.`
+    `La tua percentuale media di successo negli ultimi 5 giorni è ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}`,
+    `Negli ultimi cinque giorni, la tua percentuale media di successo è stata del ${avg5}%.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}`,
+    `La tua performance recente è in media al ${avg5}% negli ultimi cinque giorni.\n\n${allTimeLine}Missioni riuscite: ${allSucc}\nMissioni fallite: ${allFail}`
   ] : [
-    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
-    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`,
-    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}.`
+    `Your average success rate from the past 5 days is ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}`,
+    `Over the last five days, your average success rate was ${avg5}%.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}`,
+    `Your recent performance averages at ${avg5}% over the past five days.\n\n${allTimeLine}Missions succeeded: ${allSucc}\nMissions failed: ${allFail}`
   ];
 
   const noOneStr = lang === 'it' ? 'nessuno in particolare' : 'no one in particular';
@@ -4147,15 +4628,15 @@ function buildCheckpointDialogue() {
     : topSpecies[0] || noOneStr;
 
   const SPECIES_LINES = lang === 'it' ? [
-    `Sembri preferire ${speciesStr}.`,
-    `I tuoi schemi di assunzione suggeriscono una preferenza per ${speciesStr}.`,
-    `Notiamo una dipendenza ricorrente da ${speciesStr}.`,
-    `Le tue abitudini di reclutamento favoriscono ${speciesStr}.\nDiversificare potrebbe ridurre futuri incidenti.`
+    `Sembri preferire ${speciesStr}`,
+    `I tuoi schemi di assunzione suggeriscono una preferenza per ${speciesStr}`,
+    `Notiamo una dipendenza ricorrente da ${speciesStr}`,
+    `Le tue abitudini di reclutamento favoriscono ${speciesStr}.\nDiversificare potrebbe ridurre futuri incidenti`
   ] : [
-    `You appear to favour ${speciesStr}.`,
-    `Your hiring patterns suggest a preference for ${speciesStr}.`,
-    `We notice a recurring reliance on ${speciesStr}.`,
-    `Your recruitment habits favour ${speciesStr}.\nDiversification may reduce future incidents.`
+    `You appear to favour ${speciesStr}`,
+    `Your hiring patterns suggest a preference for ${speciesStr}`,
+    `We notice a recurring reliance on ${speciesStr}`,
+    `Your recruitment habits favour ${speciesStr}.\nDiversification may reduce future incidents`
   ];
 
   const PROFIT_LINES = [ ``, ``, ``, `` ];
@@ -4285,8 +4766,124 @@ function closeMandateBlock() {
   document.getElementById('mandate-block-overlay').classList.add('hidden');
 }
 
+// ── DEBRIEF STORY SCREEN ────────────────────────────────────
+let _pendingOutcomeHtml = '';
+let _pendingIsSabotaged = false;
+let _debriefTyping = null;
+let _debriefTypingDone = false;
+
+function showDebriefStory(storyText, outcomeHtml, isSabotaged) {
+  _pendingOutcomeHtml = outcomeHtml;
+  _pendingIsSabotaged = isSabotaged;
+  _debriefTypingDone = false;
+
+  const screen = document.getElementById('debrief-story-screen');
+  const textEl = document.getElementById('debrief-story-text');
+  const btn = document.getElementById('debrief-story-btn');
+  const btnText = document.getElementById('see-outcome-btn-text');
+
+  textEl.innerText = '';
+  btn.style.display = 'none';
+  btnText.innerText = t('seeOutcome');
+  screen.classList.add('visible');
+
+  // Flashing cursor blinks 3 times then typing starts
+  let cursorEl = document.createElement('span');
+  cursorEl.id = 'debrief-story-cursor';
+  cursorEl.innerText = '_';
+  textEl.appendChild(cursorEl);
+
+  let blinkCount = 0;
+  const blinkInterval = setInterval(() => {
+    blinkCount++;
+    if (blinkCount >= 6) { // 3 full blinks (on/off × 3)
+      clearInterval(blinkInterval);
+      if (cursorEl.parentNode) textEl.removeChild(cursorEl);
+      startDebriefTyping(storyText, textEl, btn);
+    }
+  }, 300);
+}
+
+function startDebriefTyping(text, textEl, btn) {
+  if (!text || text.length === 0) {
+    _debriefTypingDone = true;
+    btn.style.display = 'block';
+    return;
+  }
+  let i = 0;
+  textEl.innerText = '';
+  _debriefTyping = setInterval(() => {
+    textEl.innerText += text[i];
+    playSfx('typing', 0.3);
+    hapticTick();
+    i++;
+    if (i >= text.length) {
+      clearInterval(_debriefTyping);
+      _debriefTyping = null;
+      _debriefTypingDone = true;
+      btn.style.display = 'block';
+    }
+  }, 30);
+}
+
+function skipDebriefStory() {
+  // On tap: if still typing, show full text + button; if done, go to outcome
+  if (!_debriefTypingDone) {
+    if (_debriefTyping) { clearInterval(_debriefTyping); _debriefTyping = null; }
+    const textEl = document.getElementById('debrief-story-text');
+    // Remove cursor if still present
+    const cur = document.getElementById('debrief-story-cursor');
+    if (cur) cur.remove();
+    // Show full text immediately - get story from pending (already set in textEl partially)
+    // We need to show complete text. Re-derive from current innerText length vs full
+    // Actually simpler: store the full text
+    textEl.innerText = _pendingDebriefText || textEl.innerText;
+    _debriefTypingDone = true;
+    document.getElementById('debrief-story-btn').style.display = 'block';
+  }
+}
+
+function toggleStoryExpand() {
+  const textEl = document.getElementById('res-story-text');
+  const moreEl = document.getElementById('res-story-seemore');
+  const lessEl = document.getElementById('res-story-seeless');
+  const expanded = textEl.classList.toggle('expanded');
+  moreEl.style.display = expanded ? 'none' : 'inline';
+  lessEl.style.display = expanded ? 'inline' : 'none';
+}
+
+function tapStory() {
+  const textEl = document.getElementById('res-story-text');
+  if (!textEl.innerText) return;
+  const moreEl = document.getElementById('res-story-seemore');
+  const lessEl = document.getElementById('res-story-seeless');
+  const expanded = textEl.classList.toggle('expanded');
+  moreEl.style.display = expanded ? 'none' : (moreEl.dataset.hasMore === '1' ? 'inline' : 'none');
+  lessEl.style.display = expanded ? 'inline' : 'none';
+}
+
+function collapseStory() {
+  const textEl = document.getElementById('res-story-text');
+  const moreEl = document.getElementById('res-story-seemore');
+  const lessEl = document.getElementById('res-story-seeless');
+  if (!textEl.classList.contains('expanded')) return;
+  textEl.classList.remove('expanded');
+  moreEl.style.display = 'inline';
+  lessEl.style.display = 'none';
+}
+
+function showOutcomeScreen() {
+  document.getElementById('debrief-story-screen').classList.remove('visible');
+  document.getElementById('result-overlay').classList.add('visible');
+  if (window._startOutcomeAnimation) window._startOutcomeAnimation();
+}
+
+let _pendingDebriefText = '';
+
 function nextDay() {
   document.getElementById('result-overlay').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
   setStatusBar('light');
 
   // Cannot start a new day with 0 or fewer credits
@@ -4298,6 +4895,9 @@ function nextDay() {
     document.getElementById('res-score').style.color = "#ff4444";
     document.getElementById('res-msg').innerText = t('careerOver');
     document.getElementById('res-log').innerHTML = `${t('liquidating')}<br>${t('reclaiming')}`;
+    document.getElementById('res-story-text').innerText = '';
+    document.getElementById('res-story-seemore').style.display = 'none';
+    document.getElementById('res-story-seeless').style.display = 'none';
 
     // Check if there's a checkpoint to roll back to
     const savedGame = loadCheckpointRollback();
@@ -4323,6 +4923,7 @@ function nextDay() {
           document.getElementById('modal-btn-text').innerText = t('nextDay');
           document.getElementById('modal-btn-rollback').style.display = 'none';
           document.getElementById('result-overlay').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
           closeDrawer();
           showSecondChanceCheckpoint(savedGame.day, () => startDay());
         });
@@ -4342,6 +4943,7 @@ function nextDay() {
           bounceThen(document.getElementById('modal-btn'), nextDay);
         };
         document.getElementById('result-overlay').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
         closeDrawer();
         goToSplashFromGame();
       });
@@ -4389,6 +4991,7 @@ function debugJumpToInput() {
   state.roster = [];
   state.pool = [];
   document.getElementById('result-overlay').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
   setStatusBar('light');
   startDay();
 }
@@ -4402,6 +5005,7 @@ function debugJumpToDay(day) {
   state.roster = [];
   state.pool = [];
   document.getElementById('result-overlay').classList.remove('visible');
+  document.getElementById('debrief-story-screen').classList.remove('visible');
   setStatusBar('light');
   startDay();
 }
@@ -5199,7 +5803,7 @@ startDay();
     const lang    = currentLang;
     const pick    = (arr) => arr[rand(0, arr.length - 1)];
     const pl      = (n, s, p) => n === 1 ? s : p;
-    const u       = (s) => `<u>${s}</u>`;
+    const u       = (s) => `<u>${s}</u>.`;
 
     const combinedTemplates = {
       en: [
