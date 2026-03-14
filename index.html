@@ -3406,10 +3406,18 @@ function generateMandates(statCount) {
   else                { maxSpeciesTypes = 2; maxCountPerSpecies = 4; }
 
   // Exp mandate — always 1 role, 1–2 count
-  const EXP_ROLES = ['FORCE', 'SCIENCE', 'COMMAND', 'LOGISTICS'];
-  const role = EXP_ROLES[rand(0, EXP_ROLES.length - 1)];
-  const expCount = rand(1, 2);
-  const expMandates = [{ role, count: expCount }];
+  const EXP_ROLES = ['COMMAND', 'FORCE', 'SCIENCE', 'OPERATIONS', 'LOGISTICS'];
+  let maxExpTypes;
+  if (day < 60)      { maxExpTypes = 1; }
+  else if (day < 70) { maxExpTypes = 2; }
+  else               { maxExpTypes = 3; }
+  const numExpTypes = rand(1, maxExpTypes);
+  const chosenRoles = [];
+  for (let attempt = 0; attempt < 20 && chosenRoles.length < numExpTypes; attempt++) {
+    const candidate = EXP_ROLES[rand(0, EXP_ROLES.length - 1)];
+    if (!chosenRoles.includes(candidate)) chosenRoles.push(candidate);
+  }
+  const expMandates = chosenRoles.map(role => ({ role, count: rand(1, 2) }));
 
   // Species mandate — always present
   const numTypes = rand(1, maxSpeciesTypes);
@@ -3431,7 +3439,11 @@ function generateMandates(statCount) {
     }
     if (!conflict) chosen.push(candidate);
   }
-  const speciesMandates = chosen.map(sp => ({ species: sp, count: rand(1, maxCountPerSpecies) }));
+  // Rule: Giant count is always capped at 1
+  const speciesMandates = chosen.map(sp => ({
+    species: sp,
+    count: sp === 'Giant' ? 1 : rand(1, maxCountPerSpecies)
+  }));
 
   return { exp: expMandates, species: speciesMandates };
 }
@@ -4003,6 +4015,12 @@ function updateMissionProgress() {
     const label = useShort ? shortLabel[r] : t(r);
     parts.push(`<span class="stat-val${met ? ' met' : ''}">${label} ${m.targets[r]}</span>`);
   });
+
+  // expReq (days 10–49 soft exp requirement)
+  if (m.expReq) {
+    const hasExp = hired.some(a => a.exp === m.expReq);
+    parts.push(`<span class="stat-val${hasExp ? ' met' : ''}">${roleName(m.expReq)}</span>`);
+  }
 
   // Mandate REQ
   if (m.mandates) {
