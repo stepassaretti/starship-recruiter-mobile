@@ -216,6 +216,13 @@ body {
   gap: 12px;
 }
 
+@media (min-width: 404px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, 180px);
+    justify-content: center;
+  }
+}
+
 /* ── CARD ── */
 .mc-wrap {
   position: relative;
@@ -3439,7 +3446,6 @@ function generateMandates(statCount) {
     }
     if (!conflict) chosen.push(candidate);
   }
-  // Rule: Giant count is always capped at 1
   const speciesMandates = chosen.map(sp => ({
     species: sp,
     count: sp === 'Giant' ? 1 : rand(1, maxCountPerSpecies)
