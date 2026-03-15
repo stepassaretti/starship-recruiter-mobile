@@ -3405,7 +3405,7 @@ function generateMandates(statCount) {
   else if (day < 70)  { maxSpeciesTypes = 2; maxCountPerSpecies = 3; }
   else                { maxSpeciesTypes = 2; maxCountPerSpecies = 4; }
 
-  // Exp mandate — always 1 role, 1–2 count
+  // Exp mandate — stacks like species mandates at higher days
   const EXP_ROLES = ['COMMAND', 'FORCE', 'SCIENCE', 'OPERATIONS', 'LOGISTICS'];
   let maxExpTypes;
   if (day < 60)      { maxExpTypes = 1; }
@@ -4060,16 +4060,7 @@ function slotHTML(i) {
   if (app) {
     let slotIconSrc;
     if (app.isSaboteur) {
-      // Mimic a species already in the roster, or random from pool if none yet
-      const otherHired = state.roster.filter(a => a && !a.isSaboteur && a.id !== app.id);
-      if (otherHired.length > 0) {
-        const mimic = otherHired[rand(0, otherHired.length - 1)];
-        slotIconSrc = RACES[mimic.race] ? RACES[mimic.race].icon : '';
-      } else {
-        const poolSpecies = state.pool.filter(a => !a.isSaboteur && RACES[a.race]);
-        const mimic = poolSpecies.length > 0 ? poolSpecies[rand(0, poolSpecies.length - 1)] : null;
-        slotIconSrc = mimic ? RACES[mimic.race].icon : '';
-      }
+      slotIconSrc = app.icon || '';
     } else {
       slotIconSrc = RACES[app.race] ? RACES[app.race].icon : '';
     }
