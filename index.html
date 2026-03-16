@@ -3529,7 +3529,7 @@ function generateMission() {
 
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
     minReq: minReq, expReq: expReq,
-    reward: Math.round((500 + (state.day * 90)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)),
+    reward: Math.round((400 + (state.day * 60)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)),
     mandates: generateMandates(m.stat.length) };
 }
 
