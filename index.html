@@ -1997,6 +1997,8 @@ const LANG = {
     lastHired: "Last hired",
     allSpecies: "Others",
     hates: "HATES:",
+    hatesAll: "EVERYONE",
+    hatesNone: "NO ONE",
     // Bottom info row
     missionLabel: "MISSION:",
     min: "MIN",
@@ -2155,7 +2157,9 @@ const LANG = {
     xenoManual: "Manuale di xenobiologia",
     lastHired: "Ultima assunzione",
     allSpecies: "Altre specie",
-    hates: "NEMICI:",
+    hates: "ODIANO:",
+    hatesAll: "TUTTI",
+    hatesNone: "NESSUNO",
     missionLabel: "MISSIONE:",
     min: "MIN",
     debriefing: "RISULTATO",
@@ -2989,7 +2993,9 @@ function getManualHTML() {
   const lhKey = state.lastHired;
   if (lhKey && RACES[lhKey]) {
     const rd = RACES[lhKey];
-    const hateSpans = rd.hates.map((h, i, arr) => {
+    const _sentinelText = rd.hates[0] === 'ALL' ? (currentLang==='it' ? 'ODIANO TUTTI' : 'HATES EVERYONE') : rd.hates[0] === 'NO ONE' ? (currentLang==='it' ? 'NON ODIANO NESSUNO' : 'HATES NO ONE') : null;
+    const hateSpans = _sentinelText ? `<span>${_sentinelText}</span>` :
+      rd.hates.map((h, i, arr) => {
       const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
       return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
     }).join('');
@@ -3001,7 +3007,7 @@ function getManualHTML() {
           ${speciesName(lhKey)}
         </div>
         <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
-        <div class="manual-hates"><span class="manual-hates-label"><strong>${t('hates')}</strong></span><span class="manual-hates-names">${hateSpans}</span></div>
+        <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
       </div>
       <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('allSpecies').toUpperCase()}</div>`;
   }
@@ -3012,7 +3018,9 @@ function getManualHTML() {
     .sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
   sorted.forEach(rKey => {
     const rd = RACES[rKey];
-    const hateSpans = rd.hates.map((h, i, arr) => {
+    const _sentinelText = rd.hates[0] === 'ALL' ? (currentLang==='it' ? 'ODIANO TUTTI' : 'HATES EVERYONE') : rd.hates[0] === 'NO ONE' ? (currentLang==='it' ? 'NON ODIANO NESSUNO' : 'HATES NO ONE') : null;
+    const hateSpans = _sentinelText ? `<span>${_sentinelText}</span>` :
+      rd.hates.map((h, i, arr) => {
       const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
       return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
     }).join('');
@@ -3023,7 +3031,7 @@ function getManualHTML() {
           ${speciesName(rKey)}
         </div>
         <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
-        <div class="manual-hates"><span class="manual-hates-label"><strong>${t('hates')}</strong></span><span class="manual-hates-names">${hateSpans}</span></div>
+        <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
       </div>`;
   });
   return html;
@@ -5925,7 +5933,7 @@ startDay();
     const rows = newSpecies.map(r => {
       const rd = RACES[r];
       const icon = rd ? rd.icon : '';
-      const hateSpans = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
+      const hateSpans = !rd ? '' : rd.hates[0] === 'ALL' ? t('hatesAll') : rd.hates[0] === 'NO ONE' ? t('hatesNone') : rd.hates.map(h => speciesName(h)).join(', ');
       const shortDesc = (rd ? (currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || '') : (rd.shortDesc || '')) : '').replace(/\s*\[.*?\]/g, '').trim();
       const fullDesc = rd ? (currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '')) : '';
       // Hate context = full desc minus the shortDesc opening
