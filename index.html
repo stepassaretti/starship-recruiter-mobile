@@ -198,6 +198,8 @@ body {
 .manual-desc { font-size: 17px; line-height: 1.1; margin-top: 2px; }
 .manual-desc-text { font-size: 17px; line-height: 1.2; margin-top: 3px; color: #888; }
 .manual-hates { font-size: 17px; margin-top: 2px; }
+.manual-hates-label { display: block; }
+.manual-hates-names { display: flex; flex-wrap: wrap; align-items: baseline; row-gap: 2px; }
 
 /* New species page in briefing sheet */
 .rules-newsp-list { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; overflow-y: auto; flex: 1; }
@@ -2987,7 +2989,10 @@ function getManualHTML() {
   const lhKey = state.lastHired;
   if (lhKey && RACES[lhKey]) {
     const rd = RACES[lhKey];
-    const hateNames = rd.hates.map(h => speciesName(h)).join(', ');
+    const hateSpans = rd.hates.map((h, i, arr) => {
+      const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
+      return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
+    }).join('');
     html += `
       <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('lastHired').toUpperCase()}</div>
       <div class="manual-entry" style="margin-bottom:10px;">
@@ -2996,7 +3001,7 @@ function getManualHTML() {
           ${speciesName(lhKey)}
         </div>
         <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
-        <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
+        <div class="manual-hates"><span class="manual-hates-label"><strong>${t('hates')}</strong></span><span class="manual-hates-names">${hateSpans}</span></div>
       </div>
       <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('allSpecies').toUpperCase()}</div>`;
   }
@@ -3007,7 +3012,10 @@ function getManualHTML() {
     .sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
   sorted.forEach(rKey => {
     const rd = RACES[rKey];
-    const hateNames = rd.hates.map(h => speciesName(h)).join(', ');
+    const hateSpans = rd.hates.map((h, i, arr) => {
+      const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
+      return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
+    }).join('');
     html += `
       <div class="manual-entry">
         <div class="manual-name">
@@ -3015,7 +3023,7 @@ function getManualHTML() {
           ${speciesName(rKey)}
         </div>
         <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
-        <div class="manual-hates">${t('hates')} <strong>${hateNames}</strong></div>
+        <div class="manual-hates"><span class="manual-hates-label"><strong>${t('hates')}</strong></span><span class="manual-hates-names">${hateSpans}</span></div>
       </div>`;
   });
   return html;
@@ -5917,7 +5925,7 @@ startDay();
     const rows = newSpecies.map(r => {
       const rd = RACES[r];
       const icon = rd ? rd.icon : '';
-      const hateNames = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
+      const hateSpans = rd ? rd.hates.map(h => speciesName(h)).join(', ') : '';
       const shortDesc = (rd ? (currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || '') : (rd.shortDesc || '')) : '').replace(/\s*\[.*?\]/g, '').trim();
       const fullDesc = rd ? (currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '')) : '';
       // Hate context = full desc minus the shortDesc opening
@@ -5930,7 +5938,7 @@ startDay();
           <span class="rules-newsp-name">${speciesName(r).toUpperCase()}</span>
         </div>
         <div class="rules-newsp-desc">${shortDesc}</div>
-        <div class="rules-newsp-hates">${t('hates')} <strong>${hateNames}</strong></div>
+        <div class="rules-newsp-hates"><strong>${t('hates')}</strong> ${hateSpans}</div>
         ${hateContext ? `<div class="rules-newsp-hatecontext">${hateContext}</div>` : ''}
       </div>`;
     }).join('');
