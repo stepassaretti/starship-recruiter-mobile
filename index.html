@@ -235,7 +235,8 @@ body {
   transition: transform 0.15s ease;
 }
 .mc-wrap:active { transform: scale(0.96); }
-.mc-wrap.bounce { animation: cardBounce 0.2s ease; }
+.mc-wrap.bounce { animation: cardBounce 0.2s ease; transition: none; }
+.mc-wrap.bounce:active { transform: none; }
 @keyframes cardBounce {
   0% { transform: scale(1); }
   40% { transform: scale(0.95); }
