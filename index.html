@@ -437,6 +437,92 @@ body {
 }
 .bottom-bar.slid-in { transform: translateY(0); }
 
+/* ── TIMER BOX ── */
+#timer-box {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 260;
+  background: #000;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  gap: 12px;
+  min-width: 160px;
+  cursor: pointer;
+  transition: bottom 0.35s cubic-bezier(0.2, 0, 0.3, 1);
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+  /* 2px white border via box-shadow since clip-path clips outline */
+  box-shadow: 0 0 0 2px #fff;
+}
+#timer-display {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  color: #fff;
+  letter-spacing: 3px;
+  min-width: 68px;
+  text-align: center;
+  user-select: none;
+}
+#timer-display.pulse {
+  animation: timerPulse 0.5s ease-in-out infinite alternate;
+}
+@keyframes timerPulse {
+  from { opacity: 1; }
+  to   { opacity: 0.25; }
+}
+/* Timer action button — inverted launch button style */
+.timer-action-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 80px;
+  height: 40px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px), calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+}
+.timer-action-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.timer-action-btn:active .timer-action-bg polygon { fill: #ccc; }
+.timer-action-btn.bounce { animation: none; }
+#timer-box.bounce { animation: timerBoxBounce 0.2s ease; }
+#timer-btn-text {
+  position: relative;
+  z-index: 1;
+  color: #000;
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: "VT323", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  user-select: none;
+}
+
 /* ── BUTTON ROW ── */
 .btn-row {
   display: flex;
@@ -486,6 +572,12 @@ body {
   0% { transform: scale(1); }
   40% { transform: scale(0.9); }
   100% { transform: scale(1); }
+}
+
+@keyframes timerBoxBounce {
+  0% { transform: translateX(-50%) scale(1); }
+  40% { transform: translateX(-50%) scale(0.9); }
+  100% { transform: translateX(-50%) scale(1); }
 }
 
 /* ── DRAWER OVERLAY ── */
@@ -1437,6 +1529,13 @@ body {
     4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
   );
 }
+#timer-pause-overlay .mandate-block-msg,
+#timer-notstarted-overlay .mandate-block-msg {
+  margin-bottom: 16px;
+}
+#timer-pause-overlay .mandate-block-btn {
+  width: 140px;
+}
 .mandate-block-btn svg {
   position: absolute;
   inset: 0;
@@ -1845,6 +1944,17 @@ body {
 <!-- DRAWER OVERLAY -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 
+<!-- TIMER BOX -->
+<div id="timer-box" style="display:none;">
+  <div id="timer-display">01:00</div>
+  <button id="timer-btn" class="timer-action-btn" onclick="timerBtnTap(event)">
+    <svg class="timer-action-bg" viewBox="0 0 80 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 76,0 76,2 78,2 78,4 80,4 80,36 78,36 78,38 76,38 76,40 4,40 4,38 2,38 2,36 0,36"/>
+    </svg>
+    <span id="timer-btn-text">START</span>
+  </button>
+</div>
+
 <!-- BOTTOM BAR -->
 <div class="bottom-bar" id="bottom-bar">
   <div class="bar-handle" id="bar-handle">
@@ -1902,6 +2012,38 @@ body {
       <svg class="launch-btn-bg-inv" viewBox="0 0 200 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#fff" points="0,4 2,4 2,2 4,2 4,0 196,0 196,2 198,2 198,4 200,4 200,36 198,36 198,38 196,38 196,40 4,40 4,38 2,38 2,36 0,36"/></svg>
       <span class="launch-btn-text-inv" id="modal-btn-rollback-text">BACK TO DAY 5</span>
     </button>
+  </div>
+</div>
+
+<!-- TIMER PAUSE OVERLAY -->
+<div class="mandate-block-overlay hidden" id="timer-pause-overlay">
+  <div class="mandate-block-outer" onclick="event.stopPropagation()">
+    <div class="mandate-block-box">
+      <div class="mandate-block-title" id="timer-pause-title">PAUSED</div>
+      <div class="mandate-block-msg" id="timer-pause-msg">You have 60 seconds left.</div>
+      <div class="mandate-block-btn-wrap">
+        <button class="mandate-block-btn" onclick="resumeTimer(this)">
+          <svg viewBox="0 0 120 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 116,0 116,2 118,2 118,4 120,4 120,32 118,32 118,34 116,34 116,36 4,36 4,34 2,34 2,32 0,32"/></svg>
+          <span id="timer-pause-resume-text" style="position:relative;font-family:'VT323',monospace;font-size:20px;color:#fff;letter-spacing:1px;">CONTINUE</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMER NOT STARTED OVERLAY (card tap guard) -->
+<div class="mandate-block-overlay hidden" id="timer-notstarted-overlay" onclick="dismissTimerNotStarted()">
+  <div class="mandate-block-outer" onclick="event.stopPropagation()">
+    <div class="mandate-block-box">
+      <div class="mandate-block-title">NOT SO FAST</div>
+      <div class="mandate-block-msg">Start the timer before selecting crew.</div>
+      <div class="mandate-block-btn-wrap">
+        <button class="mandate-block-btn" onclick="dismissTimerNotStarted(this)">
+          <svg viewBox="0 0 80 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><polygon fill="#000" points="0,4 2,4 2,2 4,2 4,0 76,0 76,2 78,2 78,4 80,4 80,32 78,32 78,34 76,34 76,36 4,36 4,34 2,34 2,32 0,32"/></svg>
+          <span style="position:relative;font-family:'VT323',monospace;font-size:22px;color:#fff;letter-spacing:1px;">OK</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2109,7 +2251,18 @@ const LANG = {
       "Consider this a courtesy. The Agency does not extend courtesies twice.",
       "You are being reinstated. Perform accordingly.",
       "This is not a reward. This is a last resort."
-    ]
+    ],
+    urgentContract: "URGENT CONTRACT",
+    urgentLine1: "A client has filed a last-minute emergency contract. Their ship departs imminently and the crew manifest is empty.",
+    urgentLine2: "YOU HAVE 60 SECONDS TO FILL THE ROSTER.",
+    urgentLine3: "If the timer expires, the ship launches with or without a crew.",
+    timerStart: "START",
+    timerPause: "PAUSE",
+    timerPaused: "PAUSED",
+    timerPausedMsg: "You have %s seconds left.",
+    timerResume: "CONTINUE",
+    timerSpeedBonus20: "Speed bonus (<10s)",
+    timerSpeedBonus10: "Speed bonus (11-20s)"
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -2288,7 +2441,18 @@ const LANG = {
       "Consideralo una cortesia. L'Agenzia non ne concede due.",
       "Sei stato reintegrato. Comportati di conseguenza.",
       "Questo non è un premio. È l'ultima risorsa."
-    ]
+    ],
+    urgentContract: "CONTRATTO URGENTE",
+    urgentLine1: "Un cliente ha presentato un contratto d'emergenza dell'ultimo minuto. La nave parte a breve e il manifesto dell'equipaggio è vuoto.",
+    urgentLine2: "HAI 60 SECONDI PER COMPLETARE IL ROSTER.",
+    urgentLine3: "Se il timer scade, la nave parte con o senza equipaggio.",
+    timerStart: "INIZIA",
+    timerPause: "PAUSA",
+    timerPaused: "IN PAUSA",
+    timerPausedMsg: "Ti restano %s secondi.",
+    timerResume: "CONTINUA",
+    timerSpeedBonus20: "Bonus velocità (<10s)",
+    timerSpeedBonus10: "Bonus velocità (11-20s)"
   }
 };
 
@@ -2353,6 +2517,11 @@ function openDrawer(type) {
   playSfx('menu_open', 1, 2);
   playSfx('button');
   document.getElementById('btn-launch').style.visibility = 'hidden';
+  // Hide timer box while drawer is open
+  if (state.timerMission) {
+    const tb = document.getElementById('timer-box');
+    if (tb) tb.style.visibility = 'hidden';
+  }
 
   // Set initial max-height to collapsed size, then expand
   bar.style.maxHeight = collapsedHeight + 'px';
@@ -2389,6 +2558,11 @@ function closeDrawer() {
     bar.style.maxHeight = '';
     bar.style.transition = '';
     document.getElementById('btn-launch').style.visibility = '';
+    // Restore timer box if on a timer day
+    if (state.timerMission) {
+      const tb = document.getElementById('timer-box');
+      if (tb) tb.style.visibility = '';
+    }
     renderSlots();
     updateLaunchState();
   }, 210);
@@ -2641,6 +2815,27 @@ const STORY_TEMPLATES = {
     { tags: ['COLONIZATION'], min: 3, t: `The colony was established. The site selected by {c1} [{s1}] was technically habitable. The site selected by {c2} [{s2}] was where the colonists were told to go. These were different sites. {c3} [{s3}] attempted to reconcile this on day four. The colony is now disputed.` },
   ]
 };
+
+const EMPTY_CREW_STORIES = [
+  "The ship departed on schedule. The crew manifest was filed. The crew, however, had not been informed of this arrangement.\n\nThe vessel launched flawlessly. The autopilot engaged. The mission destination was entered correctly.\n\nSomewhere out there, a perfectly functional starship is completing a mission entirely on its own, apparently annoyed that anyone thought it needed help.",
+  "Control tower cleared the launch. The docking clamps released. The engines fired.\n\nNobody checked if anyone had boarded.\n\nThe ship's log for the entire mission reads: 'Departed. Arrived. Returned. Query: where is crew? Note: crew was not present. Note: mission completed regardless. Note: ship is fine. Ship is always fine.'",
+  "The client requested a fully crewed vessel. What they received was a fully automated one.\n\nThe ship handled everything. Navigation, systems, docking protocols. It did not require motivation, lunch breaks, or performance reviews.\n\nThe debrief report came back with a single comment from the client: 'Honestly? Better than last time.'",
+  "Pre-launch checklist: fuel — check. Coordinates — check. Crew — ...\n\nThe launch proceeded anyway. The universe, for reasons that remain unclear, did not object.\n\nThe mission was completed. The ship returned. The empty crew quarters were immaculate. Silver lining.",
+  "The ship left. Nobody was on it. This is not standard procedure.\n\nThe Agency's insurance department has been notified. They are reviewing the policy on 'phantom crew deployments.' Legal is involved. Everyone is trying to figure out who to bill for this.",
+];
+
+const EMPTY_CREW_STORIES_IT = [
+  "La nave è partita puntuale. Il manifesto dell'equipaggio era in regola. L'equipaggio, tuttavia, non era stato informato di questa disposizione.\n\nIl vettore ha effettuato un decollo impeccabile. Il pilota automatico si è inserito. La destinazione era quella corretta.\n\nDa qualche parte nell'universo, una nave perfettamente funzionante sta completando una missione da sola, visibilmente seccata che qualcuno pensasse avesse bisogno di aiuto.",
+  "La torre di controllo ha autorizzato il decollo. I morsetti di attracco si sono sganciati. I motori si sono accesi.\n\nNessuno ha verificato se ci fosse qualcuno a bordo.\n\nIl registro di bordo per l'intera missione recita: 'Partenza. Arrivo. Rientro. Nota: equipaggio assente. Nota: missione completata comunque. Nota: la nave sta bene. La nave sta sempre bene.'",
+  "Il cliente aveva richiesto una nave con equipaggio al completo. Quello che ha ricevuto era un vettore completamente automatizzato.\n\nLa nave ha gestito tutto da sola. Navigazione, sistemi, protocolli di attracco. Non aveva bisogno di motivazione, pause pranzo o valutazioni delle prestazioni.\n\nIl rapporto di debriefing è tornato con un solo commento del cliente: 'Onestamente? Meglio dell'ultima volta.'",
+  "Lista pre-lancio: carburante — ok. Coordinate — ok. Equipaggio — ...\n\nIl lancio è proceduto lo stesso. L'universo, per ragioni ancora ignote, non ha obiettato.\n\nLa missione è stata completata. La nave è tornata. I quartieri dell'equipaggio vuoti erano immacolati. Lato positivo.",
+  "La nave è partita. Non c'era nessuno a bordo. Questa non è la procedura standard.\n\nL'ufficio assicurazioni dell'Agenzia è stato avvisato. Stanno esaminando la polizza relativa ai 'dispiegamenti con equipaggio fantasma.' L'ufficio legale è coinvolto. Tutti stanno cercando di capire a chi addebitare la cosa.",
+];
+
+function getEmptyCrewStory() {
+  const pool = currentLang === 'it' ? EMPTY_CREW_STORIES_IT : EMPTY_CREW_STORIES;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 const SABOTEUR_STORIES = [
   (c1, s1, c2, s2) => `The mission proceeded without incident for the first leg. ${c1} [${s1}] logged normal progress. ${c2} [${s2}] logged normal progress. Someone else on board was logging something entirely different.`,
@@ -3273,7 +3468,8 @@ let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: nul
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
-  nextSaboteurDay: 14  // first saboteur appears day 14 or 15 (randomised at startDay)
+  nextSaboteurDay: 14, // first saboteur appears day 14 or 15 (randomised at startDay)
+  timerMission: false  // true when this day is a timed mission
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -3549,6 +3745,58 @@ function generateMission() {
     mandates: generateMandates(m.stat.length) };
 }
 
+// Timer mission: fixed ship (10-20 slots), scaled targets, no mandates/expReq
+function generateTimerMissionAndShip() {
+  // Pick random slot count 10-20, then map to a Phase 1 ship name
+  const slots = rand(10, 20);
+  const timerShipNames = ['Speeder','Courier','Interceptor','Scout','Shuttle','Gunship'];
+  // Map slot count loosely to ship name by range
+  let baseName;
+  if      (slots <= 11) baseName = 'Speeder';
+  else if (slots <= 13) baseName = 'Courier';
+  else if (slots <= 14) baseName = 'Interceptor';
+  else if (slots <= 16) baseName = 'Scout';
+  else if (slots <= 18) baseName = 'Shuttle';
+  else                  baseName = 'Gunship';
+  // Randomise within the mapped group for variety
+  baseName = timerShipNames[rand(0, timerShipNames.length - 1)];
+  const minSlots = Math.round(slots * 0.75);
+  state.ship = { name: baseName + ' [URGENT]', base: baseName, max: slots, min: minSlots };
+  state.roster = new Array(slots).fill(null);
+
+  // Generate mission type — all types available (day 60+)
+  const types = [
+    { id: "ASSAULT",    stat: ["str"],        t: 1, titles: ["Pirate suppression", "Direct fleet engagement", "Orbital defense"] },
+    { id: "DIPLOMACY",  stat: ["cha"],        t: 1, titles: ["Treaty signing", "Trade negotiations", "Gala attendance"] },
+    { id: "RESEARCH",   stat: ["int"],        t: 1, titles: ["Mapping nebulae", "Analyzing black holes", "Studying alien flora"] },
+    { id: "RESCUE OP",  stat: ["str","int"],  t: 2, titles: ["Extracting survivors from collapsing stations"] },
+    { id: "SALVAGE",    stat: ["str","int"],  t: 2, titles: ["Breaking apart derelict Dreadnoughts"] },
+    { id: "ESPIONAGE",  stat: ["int","cha"],  t: 2, titles: ["Infiltrating corporate HQs"] },
+    { id: "ENFORCEMENT",stat: ["str","cha"],  t: 2, titles: ["Policing lawless sectors"] },
+  ];
+  const m = types[rand(0, types.length - 1)];
+  const title = m.titles[rand(0, m.titles.length - 1)];
+
+  // Stat targets scaled proportionally to slot count — matching day 20-27 scale
+  // Each slot contributes ~20-25 stat points to the total target per stat
+  let targets = {};
+  m.stat.forEach(s => {
+    const perSlot = s === 'cha' ? rand(12, 16) : rand(20, 25);
+    targets[s] = slots * perSlot + rand(-15, 15);
+  });
+
+  // minReq — same formula logic as normal but using slot count as reference
+  const statCountBase = 90 - (m.stat.length - 1) * 12;
+  const avgTarget = m.stat.reduce((sum, s) => sum + targets[s], 0) / m.stat.length;
+  const slotsPerTarget = slots / avgTarget;
+  const pressureAdj = Math.round((slotsPerTarget - 0.07) * 300);
+  const minReq = Math.round(Math.max(55, Math.min(90, statCountBase + pressureAdj)));
+
+  const reward = Math.round((600 + (state.day * 40)) * (m.stat.length === 1 ? 1.15 : 1.25));
+
+  return { title, type: m.id, reqs: m.stat, targets, minReq, expReq: null, mandates: null, reward, isTimer: true };
+}
+
 function updateShip() {
   // Build ship table: {d, baseName, displayName, max, min}
   // PNG always uses baseName (e.g. "Cargo", "Dreadnought")
@@ -3620,7 +3868,23 @@ function updateShip() {
 function startDay() {
   updateShip();
   state.speciesOrder = [];
-  state.mission = generateMission();
+  state.timerMission = false;
+
+  // Always reset timer state for the new day
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerStarted = false;
+  timerRunning = false;
+  timerSfxSilenced = false;
+  const tb = document.getElementById('timer-box');
+  if (tb) tb.style.display = 'none';
+
+  // Day 60+: 50% chance of a timer mission (overrides normal ship/pool)
+  if (state.day >= 60 && (state.day === 60 || Math.random() < 0.5)) {
+    state.timerMission = true;
+    state.mission = generateTimerMissionAndShip(); // also sets state.ship + state.roster
+  } else {
+    state.mission = generateMission();
+  }
   state.pool = [];
 
   if (state.day === 1) {
@@ -3632,7 +3896,9 @@ function startDay() {
   } else {
     // Pool must be at least 15-20% more than max slots
     const minPool = Math.ceil(state.ship.max * (1.15 + Math.random() * 0.05));
-    const poolSize = Math.max(6 + Math.floor(state.day / 2), minPool);
+    const poolSize = state.timerMission
+      ? minPool  // timer mission: pure slot-based pool, no day floor
+      : Math.max(6 + Math.floor(state.day / 2), minPool);
     let attempts = 0;
     while(state.pool.length < poolSize && attempts < 200) {
       let newApp = generateApplicant(state.pool.length);
@@ -4155,6 +4421,15 @@ function tapCard(appId) {
   const card = document.getElementById('card-' + appId);
   if (!card) return;
 
+  // Timer mission guard: player must start timer before selecting crew
+  if (state.timerMission && !timerStarted) {
+    card.classList.remove('bounce');
+    requestAnimationFrame(() => card.classList.add('bounce'));
+    playSfx('wrong');
+    document.getElementById('timer-notstarted-overlay').classList.remove('hidden');
+    return;
+  }
+
   // Instant bounce via class toggle
   card.classList.remove('bounce');
   requestAnimationFrame(() => card.classList.add('bounce'));
@@ -4244,14 +4519,26 @@ function updateCostDisplay() {
 // RESOLUTION LOGIC (V4.0 Math)
 // ══════════════════════════════════════════════
 
-function launchMission() {
+function launchMission(fromTimer) {
+  // Guard against double-launch (e.g. timer tick race)
+  if (launchMission._fired) return;
+  launchMission._fired = true;
+  setTimeout(() => { launchMission._fired = false; }, 500);
+
+  // Stop and silence timer SFX immediately
+  if (state.timerMission) {
+    timerSfxSilenced = true;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    timerRunning = false;
+  }
+
   // Bounce
   playSfx('button');
   const lBtn = document.getElementById('btn-launch');
   if (lBtn) { lBtn.classList.remove('bounce'); requestAnimationFrame(() => lBtn.classList.add('bounce')); }
 
   const hired = state.roster.filter(a => a !== null);
-  if (hired.length === 0) { document.getElementById('launch-warning').style.display = 'block'; return; }
+  if (hired.length === 0 && !fromTimer) { document.getElementById('launch-warning').style.display = 'block'; return; }
 
   // Hard mandate block (day 50+)
   if (state.mission.mandates) {
@@ -4378,6 +4665,16 @@ function launchMission() {
     isSuccess = false;
   }
 
+  // Timer speed bonus: applied to earned if mission succeeded and timer was used
+  let timerSpeedBonusPct = 0;
+  if (state.timerMission && timerStarted && isSuccess && !isSabotaged) {
+    const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
+    if (elapsed < 10) timerSpeedBonusPct = 20;
+    else if (elapsed <= 20) timerSpeedBonusPct = 10;
+  }
+  const timerSpeedBonusAmt = timerSpeedBonusPct > 0 ? Math.floor(earned * timerSpeedBonusPct / 100) : 0;
+  earned += timerSpeedBonusAmt;
+
   state.money += earned;
 
   // Track mission result and hires for checkpoint
@@ -4406,7 +4703,9 @@ function launchMission() {
   if (expMandateMod > 0 && state.day < MANDATE_DAY) storyMods.push('exp');
   const storyText = isSabotaged
     ? getSaboteurStory(hired)
-    : (getDebriefStory(outcomeTier, state.mission.type, storyMods, hired, conflictLines) || '');
+    : hired.length === 0
+      ? getEmptyCrewStory()
+      : (getDebriefStory(outcomeTier, state.mission.type, storyMods, hired, conflictLines) || '');
 
   // Reset outcome screen UI (prepared in background, shown on SEE OUTCOME tap)
   document.getElementById('res-score').innerText = '0%';
@@ -4492,6 +4791,13 @@ function launchMission() {
   if (overperformance > 0) {
     let bonus = Math.floor(state.mission.reward * (overperformance/100));
     html += resRow(t('overperformBonus'), `+${bonus} CR`);
+    html += resDivider();
+  }
+
+  // Timer speed bonus row
+  if (timerSpeedBonusPct > 0) {
+    const label = timerSpeedBonusPct === 20 ? t('timerSpeedBonus20') : t('timerSpeedBonus10');
+    html += resRow(label, `+${timerSpeedBonusAmt} CR`);
     html += resDivider();
   }
 
@@ -4992,6 +5298,7 @@ let _pendingOutcomeHtml = '';
 let _pendingIsSabotaged = false;
 let _debriefTyping = null;
 let _debriefTypingDone = false;
+let _debriefBlinkInterval = null;
 
 function showDebriefStory(storyText, outcomeHtml, isSabotaged) {
   _pendingOutcomeHtml = outcomeHtml;
@@ -5015,12 +5322,17 @@ function showDebriefStory(storyText, outcomeHtml, isSabotaged) {
   textEl.appendChild(cursorEl);
 
   let blinkCount = 0;
-  const blinkInterval = setInterval(() => {
+  if (_debriefBlinkInterval) clearInterval(_debriefBlinkInterval);
+  _debriefBlinkInterval = setInterval(() => {
     blinkCount++;
-    if (blinkCount >= 6) { // 3 full blinks (on/off × 3)
-      clearInterval(blinkInterval);
+    if (blinkCount >= 6) {
+      clearInterval(_debriefBlinkInterval);
+      _debriefBlinkInterval = null;
       if (cursorEl.parentNode) textEl.removeChild(cursorEl);
-      startDebriefTyping(storyText, textEl, btn);
+      // Only start typing if screen is still visible
+      if (screen.classList.contains('visible')) {
+        startDebriefTyping(storyText, textEl, btn);
+      }
     }
   }, 300);
 }
@@ -5048,16 +5360,13 @@ function startDebriefTyping(text, textEl, btn) {
 }
 
 function skipDebriefStory() {
-  // On tap: if still typing, show full text + button; if done, go to outcome
+  // On tap: if still typing (or blinking), show full text + button; if done, do nothing
   if (!_debriefTypingDone) {
+    if (_debriefBlinkInterval) { clearInterval(_debriefBlinkInterval); _debriefBlinkInterval = null; }
     if (_debriefTyping) { clearInterval(_debriefTyping); _debriefTyping = null; }
     const textEl = document.getElementById('debrief-story-text');
-    // Remove cursor if still present
     const cur = document.getElementById('debrief-story-cursor');
     if (cur) cur.remove();
-    // Show full text immediately - get story from pending (already set in textEl partially)
-    // We need to show complete text. Re-derive from current innerText length vs full
-    // Actually simpler: store the full text
     textEl.innerText = _pendingDebriefText || textEl.innerText;
     _debriefTypingDone = true;
     document.getElementById('debrief-story-btn').style.display = 'block';
@@ -5094,6 +5403,8 @@ function collapseStory() {
 }
 
 function showOutcomeScreen() {
+  if (_debriefBlinkInterval) { clearInterval(_debriefBlinkInterval); _debriefBlinkInterval = null; }
+  if (_debriefTyping) { clearInterval(_debriefTyping); _debriefTyping = null; }
   document.getElementById('debrief-story-screen').classList.remove('visible');
   document.getElementById('result-overlay').classList.add('visible');
   if (window._startOutcomeAnimation) window._startOutcomeAnimation();
@@ -5102,6 +5413,9 @@ function showOutcomeScreen() {
 let _pendingDebriefText = '';
 
 function nextDay() {
+  // Clean up any active timer
+  cleanupTimerForNextDay();
+
   document.getElementById('result-overlay').classList.remove('visible');
   document.getElementById('debrief-story-screen').classList.remove('visible');
   document.getElementById('debrief-story-screen').classList.remove('visible');
@@ -5174,6 +5488,11 @@ function nextDay() {
   } else {
     state.day++;
     closeDrawer();
+    // Remove slid-in from bottom bar so goToGameForReal re-animates it
+    const bb = document.getElementById('bottom-bar');
+    bb.style.transition = '';
+    bb.style.maxHeight = '';
+    bb.classList.remove('slid-in');
     // Checkpoint every 5 days (after day 5, 10, 15...)
     if (state.day > 1 && (state.day - 1) % 5 === 0) {
       showCheckpoint(() => startDay());
@@ -5294,6 +5613,8 @@ const SFX_FILES = {
   menu_open:    'sound/menu_open.m4a',
   menu_close:   'sound/menu_close.m4a',
   wrong:        'sound/wrong.m4a',
+  timer:        'sound/timer.m4a',
+  tensec:       'sound/10sec.m4a',
 };
 
 // Pool of Audio elements per key — allows overlapping playback
@@ -5746,9 +6067,18 @@ function goToGame() {
 function fixScrollPadding() {
   const bb = document.getElementById('bottom-bar');
   const sa = document.getElementById('scroll-area');
+  const tb = document.getElementById('timer-box');
   if (!bb || !sa) return;
-  const bbH = bb.getBoundingClientRect().height;
-  sa.style.paddingBottom = (bbH + 24) + 'px';
+  const timerVisible = state.timerMission && tb && tb.style.display !== 'none';
+  const timerH = timerVisible ? (tb.offsetHeight || 50) : 0;
+  const bbH = bb.classList.contains('slid-in') ? bb.getBoundingClientRect().height : 0;
+  // On timer days: pad enough so last card scrolls to 20px above the timer box top edge
+  // Timer box sits at bottom: bbH + 8px gap. Its top edge is at bbH + 8 + timerH from bottom.
+  // We want paddingBottom = timerH + bbH + 8 + 20
+  const pad = timerVisible
+    ? timerH + bbH + 8 + 20
+    : bbH + 24;
+  sa.style.paddingBottom = pad + 'px';
 }
 
 function setStatusBar(mode) {
@@ -5767,7 +6097,6 @@ function goToGameForReal() {
   const scrollArea = document.getElementById('scroll-area');
   const barsAlreadyIn = topBar.classList.contains('slid-in');
 
-  // Step 1: slide sheet down and out
   playSfx('opening');
   rulesScreen.classList.add('slide-out');
 
@@ -5777,13 +6106,36 @@ function goToGameForReal() {
     document.getElementById('intro-cover').classList.add('gone');
 
     if (barsAlreadyIn) {
-      // Day 2+: bars already visible, just reveal cards
-      fixScrollPadding();
-      scrollArea.style.visibility = '';
+      // Day 2+: top bar already visible
+      if (state.timerMission) {
+        // Timer: force bottom bar off, show timer box only
+        bottomBar.style.transition = 'none';
+        bottomBar.classList.remove('slid-in');
+        requestAnimationFrame(() => { bottomBar.style.transition = ''; });
+        showTimerBox();
+        fixScrollPadding();
+        scrollArea.style.visibility = '';
+      } else {
+        // Clear any inline transition left from drawer drag, then animate up
+        bottomBar.style.transition = '';
+        bottomBar.style.maxHeight = '';
+        requestAnimationFrame(() => {
+          bottomBar.classList.add('slid-in');
+          fixScrollPadding();
+          scrollArea.style.visibility = '';
+        });
+      }
     } else {
-      // Day 1: bars slide in for first time
+      // Day 1: both bars slide in
       topBar.classList.add('slid-in');
-      bottomBar.classList.add('slid-in');
+      if (!state.timerMission) {
+        bottomBar.classList.add('slid-in');
+      } else {
+        bottomBar.style.transition = 'none';
+        bottomBar.classList.remove('slid-in');
+        requestAnimationFrame(() => { bottomBar.style.transition = ''; });
+        showTimerBox();
+      }
       topBar.addEventListener('transitionend', () => {
         fixScrollPadding();
         scrollArea.style.visibility = '';
@@ -5839,7 +6191,165 @@ function goToSplashFromGame() {
 }
 
 
+// ══════════════════════════════════════════════
+// TIMER MISSION LOGIC
+// ══════════════════════════════════════════════
+const TIMER_DURATION = 60;
+let timerSecondsLeft = TIMER_DURATION;
+let timerRunning = false;
+let timerStarted = false;
+let timerInterval = null;
+let timerStartTime = 0; // timestamp when START was tapped
+let timerSfxSilenced = false; // true once mission launches
+
+function showTimerBox() {
+  const box = document.getElementById('timer-box');
+  timerSecondsLeft = TIMER_DURATION;
+  timerStarted = false;
+  timerRunning = false;
+  updateTimerDisplay();
+  document.getElementById('timer-btn-text').textContent = t('timerStart');
+  box.style.display = 'flex';
+  box.style.bottom = '8px';
+  box.onclick = timerBoxTap;
+}
+
+function hideTimerBox() {
+  const box = document.getElementById('timer-box');
+  box.style.display = 'none';
+  clearInterval(timerInterval);
+  timerInterval = null;
+  timerRunning = false;
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(timerSecondsLeft / 60);
+  const secs = timerSecondsLeft % 60;
+  const display = document.getElementById('timer-display');
+  display.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+  if (timerSecondsLeft <= 10) {
+    display.classList.add('pulse');
+  } else {
+    display.classList.remove('pulse');
+  }
+}
+
+function timerBoxTap(e) {
+  if (e.target === document.getElementById('timer-btn') ||
+      e.target === document.getElementById('timer-btn-text') ||
+      e.target.closest('#timer-btn')) return;
+  if (timerStarted && timerRunning) {
+    playSfx('button');
+    const box = document.getElementById('timer-box');
+    box.classList.remove('bounce');
+    requestAnimationFrame(() => box.classList.add('bounce'));
+    pauseTimer();
+  }
+}
+
+function timerBtnTap(e) {
+  e.stopPropagation();
+  playSfx('button');
+  if (!timerStarted) {
+    startTimer();
+  } else if (timerRunning) {
+    pauseTimer();
+  } else {
+    resumeTimer();
+  }
+}
+
+function startTimer() {
+  timerStarted = true;
+  timerRunning = true;
+  timerStartTime = Date.now();
+  document.getElementById('timer-btn-text').textContent = t('timerPause');
+
+  // Slide bottom bar in (it was hidden on timer days)
+  const bottomBar = document.getElementById('bottom-bar');
+  if (!bottomBar.classList.contains('slid-in')) {
+    bottomBar.classList.add('slid-in');
+    playSfx('menu_open');
+  }
+
+  // Shift timer box up above bottom bar with 8px gap
+  requestAnimationFrame(() => {
+    const bbHeight = bottomBar.offsetHeight;
+    document.getElementById('timer-box').style.bottom = (bbHeight + 8) + 'px';
+    fixScrollPadding();
+  });
+
+  timerInterval = setInterval(timerTick, 1000);
+}
+
+function pauseTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  document.getElementById('timer-btn-text').textContent = t('timerStart');
+  const secs = timerSecondsLeft;
+  const msg = t('timerPausedMsg').replace('%s', secs);
+  document.getElementById('timer-pause-title').textContent = t('timerPaused');
+  document.getElementById('timer-pause-msg').textContent = msg;
+  document.getElementById('timer-pause-resume-text').textContent = t('timerResume');
+  playSfx('wrong');
+  document.getElementById('timer-pause-overlay').classList.remove('hidden');
+}
+
+function resumeTimer(btn) {
+  if (btn) { playSfx('button'); btn.classList.remove('bounce'); requestAnimationFrame(() => btn.classList.add('bounce')); }
+  setTimeout(() => {
+    document.getElementById('timer-pause-overlay').classList.add('hidden');
+    timerRunning = true;
+    document.getElementById('timer-btn-text').textContent = t('timerPause');
+    timerInterval = setInterval(timerTick, 1000);
+  }, btn ? 200 : 0);
+}
+
+function timerTick() {
+  if (!timerRunning) return;
+  timerSecondsLeft--;
+  updateTimerDisplay();
+
+  // SFX per tick — silenced once mission launches
+  if (!timerSfxSilenced) {
+    if (timerSecondsLeft <= 5 && timerSecondsLeft > 0) {
+      playSfx('tensec', 0.7);
+      setTimeout(() => { if (!timerSfxSilenced) playSfx('tensec', 0.7); }, 500);
+    } else if (timerSecondsLeft <= 10) {
+      playSfx('tensec', 0.7);
+    } else {
+      playSfx('timer', 0.7);
+    }
+  }
+
+  if (timerSecondsLeft <= 0) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    timerRunning = false;
+    // Auto-launch with whatever crew is assembled
+    launchMission(true);
+  }
+}
+
+function dismissTimerNotStarted(btn) {
+  if (btn) { playSfx('button'); btn.classList.remove('bounce'); requestAnimationFrame(() => btn.classList.add('bounce')); }
+  setTimeout(() => {
+    document.getElementById('timer-notstarted-overlay').classList.add('hidden');
+  }, btn ? 200 : 0);
+}
+
+function cleanupTimerForNextDay() {
+  hideTimerBox();
+  timerSecondsLeft = TIMER_DURATION;
+  timerStarted = false;
+  timerRunning = false;
+  timerSfxSilenced = false;
+}
+
+// ══════════════════════════════════════════════
 // INIT
+// ══════════════════════════════════════════════
 startDay();
 
 // ══════════════════════════════════════════════
@@ -5874,6 +6384,24 @@ startDay();
     svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
     const path = document.getElementById(`rules-path-${side}`);
     path.setAttribute('d', generateSteps(size, side === 'prev'));
+  }
+
+  function buildTimerAnnouncementPage(pageEl) {
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('urgentContract')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <div style="font-family:'VT323',monospace;font-size:18px;line-height:1.5;margin-top:12px;">
+        <p style="margin:0 0 14px;">${t('urgentLine1')}</p>
+        <p style="margin:0 0 14px;text-decoration:underline;font-weight:bold;">${t('urgentLine2')}</p>
+        <p style="margin:0;">${t('urgentLine3')}</p>
+      </div>
+    `;
   }
 
   function buildMissionPage(pageEl) {
@@ -6248,6 +6776,7 @@ startDay();
       if (isMandateIntroDay)  pages.push('mandateIntro');
       if (isExpMandateDay)    pages.push('expMandate');
       if (isSaboteurDay)      pages.push('saboteur');
+      if (state.timerMission) pages.push('timerAnnouncement');
       if (hasMandates) {
         pages.push('mandateFlavour');
         pages.push('mandateStats');
@@ -6263,6 +6792,7 @@ startDay();
         if (type === 'mandateIntro')         buildMandateIntroPage(pageEl);
         else if (type === 'expMandate')      buildExpMandatePage(pageEl);
         else if (type === 'saboteur')        buildSaboteurWarningPage(pageEl);
+        else if (type === 'timerAnnouncement') buildTimerAnnouncementPage(pageEl);
         else if (type === 'mandateFlavour')  buildMandateFlavourPage(pageEl);
         else if (type === 'mandateStats')    buildMandateStatsPage(pageEl);
         else if (type === 'mission')         buildMissionPage(pageEl);
