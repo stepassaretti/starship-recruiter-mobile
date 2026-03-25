@@ -2139,8 +2139,8 @@ const LANG = {
     class: "Class",
     // Manual
     xenoManual: "Xeno-biology manual",
-    lastHired: "Last hired",
-    allSpecies: "Others",
+    hiredSpecies: "Hired species",
+    others: "Others",
     hates: "HATES:",
     hatesAll: "EVERYONE",
     hatesNone: "NO ONE",
@@ -2318,8 +2318,8 @@ const LANG = {
     yourShip: "La tua nave",
     class: "Classe",
     xenoManual: "Manuale di xenobiologia",
-    lastHired: "Ultima assunzione",
-    allSpecies: "Altre specie",
+    hiredSpecies: "Specie assunte",
+    others: "Altre specie",
     hates: "ODIANO:",
     hatesAll: "TUTTI",
     hatesNone: "NESSUNO",
@@ -3201,34 +3201,7 @@ function getOutcomeTier(score, minReq) {
 function getManualHTML() {
   let html = `<div class="section-title" style="margin-bottom:10px;">${t('xenoManual').toUpperCase()}</div>`;
 
-  // Last hired section
-  const lhKey = state.lastHired;
-  if (lhKey && RACES[lhKey]) {
-    const rd = RACES[lhKey];
-    const _sentinelText = rd.hates[0] === 'ALL' ? (currentLang==='it' ? 'ODIANO TUTTI' : 'HATES EVERYONE') : rd.hates[0] === 'NO ONE' ? (currentLang==='it' ? 'NON ODIANO NESSUNO' : 'HATES NO ONE') : null;
-    const hateSpans = _sentinelText ? `<span>${_sentinelText}</span>` :
-      rd.hates.map((h, i, arr) => {
-      const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
-      return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
-    }).join('');
-    html += `
-      <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('lastHired').toUpperCase()}</div>
-      <div class="manual-entry" style="margin-bottom:10px;">
-        <div class="manual-name">
-          <div class="manual-icon"><img src="${rd.icon}" alt="${lhKey}" onerror="this.style.display='none'"></div>
-          ${speciesName(lhKey)}
-        </div>
-        <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
-        <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
-      </div>
-      <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('allSpecies').toUpperCase()}</div>`;
-  }
-
-  const unlockedSpecies = getUnlockedSpeciesForDay(state.day);
-  const sorted = [...unlockedSpecies]
-    .filter(k => k !== lhKey)
-    .sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
-  sorted.forEach(rKey => {
+  function buildManualEntry(rKey, noBorder) {
     const rd = RACES[rKey];
     const _sentinelText = rd.hates[0] === 'ALL' ? (currentLang==='it' ? 'ODIANO TUTTI' : 'HATES EVERYONE') : rd.hates[0] === 'NO ONE' ? (currentLang==='it' ? 'NON ODIANO NESSUNO' : 'HATES NO ONE') : null;
     const hateSpans = _sentinelText ? `<span>${_sentinelText}</span>` :
@@ -3236,8 +3209,8 @@ function getManualHTML() {
       const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
       return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
     }).join('');
-    html += `
-      <div class="manual-entry">
+    return `
+      <div class="manual-entry"${noBorder ? ' style="border-bottom:none;padding-bottom:10px;"' : ''}>
         <div class="manual-name">
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${speciesName(rKey)}
@@ -3245,7 +3218,29 @@ function getManualHTML() {
         <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
         <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
       </div>`;
-  });
+  }
+
+  // Hired species section — filtered to species currently in roster, ordered by most-recently-hired
+  const rosterSpeciesSet = new Set(state.roster.filter(m => m).map(m => m.race));
+  const hiredInRoster = state.hiredStack.filter(k => rosterSpeciesSet.has(k) && RACES[k]);
+  const hasHired = hiredInRoster.length > 0;
+
+  if (hasHired) {
+    html += `<div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('hiredSpecies').toUpperCase()}</div>`;
+    hiredInRoster.forEach((rKey, i) => {
+      const isLast = i === hiredInRoster.length - 1;
+      html += buildManualEntry(rKey, isLast);
+    });
+    html += `<div style="border-top:2px solid #000;margin:0 0 15px 0;"></div>
+      <div class="section-title" style="font-size:14px;margin-bottom:8px;opacity:0.7;">${t('others').toUpperCase()}</div>`;
+  }
+
+  const unlockedSpecies = getUnlockedSpeciesForDay(state.day);
+  const hiredSet = new Set(hiredInRoster);
+  const sorted = [...unlockedSpecies]
+    .filter(k => !hiredSet.has(k))
+    .sort((a, b) => speciesName(a).toLowerCase().localeCompare(speciesName(b).toLowerCase(), currentLang));
+  sorted.forEach(rKey => { html += buildManualEntry(rKey, false); });
   return html;
 }
 
@@ -3481,7 +3476,7 @@ function anySlotOccupied() {
   return [1,2,3,4,5].some(s => getSave(s) !== null);
 }
 
-let state = { day: 1, money: 600, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [], lastHired: null,
+let state = { day: 1, money: 600, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [], hiredStack: [],
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
@@ -4503,7 +4498,10 @@ function tapCard(appId) {
   card.classList.add('selected');
   playSfx('select_card');
   state.roster[nextSlot] = app;
-  if (!app.isSaboteur) state.lastHired = app.race;
+  if (!app.isSaboteur) {
+    state.hiredStack = state.hiredStack.filter(k => k !== app.race);
+    state.hiredStack.unshift(app.race);
+  }
   // Track species selection order (first time only)
   if (!state.speciesOrder.includes(app.race)) state.speciesOrder.push(app.race);
   sortRoster();
@@ -5986,7 +5984,7 @@ function startNewCareerInSlot(slot) {
   // Reset state
   state.day = 1; state.money = 600; state.gameOver = false;
   state.roster = []; state.pool = [];
-  state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0;
+  state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0; state.hiredStack = [];
   state.nextSaboteurDay = 14;
   startDay(); // initialise ship, roster, mission and pool for day 1
   document.getElementById('screen-slots').classList.add('hidden');
