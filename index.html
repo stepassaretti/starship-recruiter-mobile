@@ -1770,6 +1770,8 @@ body {
 
 /* Net income row — no divider, bold */
 .res-row.net { font-weight: bold; padding-top: 8px; }
+.res-salaries { color: #888; font-size: 13px; font-weight: normal; }
+.res-final-balance { font-weight: bold; padding-top: 6px; align-items: flex-start; }
 
 </style>
 </head>
@@ -1912,7 +1914,7 @@ body {
   <span class="debug-btn" onclick="openDebug()">[=]</span>
   <div class="top-right">
     <span class="top-day"><span id="ui-day-label">DAY</span> <span id="ui-day">1</span></span>
-    <span class="top-cr"><span id="ui-money">800</span> CR</span>
+    <span class="top-cr"><span id="ui-money">600</span> CR</span>
   </div>
 </div>
 
@@ -2171,7 +2173,14 @@ const LANG = {
     fineApplied: "FINE APPLIED",
     fineDetail: "Required %min%%, achieved %score%%",
     netFinancialChange: "Net financial change",
+    salaries: "Salaries",
+    finalBalance: "Final Balance",
     conflictsHeader: "CONFLICTS",
+    conflictDominated: "dominated",
+    conflictAttacked: "attacked",
+    conflictMurdered: "murdered",
+    conflictDraw: "draw",
+    conflictAbsorbed: "absorbed",
     missionBriefing: "Mission Briefing",
     yourShip: "Your Ship",
     newSpeciesApplying: "New species applying",
@@ -2341,7 +2350,14 @@ const LANG = {
     fineApplied: "MULTA APPLICATA",
     fineDetail: "Richiesto %min%%, ottenuto %score%%",
     netFinancialChange: "Compenso",
+    salaries: "Stipendi",
+    finalBalance: "Saldo Finale",
     conflictsHeader: "CONFLITTI",
+    conflictDominated: "ha dominato",
+    conflictAttacked: "ha attaccato",
+    conflictMurdered: "ha eliminato",
+    conflictDraw: "pareggio",
+    conflictAbsorbed: "ha assorbito",
     missionBriefing: "Briefing di missione",
     yourShip: "La tua astronave",
     newSpeciesApplying: "Nuova specie",
@@ -3465,7 +3481,7 @@ function anySlotOccupied() {
   return [1,2,3,4,5].some(s => getSave(s) !== null);
 }
 
-let state = { day: 1, money: 800, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [], lastHired: null,
+let state = { day: 1, money: 600, pool: [], roster: [], mission: null, ship: null, gameOver: false, speciesOrder: [], lastHired: null,
   missionLog: [],      // { day, score, success } per mission
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
@@ -3534,23 +3550,39 @@ function generateApplicant(id, forceRace) {
   let str = rand(rd.str[0], rd.str[1]);
   let int = rand(rd.int[0], rd.int[1]);
   let cha = rand(rd.cha[0], rd.cha[1]);
-  let hate = rand(0, 100);
+  // Hate ranges per species (hate = direct conflict penalty %)
+  let hate;
+  if (raceKey === "Human")        hate = rand(10, 100);
+  else if (raceKey === "Sky-Elf")      hate = rand(25, 70);
+  else if (raceKey === "Droid")        hate = rand(22, 30);
+  else if (raceKey === "Space-Cat")    hate = rand(25, 80);
+  else if (raceKey === "Robomantoid")  hate = rand(40, 90);
+  else if (raceKey === "Beetlegunner") hate = rand(35, 95);
+  else if (raceKey === "Giant")        hate = rand(30, 100);
+  else if (raceKey === "Barbitulian")  hate = rand(25, 65);
+  else if (raceKey === "Aquasim")      hate = rand(30, 80);
+  else if (raceKey === "Long-Neck")    hate = rand(30, 85);
+  else if (raceKey === "Squid")        hate = rand(30, 100);
+  else if (raceKey === "Fungi")        hate = rand(70, 95);
+  else if (raceKey === "Oak-Person")   hate = rand(35, 100);
+  else if (raceKey === "Sugorian")     hate = rand(25, 70);
+  else if (raceKey === "Cheesponge")   hate = rand(22, 40);
+  else if (raceKey === "Sodio")        hate = rand(30, 75);
+  else if (raceKey === "Blorg")        hate = rand(22, 35);
+  else if (raceKey === "Void-Demon")   hate = rand(10, 30);
+  else if (raceKey === "Velkhorian")   hate = rand(25, 65);
+  else                                 hate = rand(20, 80);
 
-  if (raceKey === "Sugorian") hate = rand(0, 50);
-  if (raceKey === "Blorg") hate = rand(0, 20);
   if (raceKey === "Sky-Elf") { int = Math.max(str, cha) + rand(1, 10); }
   if (raceKey === "Human") { while (str === int && int === cha) { str++; } }
   if (raceKey === "Beetlegunner") { str = Math.max(str, cha + 1); }
   if (raceKey === "Giant") { str = Math.max(str, int + cha + rand(1, 10)); }
-  if (raceKey === "Robomantoid") { hate = rand(20, 100); }
   if (raceKey === "Barbitulian") { int = cha; }
   if (raceKey === "Cheesponge" || raceKey === "Aquasim") { str = Math.min(int, cha) - rand(1, 5); if (str < 1) str = 1; }
   if (raceKey === "Space-Cat") { cha = Math.max(str, int) + rand(1, 10); }
-  if (raceKey === "Velkhorian") { hate = rand(0, 60); }
-  if (raceKey === "Fungi") { hate = rand(80, 100); }
   if (raceKey === "Drakhen") {
-    // 10% chance of a surprisingly low-hate Drakhen
-    if (Math.random() < 0.10) hate = rand(10, 20);
+    // 10% chance of low-hate Drakhen
+    if (Math.random() < 0.10) hate = 10;
     // Trait: always highest stats in pool — enforce minimums
     str = Math.max(str, 60);
     int = Math.max(int, 55);
@@ -3578,7 +3610,7 @@ function generateApplicant(id, forceRace) {
     }
   }
   if (raceKey === "Drakhen") { int = str; }
-  if (raceKey === "Void-Demon") { cha = str + rand(1, 10); hate = rand(0, 10); }
+  if (raceKey === "Void-Demon") { cha = str + rand(1, 10); }
   if (raceKey === "Oak-Person") { cha = rand(1, 4); }
   if (raceKey === "Long-Neck" || raceKey === "Squid") { int = str + rand(1, 10); }
   if (raceKey === "Sodio") { str = Math.max(str, int + 1); }
@@ -3742,7 +3774,7 @@ function generateMission() {
 
   return { title: title, type: m.id, reqs: m.stat, targets: targets,
     minReq: minReq, expReq: expReq,
-    reward: Math.round((400 + (state.day * 60)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10)),
+    reward: Math.round((400 + (state.day * 60)) * (m.stat.length === 1 && m.stat[0] === 'cha' ? 1.20 : 1.10) * 0.75),
     mandates: generateMandates(m.stat.length) };
 }
 
@@ -3793,7 +3825,7 @@ function generateTimerMissionAndShip() {
   const pressureAdj = Math.round((slotsPerTarget - 0.07) * 300);
   const minReq = Math.round(Math.max(55, Math.min(90, statCountBase + pressureAdj)));
 
-  const reward = Math.round((600 + (state.day * 40)) * (m.stat.length === 1 ? 1.15 : 1.25));
+  const reward = Math.round((600 + (state.day * 40)) * (m.stat.length === 1 ? 1.15 : 1.25) * 0.75);
 
   return { title, type: m.id, reqs: m.stat, targets, minReq, expReq: null, mandates: null, reward, isTimer: true };
 }
@@ -4583,39 +4615,108 @@ function launchMission(fromTimer) {
   else if (effPct >= 0.15) { effMod = -70; }
   else { effMod = -80; }
 
-  // 3. CONFLICTS — collect all into a list
+  // 3. CONFLICTS — mission-stat voting, strongest hate wins, per-victim 100% cap
   let conflictPenalty = 0, conflictCount = 0;
   let conflictLines = [];
-  for(let i=0;i<hired.length;i++) {
-    for(let j=i+1;j<hired.length;j++) {
-      let a=hired[i], b=hired[j];
-      if (!RACES[a.race] || !RACES[b.race]) continue; // skip saboteur in conflict calc
-      let rA=RACES[a.race], rB=RACES[b.race];
-      // Cheesponge absorbs Drakhen hate completely — show as 0% conflict
+
+  function statVoteWinner(a, b) {
+    const reqs = state.mission.reqs;
+    let aW = 0, bW = 0;
+    reqs.forEach(st => {
+      const av = a[st] || 0, bv = b[st] || 0;
+      if (av > bv) aW++; else if (bv > av) bW++;
+    });
+    if (aW > bW) return 'a';
+    if (bW > aW) return 'b';
+    return 'draw';
+  }
+
+  // Build raw conflict events before applying cap
+  const rawConflicts = [];
+
+  for (let i = 0; i < hired.length; i++) {
+    for (let j = i + 1; j < hired.length; j++) {
+      let a = hired[i], b = hired[j];
+      if (!RACES[a.race] || !RACES[b.race]) continue;
+      let rA = RACES[a.race], rB = RACES[b.race];
+
+      // Cheesponge absorbs Drakhen hate — no damage, add immediately
       const isCheespongeVsDrakhen = (a.race==='Cheesponge'&&b.race==='Drakhen')||(a.race==='Drakhen'&&b.race==='Cheesponge');
       if (isCheespongeVsDrakhen) {
-        const cheesp = a.race==='Cheesponge' ? a : b;
-        const drakhen = a.race==='Drakhen' ? a : b;
-        conflictCount++;
-        conflictLines.push({raceA:'Cheesponge',raceB:'Drakhen',text:`${speciesName('Cheesponge')} absorbed ${speciesName('Drakhen')}'s hate (-0%)`,absorbed:true,penalty:0,
-          nameA: hired.find(x=>x.race==='Cheesponge')?.name || 'Unknown',
-          nameB: hired.find(x=>x.race==='Drakhen')?.name || 'Unknown'});
+        conflictLines.push({raceA:'Cheesponge',raceB:'Drakhen',text:`${speciesName('Cheesponge')} ${t('conflictAbsorbed')} ${speciesName('Drakhen')}'s hate (-0%)`,absorbed:true,penalty:0,
+          nameA: hired.find(x=>x.race==='Cheesponge')?.name||'Unknown',
+          nameB: hired.find(x=>x.race==='Drakhen')?.name||'Unknown'});
         continue;
       }
+
       let aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
       let bHatesA = rB.hates.includes(a.race)||(rB.hates.includes("ALL")&&b.race!==a.race);
+      if (!aHatesB && !bHatesA) continue;
+
+      const winner = statVoteWinner(a, b);
+
       if (aHatesB && bHatesA) {
-        let aW=0,bW=0;
-        if(a.str>b.str)aW++;else if(b.str>a.str)bW++;
-        if(a.int>b.int)aW++;else if(b.int>a.int)bW++;
-        if(a.cha>b.cha)aW++;else if(b.cha>a.cha)bW++;
-        if(aW>bW){let p=5+(a.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:p,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} dominated ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-        else if(bW>aW){let p=5+(b.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,penalty:p,nameA:b.name,nameB:a.name,text:`${speciesName(b.race)} dominated ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
-        else{let pA=(5+(a.hate/100)*25)/2,pB=(5+(b.hate/100)*25)/2;conflictPenalty+=(pA+pB);conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:pA+pB,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} vs ${speciesName(b.race)} (draw, -${Math.floor(pA+pB)}%)`});}
-      } else if(aHatesB){let p=5+(a.hate/100)*25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:a.race,raceB:b.race,penalty:p,nameA:a.name,nameB:b.name,text:`${speciesName(a.race)} attacked ${speciesName(b.race)} (-${Math.floor(p)}%)`});}
-      else if(bHatesA){let p=5 + (b.hate / 100) * 25;conflictPenalty+=p;conflictCount++;conflictLines.push({raceA:b.race,raceB:a.race,penalty:p,nameA:b.name,nameB:a.name,text:`${speciesName(b.race)} attacked ${speciesName(a.race)} (-${Math.floor(p)}%)`});}
+        // Mutual hate — stronger dominates, use their hate
+        let attacker, victim, p;
+        if (winner === 'a') { attacker = a; victim = b; p = a.hate; }
+        else if (winner === 'b') { attacker = b; victim = a; p = b.hate; }
+        else { attacker = a; victim = b; p = Math.floor((a.hate + b.hate) / 2); }
+        const txt = winner === 'draw'
+          ? `${speciesName(a.race)} vs ${speciesName(b.race)} (${t('conflictDraw')}, -${p}%)`
+          : `${speciesName(attacker.race)} ${t('conflictDominated')} ${speciesName(victim.race)} (-${p}%)`;
+        rawConflicts.push({ attacker, victim, p, raceA: attacker.race, raceB: victim.race, nameA: attacker.name, nameB: victim.name, txt });
+      } else if (aHatesB) {
+        // A hates B — stronger determines penalty
+        let attacker, victim, p, verb;
+        if (winner === 'a') { attacker = a; victim = b; p = a.hate; verb = 'attacked'; }
+        else if (winner === 'b') { attacker = b; victim = a; p = b.hate; verb = 'dominated'; }
+        else { attacker = a; victim = b; p = Math.floor((a.hate + b.hate) / 2); verb = 'draw'; }
+        const txt = verb === 'draw'
+          ? `${speciesName(a.race)} vs ${speciesName(b.race)} (${t('conflictDraw')}, -${p}%)`
+          : verb === 'dominated'
+            ? `${speciesName(attacker.race)} ${t('conflictDominated')} ${speciesName(victim.race)} (-${p}%)`
+            : `${speciesName(attacker.race)} ${t('conflictAttacked')} ${speciesName(victim.race)} (-${p}%)`;
+        rawConflicts.push({ attacker, victim, p, raceA: attacker.race, raceB: victim.race, nameA: attacker.name, nameB: victim.name, txt });
+      } else {
+        // B hates A
+        let attacker, victim, p, verb;
+        if (winner === 'b') { attacker = b; victim = a; p = b.hate; verb = 'attacked'; }
+        else if (winner === 'a') { attacker = a; victim = b; p = a.hate; verb = 'dominated'; }
+        else { attacker = b; victim = a; p = Math.floor((a.hate + b.hate) / 2); verb = 'draw'; }
+        const txt = verb === 'draw'
+          ? `${speciesName(b.race)} vs ${speciesName(a.race)} (${t('conflictDraw')}, -${p}%)`
+          : verb === 'dominated'
+            ? `${speciesName(attacker.race)} ${t('conflictDominated')} ${speciesName(victim.race)} (-${p}%)`
+            : `${speciesName(attacker.race)} ${t('conflictAttacked')} ${speciesName(victim.race)} (-${p}%)`;
+        rawConflicts.push({ attacker, victim, p, raceA: attacker.race, raceB: victim.race, nameA: attacker.name, nameB: victim.name, txt });
+      }
     }
   }
+
+  // Sort by hate descending (highest hate processed first per victim)
+  rawConflicts.sort((x, y) => y.p - x.p);
+
+  // Apply with per-victim 100% damage cap; murdered characters can't attack
+  const victimDamage = {}; // id → total damage so far
+  for (const c of rawConflicts) {
+    // If attacker was already murdered, they can't act
+    if ((victimDamage[c.attacker.id] || 0) >= 100) continue;
+
+    const vid = c.victim.id;
+    const soFar = victimDamage[vid] || 0;
+    if (soFar >= 100) continue; // victim already at cap, skip
+    const headroom = 100 - soFar;
+    const actual = Math.min(c.p, headroom);
+    victimDamage[vid] = soFar + actual;
+    conflictPenalty += actual;
+    conflictCount++;
+    let finalTxt = c.txt;
+    if (actual < c.p) {
+      finalTxt = `${speciesName(c.attacker.race)} ${t('conflictMurdered')} ${speciesName(c.victim.race)} (-${actual}%)`;
+    }
+    conflictLines.push({ raceA: c.raceA, raceB: c.raceB, penalty: actual, nameA: c.nameA, nameB: c.nameB, text: finalTxt });
+  }
+
 
   // 4. SYNERGY — any conflict (even absorbed) blocks synergy
   let synergy = 0;
@@ -4733,17 +4834,19 @@ function launchMission(fromTimer) {
   html += resRow(t('crewPowerOutput'), `${Math.floor(rawScore)}%`);
   html += resDivider();
 
-  // Ship efficiency
+  // Ship efficiency — only show if there's something to report
   let effLabel = '', effVal = '';
   if (hired.length === state.ship.max) { effLabel = t('effMaxCapacity'); effVal = '+5%'; }
-  else if (effPct >= 1) { effLabel = t('effMinMet'); effVal = '0%'; }
+  else if (effPct >= 1) { effLabel = ''; effVal = ''; } // min met — no row
   else if (effPct >= 0.8) { effLabel = t('effTier1'); effVal = '-15%'; }
   else if (effPct >= 0.6) { effLabel = t('effTier2'); effVal = '-25%'; }
   else if (effPct >= 0.4) { effLabel = t('effTier3'); effVal = '-50%'; }
   else if (effPct >= 0.15) { effLabel = t('effCritical'); effVal = '-70%'; }
   else { effLabel = t('effFatal'); effVal = '-80%'; }
-  html += resRow(effLabel, effVal);
-  html += resDivider();
+  if (effLabel) {
+    html += resRow(effLabel, effVal);
+    html += resDivider();
+  }
 
   // Conflicts block
   if (conflictCount > 0) {
@@ -4812,6 +4915,12 @@ function launchMission(fromTimer) {
   // Net financial change (no divider after)
   const netStr = earned >= 0 ? `+${earned} CR` : `${earned} CR`;
   html += resRow(t('netFinancialChange'), netStr, true);
+  html += resDivider();
+
+  // Final balance
+  const finalBal = state.money;
+  const finalBalStr = finalBal >= 0 ? `${finalBal} CR` : `${finalBal} CR`;
+  html += `<div class="res-row res-final-balance"><span class="res-row-label">${t('finalBalance')}</span><span class="res-row-value">${finalBalStr}</span></div>`;
 
   // Show debrief story screen first, pass completed html for outcome screen
   _pendingDebriefText = storyText;
@@ -5527,7 +5636,7 @@ function debugJumpToInput() {
   closeDebug();
   if (activeDrawer) closeDrawer();
   state.day = day;
-  state.money = 800;
+  state.money = 600;
   state.gameOver = false;
   state.roster = [];
   state.pool = [];
@@ -5541,7 +5650,7 @@ function debugJumpToDay(day) {
   closeDebug();
   if (activeDrawer) closeDrawer();
   state.day = day;
-  state.money = 800;
+  state.money = 600;
   state.gameOver = false;
   state.roster = [];
   state.pool = [];
@@ -5875,7 +5984,7 @@ function startNewCareerInSlot(slot) {
   activeSaveSlot = slot;
   deleteSave(slot);
   // Reset state
-  state.day = 1; state.money = 800; state.gameOver = false;
+  state.day = 1; state.money = 600; state.gameOver = false;
   state.roster = []; state.pool = [];
   state.missionLog = []; state.allTimeHires = {}; state.totalEarned = 0;
   state.nextSaboteurDay = 14;
@@ -6154,7 +6263,7 @@ function acknowledgeIntro() {
 // When returning from game over, restore intro-cover then pixel fade
 function goToSplashFromGame() {
   // Reset state fully on start over
-  state.day=1; state.money=800; state.gameOver=false; state.roster=[]; state.pool=[];
+  state.day=1; state.money=600; state.gameOver=false; state.roster=[]; state.pool=[];
   state.missionLog=[]; state.allTimeHires={}; state.totalEarned=0; state.nextSaboteurDay=14;
   activeSaveSlot = null;
 
