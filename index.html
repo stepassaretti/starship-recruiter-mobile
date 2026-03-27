@@ -130,7 +130,6 @@ body {
 .section-payroll {
   font-size: 20px;
   font-weight: 400;
-  color: #000;
 }
 
 /* ── MISSION PANEL ── */
@@ -1941,7 +1940,6 @@ body {
 <div class="scroll-area" id="scroll-area" style="visibility:hidden;">
   <div class="section-title-row">
     <div class="section-title" id="pool-title">APPLICANTS [0]</div>
-    <div class="section-payroll" id="pool-payroll"></div>
   </div>
   <div class="cards-grid" id="cards-grid"></div>
 </div>
@@ -2220,7 +2218,6 @@ const LANG = {
     missionTitles: {},
     day: "DAY",
     applicants: "APPLICANTS",
-    payroll: "PAYROLL",
     rule1: "Read the mission intel carefully. Meet the <u>required stats</u> (STRENGTH, INTELLIGENCE, CHARISMA) and the <u>min success %</u>, or the contract fails.",
     rule2: "Understaffed ships underperform — keep an eye on the <u>min crew requirement</u>.",
     rule3: "Some species don't work well together. Always consult the <u>Xeno-Biology Manual</u>.",
@@ -2420,7 +2417,6 @@ const LANG = {
     },
     day: "GIORNO",
     applicants: "CANDIDATI",
-    payroll: "PAGHE",
     rule1: "Leggi il briefing con attenzione. Raggiungi le <u>statistiche richieste</u> (FORZA, INTELLIGENZA, CARISMA) e la <u>% di successo minima</u>, o la missione fallisce.",
     rule2: "Le navi con equipaggio insufficiente rendono meno — tieni d'occhio il <u>requisito minimo di equipaggio</u>.",
     rule3: "Alcune specie non vanno d'accordo. Consulta sempre il <u>Manuale di Xenobiologia</u>.",
@@ -3950,41 +3946,10 @@ function startDay() {
   const tb = document.getElementById('timer-box');
   if (tb) tb.style.display = 'none';
 
-  // Mission type selection based on day
-  // Day 61+: 33% mandate, 33% timer, 34% regular
-  // Day 51+: 66% mandate, 34% regular
-  // Day 50: always mandate (first introduction day)
-  // Below 50: always regular
-  if (state.day >= 61) {
-    const r = Math.random();
-    if (r < 0.33) {
-      state.timerMission = true;
-      state.mission = generateTimerMissionAndShip();
-    } else if (r < 0.66) {
-      state.mission = generateMission(); // mandate (generateMandates called inside when day >= MANDATE_DAY)
-    } else {
-      // force regular: temporarily suppress mandate
-      const saved = state.day;
-      state.day = MANDATE_DAY - 1;
-      state.mission = generateMission();
-      state.day = saved;
-      if (state.mission) state.mission.mandates = null;
-    }
-  } else if (state.day === 60) {
-    // Day 60: first timer day — always timer
+  // Day 60+: 50% chance of a timer mission (overrides normal ship/pool)
+  if (state.day >= 60 && (state.day === 60 || Math.random() < 0.5)) {
     state.timerMission = true;
-    state.mission = generateTimerMissionAndShip();
-  } else if (state.day >= 51) {
-    // 66% mandate, 34% regular
-    if (Math.random() < 0.66) {
-      state.mission = generateMission(); // mandate
-    } else {
-      const saved = state.day;
-      state.day = MANDATE_DAY - 1;
-      state.mission = generateMission();
-      state.day = saved;
-      if (state.mission) state.mission.mandates = null;
-    }
+    state.mission = generateTimerMissionAndShip(); // also sets state.ship + state.roster
   } else {
     state.mission = generateMission();
   }
@@ -4303,10 +4268,6 @@ function updateUI() {
 
   // Pool title — count ALL applicants (cards stay in pool)
   document.getElementById('pool-title').innerText = `${t('applicants')} [${state.pool.length}]`;
-  const payrollEl = document.getElementById('pool-payroll');
-  if (payrollEl) {
-    payrollEl.innerText = currentCost > 0 ? `${t('payroll')}: -${currentCost} cr` : '';
-  }
 
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
@@ -4671,8 +4632,6 @@ function updateSingleSlot(index) {
 function updateCostDisplay() {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-money').innerText = state.money - currentCost;
-  const payrollEl = document.getElementById('pool-payroll');
-  if (payrollEl) payrollEl.innerText = currentCost > 0 ? `${t('payroll')}: -${currentCost} cr` : '';
 }
 
 // ══════════════════════════════════════════════
