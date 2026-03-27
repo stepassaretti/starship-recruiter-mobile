@@ -130,6 +130,7 @@ body {
 .section-payroll {
   font-size: 20px;
   font-weight: 400;
+  color: #000;
 }
 
 /* ── MISSION PANEL ── */
@@ -1940,6 +1941,7 @@ body {
 <div class="scroll-area" id="scroll-area" style="visibility:hidden;">
   <div class="section-title-row">
     <div class="section-title" id="pool-title">APPLICANTS [0]</div>
+    <div class="section-payroll" id="pool-payroll"></div>
   </div>
   <div class="cards-grid" id="cards-grid"></div>
 </div>
@@ -2125,7 +2127,8 @@ const LANG = {
       "Sky-Elf": "Sky-Elf", "Beetlegunner": "Beetlegunner", "Barbitulian": "Barbitulian",
       "Velkhorian": "Velkhorian", "Squid": "Squid", "Sugorian": "Sugorian",
       "Void-Demon": "Void-Demon", "Cheesponge": "Cheesponge", "Aquasim": "Aquasim",
-      "Space-Cat": "Space-Cat", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio"
+      "Space-Cat": "Space-Cat", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio",
+      "Tetralynx": "Tetralynx"
     },
     // Mission overlay
     missionIntel: "Mission intel",
@@ -2165,6 +2168,7 @@ const LANG = {
     effFatal: "Fatal understaffing",
     synergyBonus: "Synergy bonus",
     drakhForceBonus: "Drakh Force Bonus",
+    harmonyProtocol: "Harmony Protocol",
     experienceReq: "Experience Req",
     expMandateFulfilled: "Experience mandate fulfilled",
     expMandateIgnored: "Experience mandate ignored",
@@ -2216,6 +2220,7 @@ const LANG = {
     missionTitles: {},
     day: "DAY",
     applicants: "APPLICANTS",
+    payroll: "PAYROLL",
     rule1: "Read the mission intel carefully. Meet the <u>required stats</u> (STRENGTH, INTELLIGENCE, CHARISMA) and the <u>min success %</u>, or the contract fails.",
     rule2: "Understaffed ships underperform — keep an eye on the <u>min crew requirement</u>.",
     rule3: "Some species don't work well together. Always consult the <u>Xeno-Biology Manual</u>.",
@@ -2300,6 +2305,7 @@ const LANG = {
       "Velkhorian": "Aviano", "Squid": "Tentacolato", "Sugorian": "Sugoriano",
       "Void-Demon": "Demone", "Cheesponge": "Spugnoso", "Aquasim": "Acquariano",
       "Space-Cat": "Gattaco", "Drakhen": "Drakhen", "Blorg": "Blorg", "Sodio": "Sodio",
+      "Tetralynx": "Tetralince",
       "Humane": "Umanio", "Skye-Elf": "Volcanieno", "Giaant": "Giganto",
       "Droyd": "Drodio", "Barbitulean": "Barbitullione", "Space-Kat": "Gattaccio",
       "Velkharion": "Avianno", "Aquazim": "Acquarello", "Void-Daemon": "Demonio",
@@ -2342,6 +2348,7 @@ const LANG = {
     effFatal: "Carenza fatale di equipaggio",
     synergyBonus: "Bonus sinergia",
     drakhForceBonus: "Bonus Forza Drakh",
+    harmonyProtocol: "Protocollo Armonia",
     experienceReq: "Req. Esperienza",
     expMandateFulfilled: "Mandato esperienza soddisfatto",
     expMandateIgnored: "Mandato esperienza ignorato",
@@ -2413,6 +2420,7 @@ const LANG = {
     },
     day: "GIORNO",
     applicants: "CANDIDATI",
+    payroll: "PAGHE",
     rule1: "Leggi il briefing con attenzione. Raggiungi le <u>statistiche richieste</u> (FORZA, INTELLIGENZA, CARISMA) e la <u>% di successo minima</u>, o la missione fallisce.",
     rule2: "Le navi con equipaggio insufficiente rendono meno — tieni d'occhio il <u>requisito minimo di equipaggio</u>.",
     rule3: "Alcune specie non vanno d'accordo. Consulta sempre il <u>Manuale di Xenobiologia</u>.",
@@ -2644,8 +2652,15 @@ function getMissionHTML() {
 
 function getUnlockedSpeciesForDay(day) {
   const allSpecies = Object.keys(RACES);
-  const count = Math.min(4 + Math.floor(day / 2), allSpecies.length);
-  return allSpecies.slice(0, count);
+  // Tetralynx has a hardcoded unlock day of 40
+  const LATE_UNLOCKS = { "Tetralynx": 40 };
+  const regular = allSpecies.filter(s => !LATE_UNLOCKS[s]);
+  const count = Math.min(4 + Math.floor(day / 2), regular.length);
+  const unlocked = regular.slice(0, count);
+  for (const [species, unlockDay] of Object.entries(LATE_UNLOCKS)) {
+    if (day >= unlockDay) unlocked.push(species);
+  }
+  return unlocked;
 }
 
 // ══════════════════════════════════════════════
@@ -2672,6 +2687,9 @@ const STORY_TEMPLATES = {
     { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] completed primary objectives while {c2} [{s2}] dealt with complications that, per the official log, "resolved themselves." The Drakhen filed no incident report. Agency policy now requires them to.` },
     // cheesponge
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] absorbed four separate pre-conflict incidents during the operation. Nobody ever raised their voice. {c2} [{s2}] noticed but said nothing. The Cheesponge seemed pleased, in whatever way Cheesponges express that.` },
+    // tetralynx
+    { tags: ['tetralynx'], min: 3, t: `{c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] did not allow a single conflict to form. Any tension that arose was intercepted before it became observable. The crew has submitted a formal query asking whether anything actually happened on this mission. The Tetralynx have not responded.` },
+    { tags: ['tetralynx'], min: 3, t: `The after-action review identifies zero interpersonal incidents. Zero raised voices. Zero filed complaints. {c1} [{s1}] positioned near every potential flashpoint before it became one. The agency has no protocol for rating a mission this frictionless.` },
     // mission types
     { tags: ['ASSAULT'], min: 2, t: `The target installation was neutralised inside the first hour. {c1} [{s1}] breached while {c2} [{s2}] secured extraction. Reinforcements arrived after the fact. The after-action log lists them under "irrelevant."` },
     { tags: ['RESEARCH'], min: 1, t: `All data collected. All specimens catalogued. {c1} [{s1}] filed seventeen supplementary observations that the client had not requested. The client is still reading them.` },
@@ -2703,6 +2721,8 @@ const STORY_TEMPLATES = {
     { tags: ['drakhen'], min: 2, t: `The mission encountered unexpected resistance at the midpoint. {c1} [{s1}] was handling it. Then {c2} [{s2}] arrived. Then it was handled. The client was told the resistance "dispersed." This is technically true.` },
     // cheesponge
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] had a friction point on day two. {c3} [{s3}] moved between them. The friction dissipated. The Cheesponge then returned to its position and did not acknowledge what it had done.` },
+    // tetralynx
+    { tags: ['tetralynx'], min: 3, t: `There were moments where conflict seemed inevitable. {c1} [{s1}] was already in position before any of them materialised. {c2} [{s2}] and {c3} [{s3}] flanked the critical flashpoints. The crew later reported that the mission felt unusually calm. It was not a coincidence.` },
     // mission types
     { tags: ['ASSAULT'], min: 2, t: `Engagement successful. {c1} [{s1}] led the breach. {c2} [{s2}] covered extraction. There were more hostiles than the briefing suggested. This is always the case. Objectives cleared.` },
     { tags: ['RESEARCH'], min: 2, t: `Data collected. Some of the collection methods were unorthodox. {c1} [{s1}] described them as "adaptive." {c2} [{s2}] described them as "alarming." The client received the data and has not asked for clarification.` },
@@ -2734,6 +2754,8 @@ const STORY_TEMPLATES = {
     { tags: ['mandate'], min: 2, t: `The client's specific requirements were met. {c1} [{s1}] confirmed this in writing. {c2} [{s2}] confirmed it verbally. The mission scraped through regardless. The Muuvari Syndicate rep accepted the outcome and left without further comment.` },
     // drakhen
     { tags: ['drakhen'], min: 2, t: `The mission was going sideways. Then {c1} [{s1}] made a decision that is not fully documented in the log. The mission was no longer going sideways. {c2} [{s2}] has declined to be debriefed on the specifics.` },
+    // tetralynx
+    { tags: ['tetralynx'], min: 3, t: `The crew held together under pressure. {c1} [{s1}] is logged as having physically stepped between two other crew members on three separate occasions. The mission came through. The incident reports say "no incidents." This is because {c1} [{s1}] intercepted them before they became incidents.` },
     // mission types
     { tags: ['ASSAULT'], min: 2, t: `Assault objectives cleared. Not cleanly. {c1} [{s1}] led the breach. {c2} [{s2}] held the rear. There was a point at which both of them were holding the rear and nobody was leading anything. It resolved itself. The objectives are listed as complete.` },
     { tags: ['FIRST CONTACT'], min: 2, t: `Contact was made. Communication was attempted. {c1} [{s1}] transmitted the standard greeting package while {c2} [{s2}] stood by. The species responded. Their response was ambiguous. The mission is classified as successful pending translation of the ambiguity.` },
@@ -2759,6 +2781,8 @@ const STORY_TEMPLATES = {
     { tags: ['synergy'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] worked well together. This is noted. They worked well together toward the wrong objective for the final two hours. The mission failed. Harmoniously.` },
     // drakhen
     { tags: ['drakhen'], min: 2, t: `The operation was progressing. Then {c1} [{s1}] made a decision. The decision was not the one that was needed. {c2} [{s2}] has not explained why they did not intervene. The mission failed. The Drakhen filed no report.` },
+    // tetralynx
+    { tags: ['tetralynx'], min: 3, t: `The crew dynamic was controlled throughout. No interpersonal incidents. No conflict penalties. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] maintained order on a ship that ultimately could not meet its objectives. The Tetralynx kept the peace. The mission still failed. These are unrelated problems.` },
     // mandate
     { tags: ['mandate'], min: 2, t: `The client's specific requirements were met. The mission itself was not. The Vorrk Interstellar Group has confirmed receipt of their requested personnel configuration and is billing separately for the unmet objectives.` },
     // mission types
@@ -2786,6 +2810,8 @@ const STORY_TEMPLATES = {
     { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] performed as expected. {c2} [{s2}] performed better than expected, then made a choice that invalidated the preceding performance. The Drakhen's after-action report is a single paragraph. Legal has been asked to review it.` },
     // cheesponge
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] had absorbed the inter-crew tension. This helped for a while. Then the tension returned in a different form. {c2} [{s2}] filed a formal complaint about the Cheesponge's involvement. The complaint is being processed.` },
+    // tetralynx
+    { tags: ['tetralynx'], min: 3, t: `Internal harmony was maintained throughout. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] ensured that. The crew did not fight. The crew also did not succeed. The agency notes that crew cohesion, while admirable, does not substitute for mission performance.` },
     // mandate
     { tags: ['mandate'], min: 2, t: `The client's crew requirements were met in full. The mission itself was not. The Crassovian Logistics Bureau has confirmed that the correct species were present for the incorrect outcome. They have issued a partial refund demand.` },
     // mission types
@@ -2818,6 +2844,8 @@ const STORY_TEMPLATES = {
     { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] made a decision at the 06:40 mark that {c2} [{s2}] describes as "not what we discussed." The sensor log from that point forward shows only white space. The client's installation is no longer at its listed coordinates.` },
     // cheesponge gone wrong
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] reached a state of tension that exceeded the Cheesponge's buffering capacity. {c2} [{s2}] observes that this has never happened before. It has now happened once. The mission site has been added to a list of locations the agency recommends avoiding.` },
+    // tetralynx - kept the peace, mission still catastrophic
+    { tags: ['tetralynx'], min: 3, t: `Not a single interpersonal incident was logged. {c1} [{s1}], {c2} [{s2}] and {c3} [{s3}] held the crew together through conditions that would have fractured any other group. The mission failed completely regardless. The Tetralynx have no comment on this. They consider crew harmony and mission success to be separate departments.` },
     // mission types
     { tags: ['ASSAULT'], min: 2, t: `{c1} [{s1}] and {c2} [{s2}] assaulted the facility. The facility was a diplomatic outpost. The briefing had indicated otherwise. The agency's legal team is currently in its fourth week of correspondence with the Vorrk Foreign Ministry.` },
     { tags: ['ASSAULT'], min: 3, t: `The assault was launched. The target retaliated. {c1} [{s1}] called for support. {c2} [{s2}] provided support in the wrong direction. {c3} [{s3}] attempted extraction before the objective was reached. Nobody has written a version of this where the agency looks good.` },
@@ -2892,6 +2920,8 @@ const STORY_TEMPLATES_IT = {
     { tags: [], min: 1, t: `Il file della missione contiene un gap di tre secondi nel registro dei sensori al minuto 04:12. Prima: undici ostili irrisolti. Dopo: nessuno. {c1} [{s1}] è elencato come presente. Non sono disponibili ulteriori dettagli.` },
     { tags: [], min: 2, t: `{c1} [{s1}] ha completato gli obiettivi primari mentre {c2} [{s2}] ha gestito le complicazioni che, secondo il registro ufficiale, "si sono risolte da sole." Il Drakhen non ha presentato alcun rapporto di incidente. La politica dell'agenzia ora lo richiede.` },
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] ha assorbito quattro incidenti pre-conflitto separati durante l'operazione. Nessuno ha mai alzato la voce. {c2} [{s2}] se ne è accorto ma non ha detto nulla. Il Cheesponge sembrava soddisfatto, in qualunque modo i Cheesponge lo esprimano.` },
+    { tags: ['tetralynx'], min: 3, t: `{c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] non hanno permesso che si formasse nemmeno un conflitto. Ogni tensione è stata intercettata prima di diventare osservabile. L'equipaggio ha inviato una richiesta formale chiedendo se sia successo effettivamente qualcosa in questa missione. I Tetralynx non hanno risposto.` },
+    { tags: ['tetralynx'], min: 3, t: `La revisione post-missione non registra alcun incidente interpersonale. Zero voci alzate. Zero reclami presentati. {c1} [{s1}] era posizionato vicino ad ogni potenziale punto critico prima che diventasse tale. L'agenzia non ha un protocollo per valutare una missione priva di frizioni come questa.` },
     { tags: [], min: 2, t: `L'installazione obiettivo è stata neutralizzata nella prima ora. {c1} [{s1}] ha effettuato la breccia mentre {c2} [{s2}] garantiva l'estrazione. I rinforzi sono arrivati dopo. Il registro post-missione li elenca sotto "irrilevanti."` },
     { tags: [], min: 1, t: `Tutti i dati raccolti. Tutti i campioni catalogati. {c1} [{s1}] ha presentato diciassette osservazioni supplementari che il cliente non aveva richiesto. Il cliente le sta ancora leggendo.` },
     { tags: [], min: 2, t: `{c1} [{s1}] ha aperto i negoziati. {c2} [{s2}] li ha chiusi. L'accordo è stato firmato prima che arrivasse il catering. La delegazione Vorrk ha descritto l'equipaggio come "inaspettatamente professionale," che, per i Vorrk, è il massimo elogio disponibile.` },
@@ -2914,6 +2944,7 @@ const STORY_TEMPLATES_IT = {
     { tags: ['veteran'], min: 2, t: `{c2} [{s2}] ha deferreduto all'esperienza di {c1} [{s1}] per tutta l'operazione. È stata la scelta corretta. Gli obiettivi sono stati raggiunti in ordine. Il cliente ha pagato senza negoziare.` },
     { tags: [], min: 2, t: `La missione ha incontrato resistenza inaspettata a metà strada. {c1} [{s1}] la stava gestendo. Poi è arrivato {c2} [{s2}]. Poi era gestita. Al cliente è stato detto che la resistenza "si è dispersa." Questo è tecnicamente vero.` },
     { tags: ['cheesponge'], min: 3, t: `{c1} [{s1}] e {c2} [{s2}] avevano un punto di attrito il secondo giorno. {c3} [{s3}] si è mosso tra di loro. L'attrito si è dissipato. Il Cheesponge è poi tornato alla sua posizione e non ha riconosciuto ciò che aveva fatto.` },
+    { tags: ['tetralynx'], min: 3, t: `Ci sono stati momenti in cui il conflitto sembrava inevitabile. {c1} [{s1}] era già in posizione prima che si materializzasse. {c2} [{s2}] e {c3} [{s3}] hanno presidiato i punti critici. L'equipaggio ha riferito in seguito che la missione sembrava insolitamente tranquilla. Non era una coincidenza.` },
     { tags: [], min: 2, t: `Scontro riuscito. {c1} [{s1}] ha guidato la breccia. {c2} [{s2}] ha coperto l'estrazione. C'erano più ostili di quanto suggerisse il briefing. È sempre così. Obiettivi raggiunti.` },
     { tags: [], min: 2, t: `Dati raccolti. Alcuni metodi di raccolta erano non ortodossi. {c1} [{s1}] li ha descritti come "adattativi." {c2} [{s2}] li ha descritti come "allarmanti." Il cliente ha ricevuto i dati e non ha chiesto chiarimenti.` },
     { tags: [], min: 2, t: `Negoziati conclusi. La delegazione Crassoviana è uscita due volte. {c1} [{s1}] li ha riportati entrambe le volte. {c2} [{s2}] non ha parlato, il che i Crassoviani hanno interpretato come gravitas. Ha funzionato.` },
@@ -2943,6 +2974,7 @@ const STORY_TEMPLATES_IT = {
     { tags: [], min: 2, t: `Obiettivo neutralizzato. {c1} [{s1}] ha tracciato l'obiettivo. {c2} [{s2}] ha chiuso il gap. L'approccio era improvvisato. L'Egemonia Thek ha ricevuto la conferma e ha pagato il tasso concordato senza il bonus di performance.` },
     { tags: [], min: 3, t: `Evacuazione raggiunta. Non tutta, e non secondo il programma originale, ma la popolazione è fuori dal pianeta. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno gestito zone separate. La zona di {c3} [{s3}] era quella difficile. {c3} [{s3}] ha richiesto un incarico diverso la prossima volta.` },
     { tags: [], min: 3, t: `Il furto è riuscito. L'uscita era non programmata. {c1} [{s1}] aveva l'asset. {c2} [{s2}] aveva il percorso. {c3} [{s3}] aveva un percorso diverso. Hanno usato il percorso di {c3} [{s3}]. L'asset è arrivato. La Sindacato ha pagato. Nessuno ha chiesto dell'altro percorso.` },
+    { tags: ['tetralynx'], min: 3, t: `L'equipaggio ha retto sotto pressione. {c1} [{s1}] è registrato come essersi fisicamente interposto tra altri due membri dell'equipaggio in tre occasioni separate. La missione è passata. I rapporti dicono "nessun incidente." Questo perché {c1} [{s1}] li ha intercettati prima che diventassero incidenti.` },
   ],
   near_miss: [
     { tags: [], min: 1, t: `{c1} [{s1}] era vicino. Il registro della missione lo conferma. Il cliente non considera la vicinanza un risultato fatturabile. La fattura è stata modificata di conseguenza.` },
@@ -2960,6 +2992,7 @@ const STORY_TEMPLATES_IT = {
     { tags: [], min: 2, t: `L'obiettivo è stato localizzato. L'estrazione è stata tentata. {c1} [{s1}] ha raggiunto l'obiettivo. {c2} [{s2}] ha gestito il percorso. Il percorso si è chiuso prima che l'estrazione fosse completa. L'obiettivo è ora nello stesso posto, ma sa che qualcuno ha provato.` },
     { tags: [], min: 1, t: `{c1} [{s1}] ha raggiunto l'obiettivo. L'obiettivo era stato spostato. La nuova posizione è stata identificata tre ore dopo la chiusura della finestra di estrazione. Il cliente è stato avvisato. Il cliente non è contento.` },
     { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] sono entrati nel caveau. Il caveau conteneva un secondo caveau. Il secondo caveau aveva un codice diverso. Il tempo è scaduto durante il tentativo del secondo codice. Il primo caveau è ancora accessibile. Questo non è stato utile.` },
+    { tags: ['tetralynx'], min: 3, t: `La dinamica dell'equipaggio era sotto controllo per tutta la durata. Nessun incidente interpersonale. Nessuna penalità da conflitto. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno mantenuto l'ordine su una nave che alla fine non è riuscita a raggiungere i propri obiettivi. I Tetralynx hanno mantenuto la pace. La missione è comunque fallita. Sono problemi distinti.` },
   ],
   failed: [
     { tags: [], min: 1, t: `{c1} [{s1}] è tornato dalla missione. La missione non è tornata con lui, in nessun senso significativo. Il cliente è stato avvisato. La multa è stata applicata. {c1} [{s1}] ha presentato un rapporto post-missione di due parole. È stato archiviato.` },
@@ -2972,6 +3005,7 @@ const STORY_TEMPLATES_IT = {
     { tags: [], min: 2, t: `{c1} [{s1}] e {c2} [{s2}] hanno diviso un lavoro da tre persone. Il terzo del lavoro che nessuno ha preso è diventato il terzo critico. La missione è fallita nella sezione scoperta. Il rapporto sul personale raccomanda più personale.` },
     { tags: ['drakhen'], min: 2, t: `{c1} [{s1}] ha eseguito come previsto. {c2} [{s2}] ha eseguito meglio del previsto, poi ha fatto una scelta che ha invalidato la prestazione precedente. Il rapporto post-missione del Drakhen è un singolo paragrafo. Al dipartimento legale è stato chiesto di esaminarlo.` },
     { tags: ['cheesponge'], min: 2, t: `{c1} [{s1}] aveva assorbito la tensione inter-equipaggio. Questo ha aiutato per un po'. Poi la tensione è tornata in una forma diversa. {c2} [{s2}] ha presentato un reclamo formale sul coinvolgimento del Cheesponge. Il reclamo è in elaborazione.` },
+    { tags: ['tetralynx'], min: 3, t: `L'armonia interna è stata mantenuta per tutta la durata. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] se ne sono occupati. L'equipaggio non ha litigato. L'equipaggio non ha nemmeno avuto successo. L'agenzia prende atto che la coesione dell'equipaggio, per quanto ammirevole, non sostituisce la performance della missione.` },
     { tags: [], min: 2, t: `I requisiti di equipaggio del cliente sono stati soddisfatti integralmente. La missione stessa no. L'Ufficio Logistico Crassoviano ha confermato che le specie corrette erano presenti per il risultato scorretto. Hanno emesso una richiesta di rimborso parziale.` },
     { tags: [], min: 2, t: `Il team d'assalto ha violato il perimetro. Il perimetro era quello sbagliato. {c1} [{s1}] lo ha identificato al minuto quaranta. {c2} [{s2}] lo ha confermato. Erano dal lato sbagliato della struttura. L'estrazione è seguita poco dopo.` },
     { tags: [], min: 3, t: `{c1} [{s1}] ha guidato l'assalto. {c2} [{s2}] e {c3} [{s3}] hanno supportato. La resistenza era più pesante di quanto indicasse il briefing. L'obiettivo non è stato raggiunto. La valutazione post-missione di {c1} [{s1}] consiste in una frase e un diagramma. Il diagramma è allarmante.` },
@@ -3006,6 +3040,7 @@ const STORY_TEMPLATES_IT = {
     { tags: [], min: 2, t: `Ci sono stati quattro punti in cui la missione avrebbe potuto essere salvata. {c1} [{s1}] ha gestito tre di essi in modo errato. {c2} [{s2}] ha gestito il quarto. Il quarto era il più importante. Non è stato gestito bene.` },
     { tags: [], min: 1, t: `{c1} [{s1}] ha fatto del suo meglio. Questo è annotato nel suo fascicolo personale. Questo non ha aiutato la missione, ma è annotato.` },
     { tags: [], min: 2, t: `Il cliente ha chiesto cosa si può fare diversamente la prossima volta. L'agenzia ha preparato un elenco. È lungo. Il primo punto è "assumere qualcun altro." {c1} [{s1}] e {c2} [{s2}] sono stati informati in modo professionale.` },
+    { tags: ['tetralynx'], min: 3, t: `Non è stato registrato nemmeno un incidente interpersonale. {c1} [{s1}], {c2} [{s2}] e {c3} [{s3}] hanno tenuto insieme l'equipaggio in condizioni che avrebbero frantumato qualsiasi altro gruppo. La missione è comunque fallita completamente. I Tetralynx non hanno commenti in merito. Considerano l'armonia dell'equipaggio e il successo della missione come dipartimenti separati.` },
   ],
 };
 
@@ -3379,6 +3414,7 @@ const NAME_MAP = {
   "Space-Cat": [null,"Kitty Dude","Puss Inbootz","Rob McCat","Whiskerjack","Meowsalot","Felinor Vox","O'Malley","Fluffington","Mewlius P","Scratcharro","Purrlock","Fluffrage","Von Hairball","Zarpurrion","Whisker Boy","Pawl Atreides","Catrick Swayze","Clawdius Max","Don Furioso","Orion","Jax Whisks","Kit Stardust","Purrcy J","Scratchula","Pawblo Esc","Feline Dion","Meowzart","Tabbington"],
   "Sky-Elf": [null,"Aeryn Valeth","Thalion Merev","Lyrielle Veyra","Serapha Nymis","Caelum Orivar","Vaelor Thyne","Ilyrion Caelis","Oryndel Vareth","Sylvaris Deyne","Maelor Quineth","Caedryn Solvar","Elion Tharis","Vaelyra Soles","Nymeris Caeli","Thalorin Vexar","Oriel Damaris","Vaedryn Rval","Sylion Arhex","Caelor Nythe","Valeris Thane","Oryxiel Dareth","Theryn Solis","Aelion Vereth","Isyra Valenne","Kaelith Deymor","Lyssara Thalen","Vaelor Cyneth","Tharion Valesk","Elidryn Soreth","Myri Caevra","Vaenys Olara","Caelum Nyreth","Oryndel Alis","Thalion Xereth","Sylvar Kaelis","Aeryssa Vireth"],
   "Blorg": [null,"Blorvix","Glorbin","Zorbik","Melnog","Plorvis","Grendol","Vornik","Slorbin","Nembog","Xorlum","Brivnog","Olgrin","Tormeg","Glimbor","Yelgorn","Blixor","Vorblen","Gralvik","Ombrik","Zelbor","Drimnog","Plixem","Brondel","Lornik","Glorvak","Mernog","Zelnor","Xemblor","Brivok","Nolgrim","Slorvek","Glimnor","Orbex","Melbrin","Tormik","Vexnog","Blorgath","Zornel","Grimlor"],
+  "Tetralynx": [null,"Acer","Aquila","Ardor","Arma","Audax","Caelum","Calor","Celer","Decus","Durus","Faber","Ferox","Fortis","Fulgor","Furor","Glauca","Gloria","Gravis","Hasta","Honor","Ignis","Ilex","Lux","Magnus","Mira","Mora","Nox","Orbis","Pax","Petra","Primus","Prudens","Pugna","Rex","Roma","Saeva","Sola","Spina","Tempus","Torvus","Unda","Vindex","Virtus","Vulcan"],
   "Giant": [null,"Solinamo","Polisano","Sediliro","Zanatolo","Maroneto","Talomiro","Veradino","Colenaro","Doramiso","Vaneloro","Solerano","Zanemiro","Calidoro","Pelaniso","Moratello","Zanatorio","Solavero","Dorelano","Pelomaro","Veranito","Salinoro","Donamiso","Toranello","Zalerino","Monaleto","Solenaro","Talomiso","Veralino","Zanemato","Caleriso","Polanero","Doratino","Melarono","Varoniso","Saletoro","Zanemiro","Peladino","Solerito","Donaloro","Tareliso","Veranolo","Colamiro","Zanatorio","Moreniso","Solaneto","Valerono","Sedanilo","Polerato","Zanemoro","Talorino"],
   "Sodio": [null,"Sorel Zin","Zanor Solk","Ostrix Sal","Selzor Kryn","Zolmar Brin","Sorvak Zol","Zelrik Sor","Orzan Krel","Solrex Tarn","Zorlin Skar","Salkor Vren","Zostrik Mal","Orren Solk","Zernox Sal","Sovrin Kalt","Zolstrix Mar","Sarnok Vex","Zerlin Kor","Orskel Zan","Solvrax Din","Zalkor Bren","Sorlin Kest","Zerox Varn","Ostrel Zin","Solkar Vex","Zorvak Trin","Sornel Kraz","Zelmar Drok","Orrik Sol","Salkren Vor","Zostral Kyn","Sorvex Dral","Zelrix Tarn","Orval Skor","Solgren Maz","Zornik Vaal","Salkor Brak","Zerun Sol"],
   "Squid": [null,"Veshkai","Orlith","Terequl","Nalith Ve","Xamuresh","Velith","Sorekai","Lumesh","Thalith","Neresh","Orukai","Selith","Tavul","Varekai","Xerith","Morukai","Lunesh","Talith","Zerukai","Veshul","Norith","Salukai","Temesh","Lirith","Velukai","Ormesh","Xerukai","Sorith","Nalukai","Vekesh","Thalukai","Merith","Sorukai","Velesh","Orlukai","Xamith","Loreskai","Selukai","Nerith","Torekai","Valesh","Lumukai","Zerith","Sorethkai","Velukai II","Orqul","Talesh","Vornith","Nalukai","Xeresh","Morukai II","Lunith","Selesh","Torukai","Veshith","Norekai","Valith","Lumesh II","Zerukai II","Sorith II","Talukai II","Velith II","Orukai II","Nalith II","Xamukai","Meresh","Sorukai II","Velkai Prime","Orlith Minor"],
@@ -3408,7 +3444,7 @@ const RACES = {
   "Robomantoid":  { icon: "images/robomantoid_icon.png",  images: 18, str: [28,45], int: [8,18], cha: [5,12], hates: ["Void-Demon", "Sky-Elf", "Sugorian"], desc: "Highly militant mantis-like warriors. Extremely aggressive. Void-Demons cannot be killed, which they find professionally insulting. Sky-Elves talk too much before dying. Sugorians are impossible to stab cleanly.", shortDesc: "Highly militant mantis-like warriors. Extremely aggressive.", shortDesc_it: "Guerrieri marziali simili a mantidi. Estremamente aggressivi.", desc_it: "Guerrieri marziali simili a mantidi. Estremamente aggressivi. I Demoni del Vuoto non possono essere uccisi, il che li offende professionalmente. I Vulcaniani parlano troppo prima di morire. I Sugoriani sono impossibili da trafiggere in modo pulito." },
   "Barbitulian":  { icon: "images/barbitulian_icon.png",  images: 54, str: [8,20], int: [18,32], cha: [18,32], hates: ["Robomantoid", "Cheesponge"], desc: "Cold-blooded reptilian politicians. Excel at manipulation. Robomantoids refuse to be manipulated, which Barbitulians consider deeply antisocial. Cheesponges absorb information indiscriminately and cannot be trusted with secrets.", shortDesc: "Cold-blooded reptilian politicians. Excel at manipulation.", shortDesc_it: "Politici rettiliani a sangue freddo. Eccellono nella manipolazione.", desc_it: "Politici rettiliani a sangue freddo. Eccellono nella manipolazione. I Robomantoidi rifiutano di essere manipolati, cosa che i Barbituliani trovano profondamente antisociale. Gli Spugnosi assorbono informazioni indiscriminatamente e non possono essere considerati affidabili con i segreti." },
   "Space-Cat":    { icon: "images/spacecat_icon.png",     images: 28, str: [8,18], int: [12,26], cha: [28,45], hates: ["Long-Neck", "Sugorian", "Void-Demon"], desc: "Feline strategists. Smart, sneaky, and always up to something. Long-Necks are too tall to ignore and too smug to tolerate. Sugorians leave traces everywhere, which ruins a clean exit. Void-Demons cannot be read, which is simply unacceptable.", shortDesc: "Feline strategists. Smart, sneaky, and always up to something.", shortDesc_it: "Strateghi felini. Intelligenti, furtivi, sempre tramano qualcosa.", desc_it: "Strateghi felini. Intelligenti, furtivi, sempre tramano qualcosa. I Collalunghi sono troppo alti per essere ignorati e troppo arroganti da tollerare. I Sugoriani lasciano tracce ovunque, il che rovina ogni piano di fuga. I Demoni del Vuoto non possono essere letti, il che è semplicemente inaccettabile." },
-  "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 32, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen"], desc: "Avian diplomats. Peaceful by nature, terrifying when angered. Have attempted diplomatic contact with the Drakhen on eleven separate occasions. They are currently on their twelfth ambassador.", shortDesc: "Avian diplomats. Peaceful by nature, terrifying when angered.", shortDesc_it: "Diplomatici aviani. Pacifici per natura, terrificanti quando si arrabbiano.", desc_it: "Diplomatici aviani. Pacifici per natura, terrificanti quando si arrabbiano. Hanno tentato contatti diplomatici con i Drakhen in undici occasioni separate. Sono attualmente al loro dodicesimo ambasciatore." },
+  "Velkhorian":   { icon: "images/velkhorian_icon.png",   images: 32, str: [18,32], int: [20,34], cha: [22,36], hates: ["Drakhen", "Tetralynx"], desc: "Avian diplomats. Peaceful by nature, terrifying when angered. Have attempted diplomatic contact with the Drakhen on eleven separate occasions. They are currently on their twelfth ambassador.", shortDesc: "Avian diplomats. Peaceful by nature, terrifying when angered.", shortDesc_it: "Diplomatici aviani. Pacifici per natura, terrificanti quando si arrabbiano.", desc_it: "Diplomatici aviani. Pacifici per natura, terrificanti quando si arrabbiano. Hanno tentato contatti diplomatici con i Drakhen in undici occasioni separate. Sono attualmente al loro dodicesimo ambasciatore." },
   "Drakhen":      { icon: "images/drakhen_icon.png",      images: 25, str: [45,85], int: [45,75], cha: [25,55], hates: ["ALL"], desc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. Hate everyone with extraordinary consistency. Historians note this is, statistically, their most impressive achievement.\n\nNOTE FOR THE RECRUITER: Hire 3 or more Drakhens to earn a Drakh Force Bonus on your mission score.", shortDesc: "Dark lords of pure evil and great stats. These genocidal maniacs destroy planets for a hobby. [Drakh Force Bonus if you hire 3 or more]", shortDesc_it: "Signori oscuri del male puro e delle ottime statistiche. Maniaci genocidi che distruggono pianeti per hobby. [Bonus Forza Drakh se assumi 3 o più]", desc_it: "Odiano tutti con straordinaria coerenza. Secondo storici, è il loro risultato più impressionante.\n\nNOTA PER IL RECLUTATORE: Assumi 3 o più Drakhen per ottenere un Bonus Forza Drakh sul punteggio missione." },
   "Aquasim":      { icon: "images/aquasim_icon.png",      images: 54, str: [12,28], int: [12,28], cha: [3,10], hates: ["Squid", "Sugorian", "Sodio"], desc: "Grumpy amphibious creatures who, despite their name, hate getting wet. Squid make everything worse by being smugly aquatic about it. Sugorians are inexplicably slippery. Sodio dissolve on contact, which Aquasim find viscerally upsetting.", shortDesc: "Grumpy amphibious creatures who, despite their name, hate getting wet.", shortDesc_it: "Creature anfibie scontrosi che, nonostante il nome, odiano bagnarsi.", desc_it: "Creature anfibie scontrosi che, nonostante il nome, odiano bagnarsi. I Tentacolati peggiorano tutto essendo spudoratamente acquatici. I Sugoriani sono inspiegabilmente scivolosi. I Soddio si dissolvono al contatto, cosa che gli Acquariani trovano visceralmente sconvolgente." },
   "Void-Demon":   { icon: "images/voiddemon_icon.png",    images: 9, str: [8,20], int: [10,24], cha: [20,35], hates: ["NO ONE"], desc: "Entities from an obscure dimension. Cannot die. Take no sides. Have observed every war, famine, and diplomatic incident with the same mild expression. Do not hate anyone. Simply wait.", shortDesc: "Entities from an obscure dimension. Cannot die. Take no sides.", shortDesc_it: "Entità da una dimensione oscura. Non possono morire. Non prendono posizione.", desc_it: "Entità da una dimensione oscura. Non possono morire. Non prendono posizione. Hanno osservato ogni guerra, carestia e incidente diplomatico con la stessa espressione mite. Non odiano nessuno. Aspettano soltanto." },
@@ -3419,7 +3455,8 @@ const RACES = {
   "Sugorian":     { icon: "images/sugorian_icon.png",     images: 40, str: [10,22], int: [10,22], cha: [15,28], hates: ["Human", "Sky-Elf", "Drakhen"], desc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable. Humans poke them out of curiosity. Sky-Elves attempt to classify them, repeatedly. Drakhen use them as an accelerant. None of these interactions have been welcome.", shortDesc: "Slippery jelly entities. Not really friendly and really messy. Highly flammable.", shortDesc_it: "Entità gelatinose e scivolose. Non particolarmente amichevoli e decisamente disordinate. Altamente infiammabili.", desc_it: "Entità gelatinose e scivolose. Non particolarmente amichevoli e decisamente disordinate. Altamente infiammabili. Gli Umani li stuzzicano per curiosità. I Vulcaniani tentano di classificarli, ripetutamente. I Drakhen li usano come accelerante. Nessuna di queste interazioni è stata gradita." },
   "Cheesponge":   { icon: "images/cheesponge_icon.png",   images: 73, str: [3,10], int: [20,32], cha: [18,30], hates: ["Aquasim", "Sodio"], desc: "Porous, absorbent beings. Soak up damage and emotional tension. Aquasim cause them to swell uncontrollably. Sodio dehydrate them from across the room.\n\nNOTE FOR THE RECRUITER: Cheesponges absorb Drakhen hate entirely. Pair them with Drakhens — no conflict will occur.", shortDesc: "Porous, absorbent beings. Soak up damage and emotional tension. [Absorbs Drakhen's hate]", shortDesc_it: "Esseri porosi e assorbenti. Assorbono danni e tensione emotiva. [Assorbe l'odio dei Drakhen]", desc_it: "Esseri porosi e assorbenti. Assorbono danni e tensione emotiva. Gli Acquariani li fanno gonfiare in modo incontrollabile. I Sodio li disidratano a distanza.\n\nNOTA PER IL RECLUTATORE: Gli Spugnosi assorbono completamente l'odio dei Drakhen. Abbinali ai Drakhen — non si verificherà alcun conflitto." },
   "Sodio":        { icon: "images/sodio_icon.png",        images: 38, str: [22,38], int: [8,20], cha: [8,18], hates: ["Aquasim", "Cheesponge", "Sugorian"], desc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve. Aquasim are their geological nemesis. Cheesponges absorb them slowly and without apology. Sugorians are inexplicably moist in every environment. Sodio have lodged complaints. The complaints dissolved.", shortDesc: "Crystalline rock-salt beings. Dry, abrasive, and hard to dissolve.", shortDesc_it: "Esseri cristallini di salgemma. Asciutti, abrasivi e difficili da sciogliere.", desc_it: "Esseri cristallini di salgemma. Asciutti, abrasivi e difficili da sciogliere. Gli Acquariani e i Sugoriani sono i loro nemici geologici. Gli Spugnosi li assorbono lentamente e senza scuse. I Sodio hanno sporto reclami. I reclami si sono dissolti." },
-  "Blorg":        { icon: "images/blorg_icon.png",        images: 39, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "Pale bureaucratic masterminds. High logic, permanent disappointment. Sugorians contaminate workstations and ignore filing protocols. Fungi spore directly onto submitted paperwork. Drakhen have destroyed fourteen Blorg administrative centres. The insurance claims are still pending.", shortDesc: "Pale bureaucratic masterminds. High logic, permanent disappointment.", shortDesc_it: "Menti burocratiche pallide. Alta logica, delusione permanente.", desc_it: "Menti burocratiche pallide. Alta logica, delusione permanente. I Sugoriani contaminano le postazioni di lavoro e ignorano i protocolli di archiviazione. I Fungoidi producono spore direttamente sui moduli presentati. I Drakhen hanno distrutto quattordici centri amministrativi Blorg. Le richieste di risarcimento sono ancora in sospeso." }
+  "Blorg":        { icon: "images/blorg_icon.png",        images: 39, str: [5,15], int: [32,50], cha: [10,22], hates: ["Sugorian", "Fungi", "Drakhen"], desc: "Pale bureaucratic masterminds. High logic, permanent disappointment. Sugorians contaminate workstations and ignore filing protocols. Fungi spore directly onto submitted paperwork. Drakhen have destroyed fourteen Blorg administrative centres. The insurance claims are still pending.", shortDesc: "Pale bureaucratic masterminds. High logic, permanent disappointment.", shortDesc_it: "Menti burocratiche pallide. Alta logica, delusione permanente.", desc_it: "Menti burocratiche pallide. Alta logica, delusione permanente. I Sugoriani contaminano le postazioni di lavoro e ignorano i protocolli di archiviazione. I Fungoidi producono spore direttamente sui moduli presentati. I Drakhen hanno distrutto quattordici centri amministrativi Blorg. Le richieste di risarcimento sono ancora in sospeso." },
+  "Tetralynx":    { icon: "images/tetralynx_icon.png",   images: 44, str: [55,70], int: [50,65], cha: [35,50], hates: ["Velkhorian"], desc: "Tetralynx are the galaxy's most decorated warrior species — decorated in the medal sense, and occasionally in the blast-damage sense. They've pulled more species back from the brink of extinction than any corps in recorded history, including\x00the Velkhorian, who find this insufferable. The only known beings to face a Drakhen without flinching, though whether that's courage or a neurological quirk remains debated. Three of them on a crew means nobody fights. Except with Velkhorian. That one they won't let go.\n\nNOTE FOR THE RECRUITER: Hire 3 Tetralynx to activate the Harmony Protocol.", shortDesc: "Elite feline warriors. Legendary peacekeepers. Unafraid of anything. [Harmony Protocol if you hire 3 or more]", shortDesc_it: "Guerrieri felini d'élite. Leggendari pacificatori. Non temono nulla. [Protocollo Armonia se assumi 3 o più]", desc_it: "I Tetralynx sono la specie guerriera più decorata della galassia — nel senso delle medaglie, e occasionalmente nel senso dei danni da esplosione. Hanno salvato più specie dall'estinzione di qualsiasi corpo diplomatico nella storia registrata, inclusi i Velkhorian, che trovano questa cosa insopportabile.\x00Gli unici esseri noti ad affrontare un Drakhen senza battere ciglio, anche se si dibatte ancora se sia coraggio o un'anomalia neurologica. Tre di loro a bordo significa che nessuno litiga. Tranne con i Velkhorian. Quello non lo lasciano perdere.\n\nNOTA PER IL RECLUTATORE: Assumi 3 Tetralynx per attivare il Protocollo Armonia." }
 };
 
 const NAMES = ["Zog", "Blorp", "Kev", "Larz", "Grom", "Vok", "Nebula", "Starla", "Rex", "Tkt"];
@@ -3481,7 +3518,9 @@ let state = { day: 1, money: 600, pool: [], roster: [], mission: null, ship: nul
   allTimeHires: {},    // { race: count } all-time
   totalEarned: 0,      // cumulative credits earned (positive payouts only)
   nextSaboteurDay: 14, // first saboteur appears day 14 or 15 (randomised at startDay)
-  timerMission: false  // true when this day is a timed mission
+  timerMission: false, // true when this day is a timed mission
+  tetralynxTripleDay: null, // which day between 40-45 will force 3 Tetralynx
+  tetralynxTripleDone: false // whether it has already happened
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -3539,7 +3578,10 @@ function generateSaboteur(id) {
 
 function generateApplicant(id, forceRace) {
   const races = Object.keys(RACES);
-  let available = races.slice(0, Math.min(4 + Math.floor(state.day/2), races.length));
+  // Tetralynx is injection-only — exclude from base random generation
+  const INJECTION_ONLY = new Set(['Tetralynx']);
+  let available = races.slice(0, Math.min(4 + Math.floor(state.day/2), races.length))
+    .filter(r => !INJECTION_ONLY.has(r));
   const raceKey = forceRace || available[rand(0, available.length - 1)];
   const rd = RACES[raceKey];
   let str = rand(rd.str[0], rd.str[1]);
@@ -3566,6 +3608,7 @@ function generateApplicant(id, forceRace) {
   else if (raceKey === "Blorg")        hate = rand(22, 35);
   else if (raceKey === "Void-Demon")   hate = rand(10, 30);
   else if (raceKey === "Velkhorian")   hate = rand(25, 65);
+  else if (raceKey === "Tetralynx")    hate = rand(10, 20);
   else                                 hate = rand(20, 80);
 
   if (raceKey === "Sky-Elf") { int = Math.max(str, cha) + rand(1, 10); }
@@ -3609,6 +3652,7 @@ function generateApplicant(id, forceRace) {
   if (raceKey === "Oak-Person") { cha = rand(1, 4); }
   if (raceKey === "Long-Neck" || raceKey === "Squid") { int = str + rand(1, 10); }
   if (raceKey === "Sodio") { str = Math.max(str, int + 1); }
+  if (raceKey === "Tetralynx") { baseCost = rand(400, 500); }
 
   // Day 20+ stat scaling: +1 per stat every 2 days beyond day 20, capped at +15
   if (state.day >= 20) {
@@ -3906,10 +3950,41 @@ function startDay() {
   const tb = document.getElementById('timer-box');
   if (tb) tb.style.display = 'none';
 
-  // Day 60+: 50% chance of a timer mission (overrides normal ship/pool)
-  if (state.day >= 60 && (state.day === 60 || Math.random() < 0.5)) {
+  // Mission type selection based on day
+  // Day 61+: 33% mandate, 33% timer, 34% regular
+  // Day 51+: 66% mandate, 34% regular
+  // Day 50: always mandate (first introduction day)
+  // Below 50: always regular
+  if (state.day >= 61) {
+    const r = Math.random();
+    if (r < 0.33) {
+      state.timerMission = true;
+      state.mission = generateTimerMissionAndShip();
+    } else if (r < 0.66) {
+      state.mission = generateMission(); // mandate (generateMandates called inside when day >= MANDATE_DAY)
+    } else {
+      // force regular: temporarily suppress mandate
+      const saved = state.day;
+      state.day = MANDATE_DAY - 1;
+      state.mission = generateMission();
+      state.day = saved;
+      if (state.mission) state.mission.mandates = null;
+    }
+  } else if (state.day === 60) {
+    // Day 60: first timer day — always timer
     state.timerMission = true;
-    state.mission = generateTimerMissionAndShip(); // also sets state.ship + state.roster
+    state.mission = generateTimerMissionAndShip();
+  } else if (state.day >= 51) {
+    // 66% mandate, 34% regular
+    if (Math.random() < 0.66) {
+      state.mission = generateMission(); // mandate
+    } else {
+      const saved = state.day;
+      state.day = MANDATE_DAY - 1;
+      state.mission = generateMission();
+      state.day = saved;
+      if (state.mission) state.mission.mandates = null;
+    }
   } else {
     state.mission = generateMission();
   }
@@ -3959,7 +4034,54 @@ function startDay() {
         injected++;
       }
     }
-    // Ensure at least 20% of pool has required experience if expReq exists
+    // Tetralynx injection from day 40+
+    if (state.day >= 40) {
+      const r = Math.random() * 100;
+      let tetTarget = 0;
+
+      // Force 3 on the designated triple day (if not done yet)
+      const isTripleDay = !state.tetralynxTripleDone && state.day === state.tetralynxTripleDay;
+      // Also force on day 45 if it still hasn't happened
+      const isLastChance = !state.tetralynxTripleDone && state.day === 45;
+
+      if (isTripleDay || isLastChance) {
+        tetTarget = 3;
+      } else if (state.day === 40) {
+        // Day 40: guaranteed at least 1, equal chance of 1, 2, or 3
+        if (r < 33.3) tetTarget = 3;
+        else if (r < 66.6) tetTarget = 2;
+        else tetTarget = 1;
+      } else {
+        // Day 41+: 25% none, 40% one, 25% two, 10% three
+        if (r < 10) tetTarget = 3;
+        else if (r < 35) tetTarget = 2;
+        else if (r < 75) tetTarget = 1;
+        else tetTarget = 0;
+      }
+
+      // Mark triple as done once 3 are in pool
+      if (tetTarget === 3) state.tetralynxTripleDone = true;
+      // Hard cap: never more than 3 Tetralynx in pool
+      tetTarget = Math.min(tetTarget, 3);
+      const tetCurrent = state.pool.filter(a => a.race === 'Tetralynx').length;
+      const tetToInject = Math.max(0, tetTarget - tetCurrent);
+      let tetAttempts = 0, tetInjected = 0;
+      while (tetInjected < tetToInject && tetAttempts < 100) {
+        const app = generateApplicantForRace(state.pool.length, 'Tetralynx');
+        tetAttempts++;
+        if (state.pool.some(a => a.name === app.name)) continue;
+        const insertAt = rand(0, state.pool.length);
+        state.pool.splice(insertAt, 0, app);
+        tetInjected++;
+      }
+      // Trim pool back if somehow >3 Tetralynx ended up in it (from base generation)
+      let tetInPool = state.pool.filter(a => a.race === 'Tetralynx');
+      while (tetInPool.length > 3) {
+        const idx = state.pool.findIndex(a => a.race === 'Tetralynx');
+        if (idx !== -1) state.pool.splice(idx, 1);
+        tetInPool = state.pool.filter(a => a.race === 'Tetralynx');
+      }
+    }
     if (state.mission.expReq) {
       const minExpCount = Math.ceil(state.pool.length * 0.20);
       const currentExpCount = state.pool.filter(a => a.exp === state.mission.expReq).length;
@@ -4094,6 +4216,7 @@ function startDay() {
     // Saboteur injection from day 14+, every 4-5 days
     // Randomise first saboteur day on day 1 load
     if (state.day === 1) state.nextSaboteurDay = 14 + rand(0, 1);
+    if (state.day === 1) { state.tetralynxTripleDay = 40 + rand(0, 5); state.tetralynxTripleDone = false; }
     if (state.day >= 14 && state.day >= state.nextSaboteurDay) {
       const d = state.day;
       // Probabilities scale with day: [p1, p2, p3]
@@ -4180,6 +4303,10 @@ function updateUI() {
 
   // Pool title — count ALL applicants (cards stay in pool)
   document.getElementById('pool-title').innerText = `${t('applicants')} [${state.pool.length}]`;
+  const payrollEl = document.getElementById('pool-payroll');
+  if (payrollEl) {
+    payrollEl.innerText = currentCost > 0 ? `${t('payroll')}: -${currentCost} cr` : '';
+  }
 
   // Cards grid — ALL cards always shown, selected ones get dither overlay
   const grid = document.getElementById('cards-grid');
@@ -4544,6 +4671,8 @@ function updateSingleSlot(index) {
 function updateCostDisplay() {
   const currentCost = state.roster.reduce((sum, a) => sum + (a ? a.cost : 0), 0);
   document.getElementById('ui-money').innerText = state.money - currentCost;
+  const payrollEl = document.getElementById('pool-payroll');
+  if (payrollEl) payrollEl.innerText = currentCost > 0 ? `${t('payroll')}: -${currentCost} cr` : '';
 }
 
 // ══════════════════════════════════════════════
@@ -4616,6 +4745,7 @@ function launchMission(fromTimer) {
   // 3. CONFLICTS — mission-stat voting, strongest hate wins, per-victim 100% cap
   let conflictPenalty = 0, conflictCount = 0;
   let conflictLines = [];
+  let rawConflictPenalty = 0, rawConflictCount = 0; // what conflicts would have cost without harmony
 
   function statVoteWinner(a, b) {
     const reqs = state.mission.reqs;
@@ -4631,6 +4761,11 @@ function launchMission(fromTimer) {
 
   // Build raw conflict events before applying cap
   const rawConflicts = [];
+  const rawConflictsAll = []; // all conflicts including harmony-suppressed ones
+
+  // TETRALYNX HARMONY PROTOCOL: 3+ Tetralynx suppress all conflicts except Tetralynx ⇄ Velkhorian
+  const tetralynxCount = hired.filter(a => a.race === 'Tetralynx').length;
+  const harmonyActive = tetralynxCount >= 3;
 
   for (let i = 0; i < hired.length; i++) {
     for (let j = i + 1; j < hired.length; j++) {
@@ -4650,6 +4785,14 @@ function launchMission(fromTimer) {
       let aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
       let bHatesA = rB.hates.includes(a.race)||(rB.hates.includes("ALL")&&b.race!==a.race);
       if (!aHatesB && !bHatesA) continue;
+
+      // Harmony Protocol: suppress all conflicts except Tetralynx ⇄ Velkhorian
+      const isTetVelk = (a.race==='Tetralynx'&&b.race==='Velkhorian')||(a.race==='Velkhorian'&&b.race==='Tetralynx');
+      if (harmonyActive && !isTetVelk) {
+        // Still record it for the report display
+        rawConflictsAll.push({ a, b, rA, rB });
+        continue;
+      }
 
       const winner = statVoteWinner(a, b);
 
@@ -4719,6 +4862,38 @@ function launchMission(fromTimer) {
   // 4. SYNERGY — any conflict (even absorbed) blocks synergy
   let synergy = 0;
   if (hired.length >= 3 && conflictLines.length === 0) { synergy = 10; }
+
+  // Compute what suppressed conflicts would have cost (for harmony protocol display)
+  if (harmonyActive && rawConflictsAll.length > 0) {
+    const shadowDamage = {};
+    const shadowConflicts = [];
+    for (const { a, b, rA, rB } of rawConflictsAll) {
+      const aHatesB = rA.hates.includes(b.race)||(rA.hates.includes("ALL")&&a.race!==b.race);
+      const bHatesA = rB.hates.includes(a.race)||(rB.hates.includes("ALL")&&b.race!==a.race);
+      if (!aHatesB && !bHatesA) continue;
+      const winner = statVoteWinner(a, b);
+      let p;
+      if (aHatesB && bHatesA) {
+        p = winner === 'draw' ? Math.floor((a.hate + b.hate) / 2) : (winner === 'a' ? a.hate : b.hate);
+      } else if (aHatesB) {
+        p = winner === 'draw' ? Math.floor((a.hate + b.hate) / 2) : (winner === 'a' ? a.hate : b.hate);
+      } else {
+        p = winner === 'draw' ? Math.floor((a.hate + b.hate) / 2) : (winner === 'b' ? b.hate : a.hate);
+      }
+      shadowConflicts.push({ attacker: a, victim: b, p });
+    }
+    shadowConflicts.sort((x, y) => y.p - x.p);
+    for (const c of shadowConflicts) {
+      if ((shadowDamage[c.attacker.id] || 0) >= 100) continue;
+      const vid = c.victim.id;
+      const soFar = shadowDamage[vid] || 0;
+      if (soFar >= 100) continue;
+      const actual = Math.min(c.p, 100 - soFar);
+      shadowDamage[vid] = soFar + actual;
+      rawConflictPenalty += actual;
+      rawConflictCount++;
+    }
+  }
 
   // 5. DRAKH FORCE BONUS
   const drakhCount = hired.filter(a => a.race === 'Drakhen').length;
@@ -4799,6 +4974,7 @@ function launchMission(fromTimer) {
   if (synergy > 0) storyMods.push('synergy');
   if (hired.some(a => a.race === 'Drakhen')) storyMods.push('drakhen');
   if (hired.some(a => a.race === 'Cheesponge')) storyMods.push('cheesponge');
+  if (harmonyActive) storyMods.push('tetralynx');
   if (state.day >= MANDATE_DAY && state.mission.mandates) storyMods.push('mandate');
   if (expMandateMod > 0 && state.day < MANDATE_DAY) storyMods.push('exp');
   const storyText = isSabotaged
@@ -4847,22 +5023,31 @@ function launchMission(fromTimer) {
   }
 
   // Conflicts block
-  if (conflictCount > 0) {
-    html += `<div class="res-conflicts-header">${t('conflictsHeader')} [${conflictCount}]</div>`;
-    conflictLines.forEach(c => {
-      const iconA = RACES[c.raceA] ? RACES[c.raceA].icon : '';
-      const iconB = RACES[c.raceB] ? RACES[c.raceB].icon : '';
-      html += `<div class="res-conflict-line" data-conflict="true">
-        <div class="res-conflict-icons">
-          <img class="res-conflict-icon" src="${iconA}" onerror="this.style.display='none'">
-          <span class="res-conflict-vs">VS</span>
-          <img class="res-conflict-icon" src="${iconB}" onerror="this.style.display='none'">
-        </div>
-        <span class="res-conflict-text">${c.text}</span>
-      </div>`;
-    });
-    html += `<div class="res-row"><span class="res-row-label"></span><span class="res-row-value">-${Math.floor(conflictPenalty)}%</span></div>`;
-    html += resDivider();
+  if (conflictCount > 0 || (harmonyActive && rawConflictPenalty > 0)) {
+    if (harmonyActive && rawConflictPenalty > 0) {
+      // Harmony active: show collapsed summary + protocol offset
+      html += `<div class="res-conflicts-header">${t('conflictsHeader')} [${rawConflictCount}]</div>`;
+      html += `<div class="res-row"><span class="res-row-label"></span><span class="res-row-value">-${Math.floor(rawConflictPenalty)}%</span></div>`;
+      html += resDivider();
+      html += resRow(t('harmonyProtocol'), `+${Math.floor(rawConflictPenalty)}%`);
+      html += resDivider();
+    } else if (conflictCount > 0) {
+      html += `<div class="res-conflicts-header">${t('conflictsHeader')} [${conflictCount}]</div>`;
+      conflictLines.forEach(c => {
+        const iconA = RACES[c.raceA] ? RACES[c.raceA].icon : '';
+        const iconB = RACES[c.raceB] ? RACES[c.raceB].icon : '';
+        html += `<div class="res-conflict-line" data-conflict="true">
+          <div class="res-conflict-icons">
+            <img class="res-conflict-icon" src="${iconA}" onerror="this.style.display='none'">
+            <span class="res-conflict-vs">VS</span>
+            <img class="res-conflict-icon" src="${iconB}" onerror="this.style.display='none'">
+          </div>
+          <span class="res-conflict-text">${c.text}</span>
+        </div>`;
+      });
+      html += `<div class="res-row"><span class="res-row-label"></span><span class="res-row-value">-${Math.floor(conflictPenalty)}%</span></div>`;
+      html += resDivider();
+    }
   }
 
   // Synergy
@@ -5559,6 +5744,8 @@ function nextDay() {
           state.allTimeHires = savedGame.allTimeHires || {};
           state.totalEarned = savedGame.totalEarned || 0;
           state.nextSaboteurDay = savedGame.nextSaboteurDay || (savedGame.day + 4);
+          state.tetralynxTripleDay = savedGame.tetralynxTripleDay || (40 + rand(0, 5));
+          state.tetralynxTripleDone = savedGame.tetralynxTripleDone || false;
           state.gameOver = false;
           state.roster = [];
           state.pool = [];
@@ -6572,10 +6759,12 @@ startDay();
       const hateSpans = !rd ? '' : rd.hates[0] === 'ALL' ? t('hatesAll') : rd.hates[0] === 'NO ONE' ? t('hatesNone') : rd.hates.map(h => speciesName(h)).join(', ');
       const shortDesc = (rd ? (currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || '') : (rd.shortDesc || '')) : '').replace(/\s*\[.*?\]/g, '').trim();
       const fullDesc = rd ? (currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '')) : '';
-      // Hate context = full desc minus the shortDesc opening
-      const hateContext = (fullDesc.startsWith(shortDesc)
-        ? fullDesc.slice(shortDesc.length).trim()
-        : fullDesc).replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+      // For species with a \x00 page-break marker, only show part 1 on this page
+      const hasPageBreak = fullDesc.includes('\x00');
+      const descForPage1 = hasPageBreak ? fullDesc.split('\x00')[0] : fullDesc;
+      const hateContext = (descForPage1.startsWith(shortDesc)
+        ? descForPage1.slice(shortDesc.length).trim()
+        : descForPage1).replace(/\n\nNOTE FOR THE RECRUITER:.*$/s, '').replace(/\n\nNOTA PER IL RECLUTATORE:.*$/s, '').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
       return `<div class="rules-newsp-row">
         <div class="rules-newsp-name-row">
           <img class="rules-newsp-icon" src="${icon}" onerror="this.style.display='none'">
@@ -6597,6 +6786,41 @@ startDay();
       </div>
       <div class="rules-divider"></div>
       <div class="rules-newsp-list">${rows}</div>
+    `;
+  }
+
+  function buildNewSpeciesContPage(pageEl) {
+    // Continuation page for species with a \x00 page-break in their desc (currently Tetralynx only)
+    const rd = RACES['Tetralynx'];
+    if (!rd) { pageEl.innerHTML = ''; return; }
+    const fullDesc = currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '');
+    const parts = fullDesc.split('\x00');
+    const contText = parts[1] || '';
+
+    // Split off NOTE FOR THE RECRUITER
+    const noteMarkerEN = '\n\nNOTE FOR THE RECRUITER:';
+    const noteMarkerIT = '\n\nNOTA PER IL RECLUTATORE:';
+    const noteMarker = currentLang === 'it' ? noteMarkerIT : noteMarkerEN;
+    const noteIdx = contText.indexOf(noteMarker);
+    const mainText = noteIdx !== -1 ? contText.slice(0, noteIdx).trim() : contText.trim();
+    const noteText = noteIdx !== -1 ? contText.slice(noteIdx + noteMarker.length).trim() : '';
+    const noteLabel = currentLang === 'it' ? 'NOTA PER IL RECLUTATORE' : 'NOTE FOR THE RECRUITER';
+
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('newSpeciesApplying').toUpperCase()}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <div class="rules-newsp-list">
+        <div class="rules-newsp-row">
+          <div class="rules-newsp-hatecontext">${mainText.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>
+          ${noteText ? `<div class="rules-newsp-hatecontext" style="margin-top:12px;"><strong>${noteLabel}:</strong> ${noteText.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>` : ''}
+        </div>
+      </div>
     `;
   }
 
@@ -6891,6 +7115,9 @@ startDay();
       } else                  pages.push('mission');
       pages.push('ship');
       if (hasNewSpecies)      pages.push('newSpecies');
+      // Tetralynx gets a continuation page for its long description
+      const newSpeciesKeys = getUnlockedSpeciesForDay(state.day).filter(r => !prevUnlocked.has(r));
+      if (newSpeciesKeys.includes('Tetralynx')) pages.push('newSpeciesCont');
 
       RULES_TOTAL = pages.length;
 
@@ -6906,6 +7133,7 @@ startDay();
         else if (type === 'mission')         buildMissionPage(pageEl);
         else if (type === 'ship')            buildShipPage(pageEl);
         else if (type === 'newSpecies')      buildNewSpeciesPage(pageEl);
+        else if (type === 'newSpeciesCont')  buildNewSpeciesContPage(pageEl);
       });
     }
   }
