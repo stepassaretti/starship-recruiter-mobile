@@ -198,9 +198,31 @@ body {
 .manual-icon img { width: 18px; height: 18px; image-rendering: pixelated; }
 .manual-desc { font-size: 17px; line-height: 1.1; margin-top: 2px; }
 .manual-desc-text { font-size: 17px; line-height: 1.2; margin-top: 3px; color: #888; }
-.manual-hates { font-size: 17px; margin-top: 2px; }
+.manual-hates { font-size: 17px; margin-top: 6px; }
 .manual-hates-label { display: block; }
 .manual-hates-names { display: flex; flex-wrap: wrap; align-items: baseline; row-gap: 2px; }
+.manual-desc-tap { cursor: pointer; }
+.manual-desc-body {
+  overflow: hidden;
+  max-height: 0px;
+  transition: max-height 0.2s ease;
+  font-size: 17px;
+  line-height: 1.2;
+  color: #888;
+  margin-top: 3px;
+}
+.manual-more-link {
+  color: #888;
+  text-decoration: underline;
+  font-size: 15px;
+  cursor: pointer;
+}
+.manual-less-row {
+  text-align: right;
+  margin-top: 4px;
+}
+/* Hide "more" when expanded, "less" is inside the body so naturally hidden when collapsed */
+.manual-entry.is-expanded .manual-more-btn { visibility: hidden; }
 
 /* New species page in briefing sheet */
 .rules-newsp-list { display: flex; flex-direction: column; gap: 14px; margin-top: 4px; overflow-y: auto; flex: 1; }
@@ -987,6 +1009,10 @@ body {
 }
 .launch-btn-inverted:active .launch-btn-bg-inv polygon { fill: #ccc; }
 .launch-btn-inverted.bounce { animation: btnBounce 0.2s ease; }
+
+#btn-overwrite-confirm .launch-btn-bg-inv polygon { fill: #000; stroke: #fff; stroke-width: 4; }
+#btn-overwrite-confirm .launch-btn-text-inv { color: #fff; }
+#btn-overwrite-confirm:active .launch-btn-bg-inv polygon { fill: #333; }
 .slot-card.pressed {
   background: #fff;
   color: #000;
@@ -2497,6 +2523,7 @@ function selectLang(lang) {
 
 
 let activeDrawer = null; // 'mission' | 'manual' | null
+let lastActiveDrawer = 'mission'; // for pull-up default
 let collapsedHeight = 0;
 
 function toggleDrawer(type) {
@@ -2519,6 +2546,7 @@ function openDrawer(type) {
 
   // If switching between panels while already open
   if (activeDrawer && activeDrawer !== type) {
+    expandedManualEntry = null;
     content.innerHTML = type === 'mission' ? getMissionHTML() : getManualHTML();
     if (type === 'manual') content.scrollTop = 0;
     activeDrawer = type;
@@ -2528,6 +2556,7 @@ function openDrawer(type) {
   }
 
   activeDrawer = type;
+  lastActiveDrawer = type;
 
   // Remember collapsed height before expanding
   collapsedHeight = bar.offsetHeight;
@@ -2574,6 +2603,7 @@ function closeDrawer() {
   overlay.classList.remove('visible');
 
   activeDrawer = null;
+  expandedManualEntry = null;
   updateIconButtons();
   document.getElementById('bar-content').scrollTop = 0;
 
@@ -3233,6 +3263,43 @@ function getOutcomeTier(score, minReq) {
 }
 
 
+let expandedManualEntry = null; // single key or null
+
+function toggleManualEntry(rKey, hasMore) {
+  if (!hasMore) return;
+  const content = document.getElementById('bar-content');
+  if (!content) return;
+
+  const isExpanded = expandedManualEntry === rKey;
+  const newKey = isExpanded ? null : rKey;
+
+  // Collapse previously expanded entry
+  if (expandedManualEntry && expandedManualEntry !== rKey) {
+    const prevEntry = content.querySelector(`[data-rkey="${expandedManualEntry}"]`);
+    const prev = prevEntry && prevEntry.querySelector('.manual-desc-body');
+    if (prev) {
+      prev.style.maxHeight = prev.scrollHeight + 'px';
+      requestAnimationFrame(() => { prev.style.maxHeight = '0px'; });
+    }
+    if (prevEntry) prevEntry.classList.remove('is-expanded');
+  }
+
+  expandedManualEntry = newKey;
+
+  const entryEl = content.querySelector(`[data-rkey="${rKey}"]`);
+  const target = entryEl && entryEl.querySelector('.manual-desc-body');
+  if (target) {
+    if (newKey) {
+      target.style.maxHeight = target.scrollHeight + 'px';
+      if (entryEl) entryEl.classList.add('is-expanded');
+    } else {
+      target.style.maxHeight = target.scrollHeight + 'px';
+      requestAnimationFrame(() => { target.style.maxHeight = '0px'; });
+      if (entryEl) entryEl.classList.remove('is-expanded');
+    }
+  }
+}
+
 function getManualHTML() {
   let html = `<div class="section-title" style="margin-bottom:10px;">${t('xenoManual').toUpperCase()}</div>`;
 
@@ -3244,13 +3311,63 @@ function getManualHTML() {
       const hr = RACES[h]; const ico = hr ? `<img src="${hr.icon}" style="width:14px;height:14px;image-rendering:pixelated;vertical-align:middle;margin-right:4px;">` : '';
       return `<span style="white-space:nowrap;">${ico}${speciesName(h)}${i < arr.length - 1 ? ',&nbsp;' : ''}</span>`;
     }).join('');
+
+    const shortDescRaw = currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc);
+    // Strip [bracket hints] from displayed short desc
+    const shortDesc = shortDescRaw.replace(/\s*\[.*?\]/g, '').trim();
+    const fullDescRaw = currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '');
+    // Keep page-break joined; keep NOTE FOR RECRUITER for display
+    const fullDesc = fullDescRaw.split('\x00').join(' ').trim();
+
+    // Compute the extra text: if fullDesc starts with shortDesc (minus brackets), slice off the prefix.
+    // Otherwise (e.g. Tetralynx where desc is completely different), show all of fullDesc.
+    let extraText = '';
+    if (fullDesc && fullDesc !== shortDesc) {
+      if (fullDesc.startsWith(shortDesc)) {
+        extraText = fullDesc.slice(shortDesc.length).trim();
+      } else {
+        // desc doesn't start with shortDesc — show entire fullDesc
+        extraText = fullDesc;
+      }
+    }
+
+    // Format NOTE FOR RECRUITER as a styled block
+    const noteMarker = currentLang === 'it' ? '\n\nNOTA PER IL RECLUTATORE:' : '\n\nNOTE FOR THE RECRUITER:';
+    const noteLabel  = currentLang === 'it' ? 'NOTA PER IL RECLUTATORE' : 'NOTE FOR THE RECRUITER';
+    let extraMain = extraText, extraNote = '';
+    const noteIdx = extraText.indexOf(noteMarker);
+    if (noteIdx !== -1) {
+      extraMain = extraText.slice(0, noteIdx).trim();
+      extraNote = extraText.slice(noteIdx + noteMarker.length).trim();
+    }
+    const extraHTML = (extraMain ? extraMain.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>') : '')
+      + (extraNote ? `<div style="margin-top:6px;"><span style="font-weight:bold;color:#555;">${noteLabel}:</span> ${extraNote}</div>` : '');
+
+    const hasMore = !!extraHTML;
+    // more: inline after short desc (float right, after text = last line)
+    // less: right-aligned div at bottom of expanded body
+    const moreLabel = currentLang === 'it' ? 'leggi' : 'more';
+    const lessLabel = currentLang === 'it' ? 'chiudi' : 'less';
+
+    const moreSpan = hasMore
+      ? `<span class="manual-more-link manual-more-btn" style="float:right;margin-left:8px;">${moreLabel}</span>`
+      : '';
+    const expandBody = hasMore
+      ? `<div class="manual-desc-body">${extraHTML}<div class="manual-less-row"><span class="manual-more-link manual-less-btn">${lessLabel}</span></div></div>`
+      : '';
+
+    const tapAttr = hasMore ? ` onclick="toggleManualEntry('${rKey}', true)"` : '';
+
     return `
-      <div class="manual-entry"${noBorder ? ' style="border-bottom:none;padding-bottom:10px;"' : ''}>
+      <div class="manual-entry" data-rkey="${rKey}"${noBorder ? ' style="border-bottom:none;padding-bottom:10px;"' : ''}>
         <div class="manual-name">
           <div class="manual-icon"><img src="${rd.icon}" alt="${rKey}" onerror="this.style.display='none'"></div>
           ${speciesName(rKey)}
         </div>
-        <div class="manual-desc-text">${currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc)}</div>
+        <div class="manual-desc-tap"${tapAttr}>
+          <div class="manual-desc-text">${shortDesc}${moreSpan}</div>
+          ${expandBody}
+        </div>
         <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
       </div>`;
   }
@@ -3280,12 +3397,14 @@ function getManualHTML() {
 }
 
 
-// ── PULL-DOWN GESTURE on the expanded bar ──
+// ── PULL-DOWN / PULL-UP / SWIPE GESTURES on bottom bar ──
 (function() {
   const bar = document.getElementById('bottom-bar');
   const handle = document.getElementById('bar-handle');
   const contentEl = document.getElementById('bar-content');
   let startY = 0, startH = 0, dragging = false, captureEl = null;
+  // Swipe tracking
+  let swipeStartX = 0, swipeStartY = 0, swipeMaybeActive = false;
 
   function beginDrag(e, el) {
     startY = e.clientY;
@@ -3297,6 +3416,66 @@ function getManualHTML() {
     try { el.setPointerCapture(e.pointerId); } catch(ex) {}
   }
 
+  // ── Pull-up on collapsed bar (btn-row area) — finger-tracked ──
+  let pullUpStartY = 0, pullUpDragging = false, pullUpBaseH = 0;
+
+  bar.addEventListener('touchstart', (e) => {
+    if (activeDrawer) return;
+    pullUpStartY = e.touches[0].clientY;
+    pullUpBaseH = bar.offsetHeight;
+    pullUpDragging = false;
+    // Pre-populate content
+    const content = document.getElementById('bar-content');
+    content.innerHTML = getManualHTML();
+    expandedManualEntry = null;
+  }, { passive: true });
+
+  bar.addEventListener('touchmove', (e) => {
+    if (activeDrawer || dragging) return;
+    const dy = pullUpStartY - e.touches[0].clientY; // positive = pulled up
+    if (!pullUpDragging && dy > 8) {
+      pullUpDragging = true;
+      // Add expanded class now so content + handle are visible and max-height works
+      collapsedHeight = pullUpBaseH;
+      bar.classList.add('expanded');
+      bar.style.transition = 'none';
+      bar.style.maxHeight = pullUpBaseH + 'px';
+      document.getElementById('drawer-overlay').classList.add('visible');
+    }
+    if (!pullUpDragging) return;
+    const newH = Math.min(window.innerHeight * 0.85, Math.max(pullUpBaseH, pullUpBaseH + dy));
+    bar.style.maxHeight = newH + 'px';
+  }, { passive: true });
+
+  bar.addEventListener('touchend', () => {
+    if (!pullUpDragging) return;
+    pullUpDragging = false;
+    const currentH = bar.offsetHeight;
+    if (currentH > pullUpBaseH * 1.3) {
+      // Snap fully open as manual
+      activeDrawer = 'manual';
+      lastActiveDrawer = 'manual';
+      updateIconButtons();
+      playSfx('menu_open', 1, 2);
+      document.getElementById('btn-launch').style.visibility = 'hidden';
+      document.getElementById('bar-content').scrollTop = 0;
+      requestAnimationFrame(() => {
+        bar.style.transition = 'max-height 0.15s cubic-bezier(0.2, 0, 0.3, 1)';
+        bar.style.maxHeight = '85vh';
+      });
+    } else {
+      // Snap back closed — undo everything
+      bar.style.transition = 'max-height 0.1s ease';
+      bar.style.maxHeight = pullUpBaseH + 'px';
+      document.getElementById('drawer-overlay').classList.remove('visible');
+      setTimeout(() => {
+        bar.classList.remove('expanded');
+        bar.style.maxHeight = '';
+        bar.style.transition = '';
+      }, 110);
+    }
+  });
+
   // Handle always initiates drag
   handle.addEventListener('pointerdown', (e) => {
     if (!activeDrawer) return;
@@ -3305,21 +3484,41 @@ function getManualHTML() {
   });
 
   // Content initiates drag only when scrolled to top and pulling down
-  let contentStartY = 0, contentMaybeDrag = false;
+  // Also detects left/right swipe to switch panels
+  let contentStartY = 0, contentStartX = 0, contentMaybeDrag = false, contentMaybeSwipe = false;
   contentEl.addEventListener('touchstart', (e) => {
     if (!activeDrawer) return;
+    contentStartX = e.touches[0].clientX;
+    contentStartY = e.touches[0].clientY;
+    contentMaybeSwipe = true;
     if (contentEl.scrollTop <= 0) {
-      contentStartY = e.touches[0].clientY;
       contentMaybeDrag = true;
     }
   }, { passive: true });
 
   contentEl.addEventListener('touchmove', (e) => {
-    if (!contentMaybeDrag || dragging) return;
+    const dx = e.touches[0].clientX - contentStartX;
     const dy = e.touches[0].clientY - contentStartY;
+
+    // Swipe detection — horizontal dominates and threshold met
+    if (contentMaybeSwipe && !dragging && Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      contentMaybeSwipe = false;
+      contentMaybeDrag = false;
+      if (activeDrawer === 'manual' && dx < 0) {
+        // Swipe left from manual → mission
+        toggleDrawer('mission');
+      } else if (activeDrawer === 'mission' && dx > 0) {
+        // Swipe right from mission → manual
+        toggleDrawer('manual');
+      }
+      return;
+    }
+
+    if (!contentMaybeDrag || dragging) return;
     if (dy > 10 && contentEl.scrollTop <= 0) {
       // Intercept scroll — start drag
       contentMaybeDrag = false;
+      contentMaybeSwipe = false;
       startY = e.touches[0].clientY;
       startH = bar.offsetHeight;
       dragging = true;
@@ -3334,6 +3533,7 @@ function getManualHTML() {
 
   contentEl.addEventListener('touchend', () => {
     contentMaybeDrag = false;
+    contentMaybeSwipe = false;
     finishDrag();
   });
 
@@ -3359,7 +3559,7 @@ function getManualHTML() {
       captureEl = null;
       bar.classList.remove('dragging');
       if (activeDrawer) {
-        bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+        bar.style.transition = 'max-height 0.15s cubic-bezier(0.2, 0, 0.3, 1)';
         bar.style.maxHeight = '85vh';
       }
     }
@@ -3394,7 +3594,7 @@ function getManualHTML() {
       if (currentH < startH * 0.6) {
         closeDrawer();
       } else {
-        bar.style.transition = 'max-height 0.2s cubic-bezier(0.2, 0, 0.3, 1)';
+        bar.style.transition = 'max-height 0.15s cubic-bezier(0.2, 0, 0.3, 1)';
         bar.style.maxHeight = '85vh';
       }
     }
