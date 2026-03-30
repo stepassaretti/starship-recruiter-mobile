@@ -2302,8 +2302,12 @@ const LANG = {
     timerPaused: "PAUSED",
     timerPausedMsg: "You have %s seconds left.",
     timerResume: "CONTINUE",
-    timerSpeedBonus20: "Speed bonus (<10s)",
-    timerSpeedBonus10: "Speed bonus (11-20s)"
+    timerSpeedBonus20: "Speed bonus (<%ss)",
+    timerSpeedBonus10: "Speed bonus (<%ss)",
+    timerBonusPage1: "Complete the roster with time to spare and a speed bonus will be applied to your mission score.",
+    timerBonusNoteLabel: "NOTE FOR THE RECRUITER:",
+    timerBonusNote20: "Complete within %s seconds: +10%",
+    timerBonusNote10: "Complete within %s seconds: +5%"
   },
   it: {
     selectLang: "Seleziona la lingua",
@@ -2502,8 +2506,12 @@ const LANG = {
     timerPaused: "IN PAUSA",
     timerPausedMsg: "Ti restano %s secondi.",
     timerResume: "CONTINUA",
-    timerSpeedBonus20: "Bonus velocità (<10s)",
-    timerSpeedBonus10: "Bonus velocità (11-20s)"
+    timerSpeedBonus20: "Bonus velocità (<%ss)",
+    timerSpeedBonus10: "Bonus velocità (<%ss)",
+    timerBonusPage1: "Completa il roster in anticipo e un bonus velocità verrà aggiunto al tuo punteggio missione.",
+    timerBonusNoteLabel: "NOTA PER IL RECLUTATORE:",
+    timerBonusNote20: "Completa entro %s secondi: +10%",
+    timerBonusNote10: "Completa entro %s secondi: +5%"
   }
 };
 
@@ -3313,8 +3321,9 @@ function getManualHTML() {
     }).join('');
 
     const shortDescRaw = currentLang === 'it' ? (rd.shortDesc_it || rd.shortDesc || rd.desc) : (rd.shortDesc || rd.desc);
-    // Strip [bracket hints] from displayed short desc
-    const shortDesc = shortDescRaw.replace(/\s*\[.*?\]/g, '').trim();
+    const bracketMatch = shortDescRaw.match(/\[([^\]]+)\]/);
+    const shortDesc = shortDescRaw.replace(/\s*\[[^\]]+\]/g, '').trim();
+    const hintText = bracketMatch ? `<span style="color:#888;"> [${bracketMatch[1]}]</span>` : '';
     const fullDescRaw = currentLang === 'it' ? (rd.desc_it || rd.desc || '') : (rd.desc || '');
     // Keep page-break joined; keep NOTE FOR RECRUITER for display
     const fullDesc = fullDescRaw.split('\x00').join(' ').trim();
@@ -3365,7 +3374,7 @@ function getManualHTML() {
           ${speciesName(rKey)}
         </div>
         <div class="manual-desc-tap"${tapAttr}>
-          <div class="manual-desc-text">${shortDesc}${moreSpan}</div>
+          <div class="manual-desc-text">${shortDesc}${hintText}${moreSpan}</div>
           ${expandBody}
         </div>
         <div class="manual-hates">${(rd.hates[0]==='ALL'||rd.hates[0]==='NO ONE')?`<span class="manual-hates-names">${hateSpans}</span>`:`<span class="manual-hates-label">${t('hates')}</span><span class="manual-hates-names">${hateSpans}</span>`}</div>
@@ -4019,19 +4028,16 @@ function generateMission() {
 
 // Timer mission: fixed ship (10-20 slots), scaled targets, no mandates/expReq
 function generateTimerMissionAndShip() {
-  // Pick random slot count 10-20, then map to a Phase 1 ship name
-  const slots = rand(10, 20);
+  // Pick timer duration from pool
+  const timerDuration = TIMER_DURATIONS[rand(0, TIMER_DURATIONS.length - 1)];
+
+  // Slots scale with duration: 20s→10-12, 30s→12-14, 40s→14-16, 50s→16-18, 60s→18-20
+  const slotRanges = { 20: [10,12], 30: [12,14], 40: [14,16], 50: [16,18], 60: [18,20] };
+  const [slotMin, slotMax] = slotRanges[timerDuration] || [10, 20];
+  const slots = rand(slotMin, slotMax);
+
   const timerShipNames = ['Speeder','Courier','Interceptor','Scout','Shuttle','Gunship'];
-  // Map slot count loosely to ship name by range
-  let baseName;
-  if      (slots <= 11) baseName = 'Speeder';
-  else if (slots <= 13) baseName = 'Courier';
-  else if (slots <= 14) baseName = 'Interceptor';
-  else if (slots <= 16) baseName = 'Scout';
-  else if (slots <= 18) baseName = 'Shuttle';
-  else                  baseName = 'Gunship';
-  // Randomise within the mapped group for variety
-  baseName = timerShipNames[rand(0, timerShipNames.length - 1)];
+  const baseName = timerShipNames[rand(0, timerShipNames.length - 1)];
   const minSlots = Math.round(slots * 0.75);
   state.ship = { name: baseName + ' [URGENT]', base: baseName, max: slots, min: minSlots };
   state.roster = new Array(slots).fill(null);
@@ -4049,15 +4055,16 @@ function generateTimerMissionAndShip() {
   const m = types[rand(0, types.length - 1)];
   const title = m.titles[rand(0, m.titles.length - 1)];
 
-  // Stat targets scaled proportionally to slot count — matching day 20-27 scale
-  // Each slot contributes ~20-25 stat points to the total target per stat
+  // Stat targets scale with duration (lower duration = lower per-slot multipliers)
+  const strIntRanges = { 20: [12,15], 30: [14,18], 40: [16,20], 50: [18,22], 60: [20,25] };
+  const chaRanges    = { 20: [8,10],  30: [9,12],  40: [10,13], 50: [11,14], 60: [12,16] };
   let targets = {};
   m.stat.forEach(s => {
-    const perSlot = s === 'cha' ? rand(12, 16) : rand(20, 25);
-    targets[s] = slots * perSlot + rand(-15, 15);
+    const [lo, hi] = s === 'cha' ? (chaRanges[timerDuration] || [12,16]) : (strIntRanges[timerDuration] || [20,25]);
+    targets[s] = slots * rand(lo, hi) + rand(-15, 15);
   });
 
-  // minReq — same formula logic as normal but using slot count as reference
+  // minReq — same formula logic as normal
   const statCountBase = 90 - (m.stat.length - 1) * 12;
   const avgTarget = m.stat.reduce((sum, s) => sum + targets[s], 0) / m.stat.length;
   const slotsPerTarget = slots / avgTarget;
@@ -4066,7 +4073,7 @@ function generateTimerMissionAndShip() {
 
   const reward = Math.round((600 + (state.day * 40)) * (m.stat.length === 1 ? 1.15 : 1.25) * 0.75);
 
-  return { title, type: m.id, reqs: m.stat, targets, minReq, expReq: null, mandates: null, reward, isTimer: true };
+  return { title, type: m.id, reqs: m.stat, targets, minReq, expReq: null, mandates: null, reward, isTimer: true, timerDuration };
 }
 
 function updateShip() {
@@ -5117,7 +5124,20 @@ function launchMission(fromTimer) {
     expMandateMod = hasExp ? 10 : -10;
   }
 
-  score = Math.floor(rawScore + effMod - conflictPenalty + synergy + drakhForce + expMandateMod);
+  // Timer speed bonus — added to score (like Drakh Force), +10% or +5%
+  // Thresholds are elapsed seconds (time used), not remaining
+  const TIMER_BONUS_THRESHOLDS = { 60: [10,20], 50: [8,15], 40: [6,12], 30: [5,10], 20: [4,8] };
+  let timerSpeedBonusPct = 0;
+  let timerSpeedBonusThresh = 0; // the threshold that was beaten, for the report label
+  if (state.timerMission && timerStarted) {
+    const dur = (state.mission && state.mission.timerDuration) ? state.mission.timerDuration : 60;
+    const elapsed = dur - timerSecondsLeft;
+    const [t10, t5] = TIMER_BONUS_THRESHOLDS[dur] || [Math.round(dur*0.167), Math.round(dur*0.333)];
+    if (elapsed < t10) { timerSpeedBonusPct = 10; timerSpeedBonusThresh = t10; }
+    else if (elapsed < t5) { timerSpeedBonusPct = 5; timerSpeedBonusThresh = t5; }
+  }
+
+  score = Math.floor(rawScore + effMod - conflictPenalty + synergy + drakhForce + expMandateMod + timerSpeedBonusPct);
   let overperformance = 0;
   if (score > 100) { overperformance = Math.min(20, score - 100); score = 100; }
   if (score < 0) score = 0;
@@ -5139,16 +5159,6 @@ function launchMission(fromTimer) {
     earned = 0;
     isSuccess = false;
   }
-
-  // Timer speed bonus: applied to earned if mission succeeded and timer was used
-  let timerSpeedBonusPct = 0;
-  if (state.timerMission && timerStarted && isSuccess && !isSabotaged) {
-    const elapsed = Math.floor((Date.now() - timerStartTime) / 1000);
-    if (elapsed < 10) timerSpeedBonusPct = 20;
-    else if (elapsed <= 20) timerSpeedBonusPct = 10;
-  }
-  const timerSpeedBonusAmt = timerSpeedBonusPct > 0 ? Math.floor(earned * timerSpeedBonusPct / 100) : 0;
-  earned += timerSpeedBonusAmt;
 
   state.money += earned;
 
@@ -5274,17 +5284,18 @@ function launchMission(fromTimer) {
     html += resDivider();
   }
 
+  // Timer speed bonus row (before overperformance)
+  if (timerSpeedBonusPct > 0) {
+    const baseLabel = timerSpeedBonusPct === 10 ? t('timerSpeedBonus20') : t('timerSpeedBonus10');
+    const label = baseLabel.replace('%s', timerSpeedBonusThresh);
+    html += resRow(label, `+${timerSpeedBonusPct}%`);
+    html += resDivider();
+  }
+
   // Overperformance
   if (overperformance > 0) {
     let bonus = Math.floor(state.mission.reward * (overperformance/100));
     html += resRow(t('overperformBonus'), `+${bonus} CR`);
-    html += resDivider();
-  }
-
-  // Timer speed bonus row
-  if (timerSpeedBonusPct > 0) {
-    const label = timerSpeedBonusPct === 20 ? t('timerSpeedBonus20') : t('timerSpeedBonus10');
-    html += resRow(label, `+${timerSpeedBonusAmt} CR`);
     html += resDivider();
   }
 
@@ -6689,8 +6700,8 @@ function goToSplashFromGame() {
 // ══════════════════════════════════════════════
 // TIMER MISSION LOGIC
 // ══════════════════════════════════════════════
-const TIMER_DURATION = 60;
-let timerSecondsLeft = TIMER_DURATION;
+const TIMER_DURATIONS = [20, 30, 40, 50, 60];
+let timerSecondsLeft = 60;
 let timerRunning = false;
 let timerStarted = false;
 let timerInterval = null;
@@ -6699,7 +6710,7 @@ let timerSfxSilenced = false; // true once mission launches
 
 function showTimerBox() {
   const box = document.getElementById('timer-box');
-  timerSecondsLeft = TIMER_DURATION;
+  timerSecondsLeft = (state.mission && state.mission.timerDuration) ? state.mission.timerDuration : 60;
   timerStarted = false;
   timerRunning = false;
   updateTimerDisplay();
@@ -6836,7 +6847,7 @@ function dismissTimerNotStarted(btn) {
 
 function cleanupTimerForNextDay() {
   hideTimerBox();
-  timerSecondsLeft = TIMER_DURATION;
+  timerSecondsLeft = 60;
   timerStarted = false;
   timerRunning = false;
   timerSfxSilenced = false;
@@ -6882,6 +6893,10 @@ startDay();
   }
 
   function buildTimerAnnouncementPage(pageEl) {
+    const dur = state.mission ? (state.mission.timerDuration || 60) : 60;
+    const durLine = currentLang === 'it'
+      ? `HAI ${dur} SECONDI PER COMPLETARE IL ROSTER.`
+      : `YOU HAVE ${dur} SECONDS TO FILL THE ROSTER.`;
     pageEl.innerHTML = `
       <div class="rules-briefing-header">
         <div class="rules-briefing-header-text">
@@ -6893,8 +6908,32 @@ startDay();
       <div class="rules-divider"></div>
       <div style="font-family:'VT323',monospace;font-size:18px;line-height:1.5;margin-top:12px;">
         <p style="margin:0 0 14px;">${t('urgentLine1')}</p>
-        <p style="margin:0 0 14px;text-decoration:underline;font-weight:bold;">${t('urgentLine2')}</p>
+        <p style="margin:0 0 14px;text-decoration:underline;font-weight:bold;">${durLine}</p>
         <p style="margin:0;">${t('urgentLine3')}</p>
+      </div>
+    `;
+  }
+
+  function buildTimerSpeedBonusPage(pageEl) {
+    const dur = state.mission ? (state.mission.timerDuration || 60) : 60;
+    const THRESHOLDS = { 60: [10,20], 50: [8,15], 40: [6,12], 30: [5,10], 20: [4,8] };
+    const [t10, t5] = THRESHOLDS[dur] || [Math.round(dur*0.167), Math.round(dur*0.333)];
+    const note20 = t('timerBonusNote20').replace('%s', t10);
+    const note10 = t('timerBonusNote10').replace('%s', t5);
+    pageEl.innerHTML = `
+      <div class="rules-briefing-header">
+        <div class="rules-briefing-header-text">
+          <span class="rules-briefing-day">${t('day').toUpperCase()} ${state.day}</span>
+          <span class="rules-briefing-sub">${t('urgentContract')}</span>
+        </div>
+        <img src="images/doc_icon.png" class="rules-briefing-icon" onerror="this.style.display='none'">
+      </div>
+      <div class="rules-divider"></div>
+      <div style="font-family:'VT323',monospace;font-size:18px;line-height:1.5;margin-top:12px;">
+        <p style="margin:0 0 20px;">${t('timerBonusPage1')}</p>
+        <p style="margin:0 0 6px;font-weight:bold;">${t('timerBonusNoteLabel')}</p>
+        <p style="margin:0 0 6px;">— ${note20}</p>
+        <p style="margin:0;">— ${note10}</p>
       </div>
     `;
   }
@@ -6962,9 +7001,14 @@ startDay();
       // For species with a \x00 page-break marker, only show part 1 on this page
       const hasPageBreak = fullDesc.includes('\x00');
       const descForPage1 = hasPageBreak ? fullDesc.split('\x00')[0] : fullDesc;
-      const hateContext = (descForPage1.startsWith(shortDesc)
+      const noteMarker = currentLang === 'it' ? '\n\nNOTA PER IL RECLUTATORE:' : '\n\nNOTE FOR THE RECRUITER:';
+      const noteLabel  = currentLang === 'it' ? 'NOTA PER IL RECLUTATORE' : 'NOTE FOR THE RECRUITER';
+      const rawContext = (descForPage1.startsWith(shortDesc)
         ? descForPage1.slice(shortDesc.length).trim()
-        : descForPage1).replace(/\n\nNOTE FOR THE RECRUITER:.*$/s, '').replace(/\n\nNOTA PER IL RECLUTATORE:.*$/s, '').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+        : descForPage1);
+      const noteIdx = rawContext.indexOf(noteMarker);
+      const mainContext = (noteIdx !== -1 ? rawContext.slice(0, noteIdx) : rawContext).trim().replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+      const noteText = noteIdx !== -1 ? rawContext.slice(noteIdx + noteMarker.length).trim().replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>') : '';
       return `<div class="rules-newsp-row">
         <div class="rules-newsp-name-row">
           <img class="rules-newsp-icon" src="${icon}" onerror="this.style.display='none'">
@@ -6972,7 +7016,8 @@ startDay();
         </div>
         <div class="rules-newsp-desc">${shortDesc}</div>
         <div class="rules-newsp-hates"><strong>${t('hates')}</strong> ${hateSpans}</div>
-        ${hateContext ? `<div class="rules-newsp-hatecontext">${hateContext}</div>` : ''}
+        ${mainContext ? `<div class="rules-newsp-hatecontext">${mainContext}</div>` : ''}
+        ${noteText ? `<div class="rules-newsp-hatecontext" style="margin-top:10px;"><strong>${noteLabel}:</strong> ${noteText}</div>` : ''}
       </div>`;
     }).join('');
 
@@ -7308,7 +7353,7 @@ startDay();
       if (isMandateIntroDay)  pages.push('mandateIntro');
       if (isExpMandateDay)    pages.push('expMandate');
       if (isSaboteurDay)      pages.push('saboteur');
-      if (state.timerMission) pages.push('timerAnnouncement');
+      if (state.timerMission) { pages.push('timerAnnouncement'); pages.push('timerSpeedBonus'); }
       if (hasMandates) {
         pages.push('mandateFlavour');
         pages.push('mandateStats');
@@ -7328,6 +7373,7 @@ startDay();
         else if (type === 'expMandate')      buildExpMandatePage(pageEl);
         else if (type === 'saboteur')        buildSaboteurWarningPage(pageEl);
         else if (type === 'timerAnnouncement') buildTimerAnnouncementPage(pageEl);
+        else if (type === 'timerSpeedBonus')  buildTimerSpeedBonusPage(pageEl);
         else if (type === 'mandateFlavour')  buildMandateFlavourPage(pageEl);
         else if (type === 'mandateStats')    buildMandateStatsPage(pageEl);
         else if (type === 'mission')         buildMissionPage(pageEl);
